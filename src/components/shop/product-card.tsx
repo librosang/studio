@@ -12,6 +12,11 @@ type ProductCardProps = {
   onQuantityChange: (productId: string, newQuantity: number) => void;
 };
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 export function ProductCard({ product, cartQuantity, onQuantityChange }: ProductCardProps) {
 
   const handleIncrement = () => {
@@ -25,8 +30,13 @@ export function ProductCard({ product, cartQuantity, onQuantityChange }: Product
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="text-lg">{product.name}</CardTitle>
-        <CardDescription>{product.brand}</CardDescription>
+        <div className="flex justify-between items-start gap-4">
+          <div className="grid gap-0.5">
+            <CardTitle className="text-lg">{product.name}</CardTitle>
+            <CardDescription>{product.brand}</CardDescription>
+          </div>
+          <p className="text-lg font-semibold">{currencyFormatter.format(product.price)}</p>
+        </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-2">
          <Badge variant="secondary">{product.category}</Badge>

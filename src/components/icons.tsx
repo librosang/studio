@@ -25,7 +25,8 @@ import {
   Store,
   BookText,
   Package,
-  Wand2
+  Wand2,
+  ArrowRightLeft
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -72,4 +73,5 @@ export const Icons = {
   create: PackagePlus,
   update: Edit,
   delete: PackageX,
+  transaction: ArrowRightLeft,
 };

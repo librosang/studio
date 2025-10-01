@@ -28,21 +28,20 @@ const ProductSchema = z.object({
   brand: z.string().min(1, 'Brand is required'),
   category: z.string().min(1, 'Category is required'),
   quantity: z.coerce.number().int('Quantity must be an integer'),
+  price: z.coerce.number().positive('Price must be a positive number'),
 });
 
 // --- Log Helper ---
 async function addLog(
   type: LogEntry['type'],
-  productName: string,
   details: string,
-  quantityChange?: number
+  items: { productName: string; quantityChange: number }[]
 ) {
   try {
     await addDoc(collection(db, 'logs'), {
       type,
-      productName,
       details,
-      quantityChange: quantityChange || 0,
+      items,
       timestamp: Timestamp.now(),
     });
   } catch (error) {
@@ -73,7 +72,7 @@ export async function addProduct(formData: unknown) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, quantity } = result.data;
+  const { name, brand, category, quantity, price } = result.data;
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
@@ -81,15 +80,15 @@ export async function addProduct(formData: unknown) {
       brand,
       category,
       quantity,
+      price,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
 
     await addLog(
       'CREATE',
-      name,
-      `Added new product with quantity ${quantity}.`,
-      quantity
+      `Added new product: ${name}.`,
+      [{ productName: name, quantityChange: quantity }]
     );
 
     revalidatePath('/stock');
@@ -110,10 +109,9 @@ export async function updateProduct(id: string, formData: unknown) {
   if (!productSnap.exists()) {
     return { error: 'Product not found.' };
   }
-  const oldQuantity = productSnap.data().quantity;
-  const { name, brand, category, quantity } = result.data;
-  const quantityChange = quantity - oldQuantity;
-
+  const oldData = productSnap.data();
+  const { name, brand, category, quantity, price } = result.data;
+  const quantityChange = quantity - oldData.quantity;
 
   try {
     await updateDoc(productRef, {
@@ -121,14 +119,14 @@ export async function updateProduct(id: string, formData: unknown) {
       brand,
       category,
       quantity,
+      price,
       updatedAt: Timestamp.now(),
     });
     
     await addLog(
       'UPDATE',
-      name,
-      `Updated product. Quantity changed by ${quantityChange}.`,
-      quantityChange
+      `Updated product: ${name}.`,
+      [{ productName: name, quantityChange: quantityChange }]
     );
 
     revalidatePath('/stock');
@@ -151,9 +149,8 @@ export async function deleteProduct(id: string) {
     await deleteDoc(productRef);
     await addLog(
       'DELETE',
-      name,
-      'Deleted product from inventory.',
-      -quantity
+      `Deleted product: ${name}.`,
+      [{ productName: name, quantityChange: -quantity }]
     );
     
     revalidatePath('/stock');
@@ -176,6 +173,9 @@ export async function getUniqueCategoriesAndBrands() {
 export async function processTransaction(cart: { [id: string]: number }) {
   const batch = writeBatch(db);
   const productIds = Object.keys(cart);
+  const logItems: { productName: string; quantityChange: number }[] = [];
+  let salesCount = 0;
+  let returnsCount = 0;
 
   try {
     for (const productId of productIds) {
@@ -195,30 +195,23 @@ export async function processTransaction(cart: { [id: string]: number }) {
         
         batch.update(productRef, { quantity: newQuantity, updatedAt: Timestamp.now() });
         
-        const logType = quantityChange > 0 ? 'SALE' : 'RETURN';
-        const logDetails =
-          logType === 'SALE'
-            ? `Sold ${quantityChange} unit(s).`
-            : `Returned ${-quantityChange} unit(s).`;
+        logItems.push({ productName: product.name, quantityChange: -quantityChange });
         
-        const productsCollection = collection(db, 'products');
-        const logBatch = writeBatch(db);
-        const newLogRef = doc(collection(db, 'logs'));
-        logBatch.set(newLogRef, {
-            type: logType,
-            productName: product.name,
-            details: logDetails,
-            quantityChange: -quantityChange,
-            timestamp: Timestamp.now(),
-        });
-        await logBatch.commit();
-
+        if (quantityChange > 0) {
+          salesCount += quantityChange;
+        } else {
+          returnsCount += Math.abs(quantityChange);
+        }
       }
     }
 
+    const logDetails = `Transaction completed with ${salesCount} sale(s) and ${returnsCount} return(s).`;
+    await addLog('TRANSACTION', logDetails, logItems);
+
     await batch.commit();
+
     revalidatePath('/stock');
-revalidatePath('/shop');
+    revalidatePath('/shop');
     revalidatePath('/log');
     return { data: 'Transaction successful.' };
   } catch (error) {

@@ -6,19 +6,19 @@ export type Product = {
   brand: string;
   category: string;
   quantity: number;
+  price: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
 
-export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'SALE' | 'RETURN';
+export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION';
 
 export type LogEntry = {
   id: string;
   timestamp: Timestamp;
   type: LogType;
-  productName: string;
   details: string;
-  quantityChange?: number;
+  items: { productName: string; quantityChange: number }[];
 };
 
 export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {

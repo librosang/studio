@@ -25,6 +25,11 @@ type ShopClientProps = {
   brands: string[];
 };
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 export function ShopClient({
   initialProducts,
   categories,
@@ -91,6 +96,13 @@ export function ShopClient({
   const totalItems = Array.from(cart.values()).reduce((sum, qty) => sum + Math.abs(qty), 0);
   const salesCount = Array.from(cart.values()).filter(q => q > 0).reduce((sum, q) => sum + q, 0);
   const returnsCount = Array.from(cart.values()).filter(q => q < 0).reduce((sum, q) => sum + q, 0);
+
+  const totalAmount = useMemo(() => {
+    return cartItems.reduce((acc, item) => {
+      const quantity = cart.get(item.id) || 0;
+      return acc + (item.price * quantity);
+    }, 0);
+  }, [cart, cartItems]);
 
 
   return (
@@ -159,7 +171,7 @@ export function ShopClient({
                   <li key={item.id} className="flex justify-between items-center">
                     <div>
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">{item.brand}</p>
+                      <p className="text-sm text-muted-foreground">{currencyFormatter.format(item.price)}</p>
                     </div>
                      <Badge variant={ (cart.get(item.id) || 0) > 0 ? "secondary" : "destructive"}>
                       Qty: {cart.get(item.id)}
@@ -188,8 +200,8 @@ export function ShopClient({
             </div>
              <Separator/>
              <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
-                <span>Total Items:</span>
-                <span>{totalItems}</span>
+                <span>Total:</span>
+                <span>{currencyFormatter.format(totalAmount)}</span>
             </div>
           <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
             {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}

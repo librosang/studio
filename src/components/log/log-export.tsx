@@ -37,24 +37,26 @@ export function LogExport({ logs }: LogExportProps) {
         return;
     }
 
-    const dataToExport = filteredLogs.map(log => ({
-      Timestamp: format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss'),
-      Type: log.type,
-      "Product Name": log.productName,
-      Details: log.details,
-      "Quantity Change": log.quantityChange,
-    }));
+    const dataToExport = filteredLogs.flatMap(log => 
+        log.items.map(item => ({
+          Timestamp: format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss'),
+          Type: log.type,
+          Details: log.details,
+          "Product Name": item.productName,
+          "Quantity Change": item.quantityChange,
+        }))
+    );
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Activity Log");
 
     worksheet["!cols"] = [
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 30 },
-      { wch: 50 },
-      { wch: 15 },
+      { wch: 20 }, // Timestamp
+      { wch: 15 }, // Type
+      { wch: 50 }, // Details
+      { wch: 30 }, // Product Name
+      { wch: 15 }, // Quantity Change
     ];
 
     XLSX.writeFile(workbook, "StockFlow_ActivityLog.xlsx");

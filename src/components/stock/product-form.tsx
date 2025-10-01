@@ -24,6 +24,7 @@ const FormSchema = z.object({
   brand: z.string().min(2, 'Brand must be at least 2 characters.'),
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   quantity: z.coerce.number().int(),
+  price: z.coerce.number().positive('Price must be a positive number.'),
 });
 
 type ProductFormProps = {
@@ -42,11 +43,13 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       brand: product.brand,
       category: product.category,
       quantity: product.quantity,
+      price: product.price,
     } : {
       name: '',
       brand: '',
       category: '',
       quantity: 0,
+      price: 0,
     },
   });
 
@@ -138,19 +141,34 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-4">
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem className='flex-1'>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem className='flex-1'>
+                <FormLabel>Price</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
           {product ? 'Save Changes' : 'Add Product'}

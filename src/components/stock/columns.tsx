@@ -8,6 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import { format } from 'date-fns';
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'name',
@@ -33,6 +38,26 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     cell: ({ row }) => {
       return <Badge variant="secondary">{row.original.category}</Badge>;
     }
+  },
+  {
+    accessorKey: 'price',
+    header: ({ column }) => {
+       return (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Price
+            <Icons.arrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      const price = row.original.price;
+      return <div className="text-right font-medium">{currencyFormatter.format(price)}</div>;
+    },
   },
   {
     accessorKey: 'quantity',

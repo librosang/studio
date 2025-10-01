@@ -7,21 +7,20 @@ import { Icons, Icon } from '../icons';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
+import { Separator } from '../ui/separator';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
   UPDATE: Icons.update,
   DELETE: Icons.delete,
-  SALE: Icons.sale,
-  RETURN: Icons.return,
+  TRANSACTION: Icons.shoppingCart,
 };
 
 const logColorMap: Record<LogType, string> = {
   CREATE: 'bg-blue-500',
   UPDATE: 'bg-yellow-500',
   DELETE: 'bg-red-500',
-  SALE: 'bg-green-500',
-  RETURN: 'bg-purple-500',
+  TRANSACTION: 'bg-green-500',
 }
 
 function LogItem({ log }: { log: SerializableLogEntry }) {
@@ -47,13 +46,24 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
       </div>
       <div className="flex-1">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-          <p className="font-semibold">{log.productName}</p>
+           <div className="flex items-center gap-2">
+            <p className="font-semibold">{log.type}</p>
+            <Badge variant="outline" className="text-xs">{log.details}</Badge>
+          </div>
           <p className="text-xs text-muted-foreground mt-1 sm:mt-0" title={formattedDate}>
               {relativeDate}
           </p>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">{log.details}</p>
-        <Badge variant="outline" className="mt-2 text-xs">{log.type}</Badge>
+        <div className="text-sm text-muted-foreground mt-2 space-y-2">
+            {log.items.map((item, index) => (
+                <div key={index} className="flex justify-between items-center border-b border-dashed pb-1">
+                    <span>{item.productName}</span>
+                    <span className={`font-medium ${item.quantityChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {item.quantityChange > 0 ? '+' : ''}{item.quantityChange}
+                    </span>
+                </div>
+            ))}
+        </div>
       </div>
     </div>
   );
