@@ -8,15 +8,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { SalesChart } from '@/components/dashboard/sales-chart';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -71,41 +64,7 @@ export default async function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {stats.topSellingProducts.length > 0 ? (
-                <div className="h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stats.topSellingProducts}>
-                      <XAxis
-                        dataKey="productName"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        angle={-45}
-                        textAnchor="end"
-                      />
-                      <YAxis
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `${value}`}
-                      />
-                      <Tooltip
-                        cursor={{ fill: 'hsla(var(--muted))' }}
-                        content={<ChartTooltipContent />}
-                      />
-                      <Bar dataKey="quantity" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex h-[350px] flex-col items-center justify-center text-center text-muted-foreground">
-                   <Icons.shop className="h-12 w-12" />
-                  <p className="mt-4">No sales recorded yet today.</p>
-                  <p className="text-sm">Come back after you've made some sales!</p>
-                </div>
-              )}
+              <SalesChart data={stats.topSellingProducts} />
             </CardContent>
           </Card>
         </div>
