@@ -50,7 +50,7 @@ export function LogExport({ logs }: LogExportProps) {
       {isExporting ? (
         <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
       ) : (
-        <Icons.fileDown className="mr-2 h-4 w-4" />
+        <Icons.sale className="mr-2 h-4 w-4" />
       )}
       Export to Excel
     </Button>
