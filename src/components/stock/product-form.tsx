@@ -18,7 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
-import { Wand2 } from 'lucide-react';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -38,11 +37,16 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      name: product?.name || '',
-      brand: product?.brand || '',
-      category: product?.category || '',
-      quantity: product?.quantity || 0,
+    defaultValues: product ? {
+      name: product.name,
+      brand: product.brand,
+      category: product.category,
+      quantity: product.quantity,
+    } : {
+      name: '',
+      brand: '',
+      category: '',
+      quantity: 0,
     },
   });
 
@@ -63,6 +67,9 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         description: `Product has been ${product ? 'updated' : 'added'}.`,
         className: 'bg-green-600 text-white',
       });
+      if (!product) {
+        form.reset();
+      }
       setOpen(false);
     }
   };
@@ -111,7 +118,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                   <Input placeholder="e.g. Apparel" {...field} />
                 </FormControl>
                 <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
-                    {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Wand2 className="h-4 w-4 text-primary" />}
+                    {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
                 </Button>
               </div>
               <FormMessage />

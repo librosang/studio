@@ -14,12 +14,14 @@ import {
   getDoc,
   where,
   limit,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from './firebase';
 import type { Product, LogEntry } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
+import { sampleProducts } from './sample-data';
 
 const ProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -194,13 +196,25 @@ export async function processTransaction(cart: { [id: string]: number }) {
             ? `Sold ${quantityChange} unit(s).`
             : `Returned ${-quantityChange} unit(s).`;
         
-        await addLog(logType, product.name, logDetails, -quantityChange);
+        const productsCollection = collection(db, 'products');
+        const logBatch = writeBatch(db);
+        const newLogRef = doc(collection(db, 'logs'));
+        logBatch.set(newLogRef, {
+            type: logType,
+            productName: product.name,
+            details: logDetails,
+            quantityChange: -quantityChange,
+            timestamp: Timestamp.now(),
+        });
+        await logBatch.commit();
+
       }
     }
 
     await batch.commit();
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/log');
     return { data: 'Transaction successful.' };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Transaction failed.';
@@ -231,9 +245,39 @@ export async function getCategorySuggestion(productName: string): Promise<{ cate
     return { category: result.category };
   } catch (error) {
     console.error('AI suggestion failed:', error);
-    if (error instanceof Error && error.message.includes('permission')) {
+    if (error instanceof Error && (error.message.includes('permission') || error.message.includes('billing'))) {
         return { error: 'AI suggestion failed. This may be due to billing settings on your Firebase project. Please ensure you are on the Blaze plan.' };
     }
     return { error: 'An unexpected error occurred while getting an AI suggestion.' };
   }
+}
+
+// --- Database Seeding ---
+export async function seedDatabase() {
+    const productsCollection = collection(db, 'products');
+    const snapshot = await getCountFromServer(productsCollection);
+    
+    if (snapshot.data().count > 0) {
+        return { error: 'Database is not empty. Seeding aborted.' };
+    }
+
+    const batch = writeBatch(db);
+
+    sampleProducts.forEach(product => {
+        const docRef = doc(productsCollection);
+        batch.set(docRef, {
+            ...product,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+    });
+
+    try {
+        await batch.commit();
+        revalidatePath('/stock');
+        revalidatePath('/shop');
+        return { data: `${sampleProducts.length} products have been added.` };
+    } catch (error) {
+        return { error: 'Failed to seed database.' };
+    }
 }

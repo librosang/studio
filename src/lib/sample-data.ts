@@ -1,0 +1,28 @@
+export const sampleProducts = [
+    { name: 'Laptop Pro', brand: 'TechCorp', category: 'Electronics', quantity: 50 },
+    { name: 'Smartphone X', brand: 'ConnectMe', category: 'Electronics', quantity: 150 },
+    { name: 'Wireless Headphones', brand: 'SoundWave', category: 'Audio', quantity: 200 },
+    { name: 'Smart Watch 2', brand: 'FitLife', category: 'Wearables', quantity: 80 },
+    { name: '4K TV 55-inch', brand: 'Vision', category: 'Home Entertainment', quantity: 30 },
+    { name: 'Gaming Console', brand: 'GameOn', category: 'Gaming', quantity: 60 },
+    { name: 'Organic Cotton T-Shirt', brand: 'EcoThreads', category: 'Apparel', quantity: 300 },
+    { name: 'Classic Blue Jeans', brand: 'DenimCo', category: 'Apparel', quantity: 250 },
+    { name: 'Running Shoes', brand: 'QuickStep', category: 'Footwear', quantity: 120 },
+    { name: 'Leather Backpack', brand: 'UrbanCarry', category: 'Accessories', quantity: 90 },
+    { name: 'Gourmet Coffee Beans', brand: 'MorningBrew', category: 'Groceries', quantity: 500 },
+    { name: 'Extra Virgin Olive Oil', brand: 'HealthyFats', category: 'Groceries', quantity: 180 },
+    { name: 'The Silent Forest', brand: 'PageTurners', category: 'Books', quantity: 75 },
+    { name: 'Cosmic Adventure', brand: 'Imagination', category: 'Toys', quantity: 130 },
+    {
+      name: 'Herbal Shampoo',
+      brand: 'NatureEssence',
+      category: 'Personal Care',
+      quantity: 220,
+    },
+    { name: 'Stainless Steel Pan', brand: 'HomeChef', category: 'Cookware', quantity: 100 },
+    { name: 'Yoga Mat', brand: 'ZenFlow', category: 'Sports', quantity: 160 },
+    { name: 'Desk Lamp', brand: 'BrightIdeas', category: 'Office Supplies', quantity: 110 },
+    { name: 'Robot Vacuum', brand: 'CleanBot', category: 'Home Appliances', quantity: 45 },
+    { name: 'Wall Art Print', brand: 'DecorVibes', category: 'Home Decor', quantity: 95 },
+  ];
+  

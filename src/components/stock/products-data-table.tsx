@@ -26,6 +26,9 @@ import { Input } from '@/components/ui/input';
 import { ProductForm } from './product-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Icons } from '../icons';
+import { seedDatabase } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,6 +42,9 @@ export function ProductsDataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [isSeeding, setIsSeeding] = React.useState(false);
+  const { toast } = useToast();
+
 
   const table = useReactTable({
     data,
@@ -54,6 +60,17 @@ export function ProductsDataTable<TData, TValue>({
       columnFilters,
     },
   });
+
+  const handleSeed = async () => {
+    setIsSeeding(true);
+    const result = await seedDatabase();
+    if (result.error) {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: result.data });
+    }
+    setIsSeeding(false);
+  }
 
   return (
     <div>
@@ -118,7 +135,13 @@ export function ProductsDataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  <div className='flex flex-col items-center gap-4'>
+                     <p>No products found.</p>
+                     <Button onClick={handleSeed} disabled={isSeeding} variant="secondary">
+                      {isSeeding ? <Icons.spinner className="animate-spin mr-2" /> :  <Icons.add className="mr-2 h-4 w-4" />}
+                       Seed Sample Data
+                     </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
