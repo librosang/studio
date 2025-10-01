@@ -7,7 +7,6 @@ import { Button } from "../ui/button";
 import { Icons } from "../icons";
 import { SerializableLogEntry } from "@/lib/types";
 import { format } from "date-fns";
-import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
@@ -19,7 +18,7 @@ type LogExportProps = {
 
 export function LogExport({ logs }: LogExportProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const [date, setDate] = useState<DateRange | undefined>();
+  const [date, setDate] = useState<Date | undefined>();
 
   const handleExport = () => {
     setIsExporting(true);
@@ -27,12 +26,9 @@ export function LogExport({ logs }: LogExportProps) {
     const filteredLogs = logs.filter(log => {
         if (!date) return true;
         const logDate = new Date(log.timestamp);
-        const from = date.from ? new Date(date.from.setHours(0,0,0,0)) : null;
-        const to = date.to ? new Date(date.to.setHours(23,59,59,999)) : null;
-        if(from && !to) return logDate >= from;
-        if(!from && to) return logDate <= to;
-        if(from && to) return logDate >= from && logDate <= to;
-        return true;
+        const from = new Date(date.setHours(0,0,0,0));
+        const to = new Date(date.setHours(23,59,59,999));
+        return logDate >= from && logDate <= to;
     });
 
     if (filteredLogs.length === 0) {
@@ -79,28 +75,15 @@ export function LogExport({ logs }: LogExportProps) {
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date?.from ? (
-                date.to ? (
-                  <>
-                    {format(date.from, "LLL dd, y")} -{" "}
-                    {format(date.to, "LLL dd, y")}
-                  </>
-                ) : (
-                  format(date.from, "LLL dd, y")
-                )
-              ) : (
-                <span>Pick a date range</span>
-              )}
+              {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
             <Calendar
               initialFocus
-              mode="range"
-              defaultMonth={date?.from}
+              mode="single"
               selected={date}
               onSelect={setDate}
-              numberOfMonths={2}
             />
           </PopoverContent>
         </Popover>
