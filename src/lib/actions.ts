@@ -15,16 +15,14 @@ import {
   where,
   limit,
   getCountFromServer,
-  startOfDay,
-  endOfDay,
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from './firebase';
 import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
-import { generateProductImage as generateProductImageFlow } from '@/ai/flows/generate-product-image';
 import { sampleProducts } from './sample-data';
+import { startOfDay, endOfDay } from 'date-fns';
 
 const ProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -32,7 +30,7 @@ const ProductSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   quantity: z.coerce.number().int('Quantity must be an integer'),
   price: z.coerce.number().positive('Price must be a positive number'),
-  imageUrl: z.string().url('Image URL must be a valid URL.').optional(),
+  imageUrl: z.string().url('Image URL must be a valid URL.').optional().or(z.literal('')),
 });
 
 // --- Log Helper ---
@@ -76,19 +74,7 @@ export async function addProduct(formData: unknown) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, quantity, price } = result.data;
-  
-  let imageUrl = result.data.imageUrl;
-  if (!imageUrl) {
-    try {
-      const imageResult = await generateProductImageFlow({productName: name});
-      imageUrl = imageResult.imageUrl;
-    } catch(e) {
-      console.error("Image generation failed, continuing without image.", e);
-      // Fail gracefully if image generation has an issue.
-    }
-  }
-
+  const { name, brand, category, quantity, price, imageUrl } = result.data;
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
@@ -110,7 +96,7 @@ export async function addProduct(formData: unknown) {
 
     revalidatePath('/stock');
     revalidatePath('/dashboard');
-    return { data: { id: docRef.id, ...result.data, imageUrl } };
+    return { data: { id: docRef.id, ...result.data } };
   } catch (error) {
     return { error: 'Failed to add product.' };
   }
@@ -291,19 +277,8 @@ export async function seedDatabase() {
 
     for (const product of sampleProducts) {
         const docRef = doc(productsCollection);
-        let imageUrl = product.imageUrl;
-        if (!imageUrl) {
-           try {
-            const imageResult = await generateProductImageFlow({productName: product.name});
-            imageUrl = imageResult.imageUrl;
-           } catch(e) {
-             console.error("Image generation failed for seed data.", e);
-           }
-        }
-
         batch.set(docRef, {
             ...product,
-            imageUrl,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
         });
