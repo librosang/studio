@@ -7,12 +7,20 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Icons } from '../icons';
 
 type SalesChartProps = {
   data: { productName: string; quantity: number }[];
 };
+
+const chartConfig = {
+  quantity: {
+    label: 'Quantity',
+    color: 'hsl(var(--primary))',
+  },
+};
+
 
 export function SalesChart({ data }: SalesChartProps) {
   if (data.length === 0) {
@@ -27,32 +35,34 @@ export function SalesChart({ data }: SalesChartProps) {
 
   return (
     <div className="h-[350px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <XAxis
-            dataKey="productName"
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            angle={-45}
-            textAnchor="end"
-            height={70}
-          />
-          <YAxis
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `${value}`}
-          />
-          <Tooltip
-            cursor={{ fill: 'hsla(var(--muted))' }}
-            content={<ChartTooltipContent />}
-          />
-          <Bar dataKey="quantity" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+       <ChartContainer config={chartConfig} className="h-full w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} accessibilityLayer>
+            <XAxis
+              dataKey="productName"
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              angle={-45}
+              textAnchor="end"
+              height={70}
+            />
+            <YAxis
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `${value}`}
+            />
+            <Tooltip
+              cursor={{ fill: 'hsla(var(--muted))' }}
+              content={<ChartTooltipContent />}
+            />
+            <Bar dataKey="quantity" fill="var(--color-quantity)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }
