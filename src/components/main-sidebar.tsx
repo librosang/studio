@@ -1,0 +1,55 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Icons } from '@/components/icons';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+
+const navItems = [
+  { href: '/stock', label: 'Stockage', icon: Icons.stock },
+  { href: '/shop', label: 'Shop', icon: Icons.shop },
+  { href: '/log', label: 'Log', icon: Icons.log },
+];
+
+export default function MainSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="w-16 md:w-64 bg-card border-r flex flex-col transition-all duration-300">
+      <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
+        <Link href="/" className="flex items-center gap-2">
+          <Icons.logo className="h-8 w-8 text-primary" />
+          <span className="hidden md:block font-bold font-headline text-xl text-foreground">StockFlow</span>
+        </Link>
+      </div>
+      <nav className="flex-1 p-2 md:p-4 space-y-2">
+        <TooltipProvider>
+          {navItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Tooltip key={item.href} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild
+                    variant={isActive ? 'default' : 'ghost'}
+                    className="w-full flex items-center justify-center md:justify-start gap-3"
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-5 w-5" />
+                      <span className="hidden md:block">{item.label}</span>
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="md:hidden">
+                  <p>{item.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </TooltipProvider>
+      </nav>
+    </aside>
+  );
+}
