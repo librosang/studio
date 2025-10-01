@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons, Icon } from '../icons';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
+import { Badge } from '../ui/badge';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
@@ -45,14 +46,14 @@ function LogItem({ log }: { log: LogEntry }) {
          <LogIcon className="h-5 w-5" />
       </div>
       <div className="flex-1">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <p className="font-semibold">{log.productName}</p>
-          <p className="text-xs text-muted-foreground" title={formattedDate}>
+          <p className="text-xs text-muted-foreground mt-1 sm:mt-0" title={formattedDate}>
               {relativeDate}
           </p>
         </div>
-        <p className="text-sm text-muted-foreground">{log.details}</p>
-        <p className="text-xs text-muted-foreground">Type: {log.type}</p>
+        <p className="text-sm text-muted-foreground mt-1">{log.details}</p>
+        <Badge variant="outline" className="mt-2 text-xs">{log.type}</Badge>
       </div>
     </div>
   );
@@ -64,7 +65,7 @@ export function LogList({ logs }: { logs: LogEntry[] }) {
     <Card>
       <CardContent className="p-0">
         <ScrollArea className="h-[75vh]">
-          <div className="p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-6">
             {logs.length > 0 ? (
               logs.map((log) => (
                 <LogItem key={log.id} log={log} />

@@ -17,7 +17,7 @@ export default function MainSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-16 md:w-64 bg-card border-r flex flex-col transition-all duration-300">
+    <aside className="w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex">
       <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-3">
           <Icons.logo className="h-8 w-8 text-primary" />
@@ -36,7 +36,7 @@ export default function MainSidebar() {
                     variant={isActive ? 'default' : 'ghost'}
                     className={cn(
                       "w-full flex items-center justify-center md:justify-start gap-3 text-lg py-6",
-                       isActive && "text-primary-foreground"
+                       isActive && "text-primary-foreground hover:text-primary-foreground"
                     )}
                   >
                     <Link href={item.href}>

@@ -7,19 +7,19 @@ import { Icons } from '@/components/icons';
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
-      <header className="mb-16 text-center">
-        <div className="flex justify-center items-center gap-4 mb-4">
-          <Icons.logo className="h-16 w-16 text-primary" />
-          <h1 className="text-7xl font-bold font-headline">
+      <header className="mb-12 md:mb-16 text-center">
+        <div className="flex justify-center items-center gap-2 md:gap-4 mb-4">
+          <Icons.logo className="h-12 w-12 md:h-16 md:w-16 text-primary" />
+          <h1 className="text-5xl md:text-7xl font-bold font-headline">
             StockFlow
           </h1>
         </div>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           An intelligent, streamlined solution for modern inventory management. Get started in seconds.
         </p>
       </header>
 
-      <main className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+      <main className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full max-w-6xl">
         <FeatureCard
           href="/stock"
           icon={<Archive className="h-10 w-10 text-primary" />}
@@ -40,7 +40,7 @@ export default function Home() {
         />
       </main>
 
-      <footer className="mt-16 text-center text-sm text-muted-foreground">
+      <footer className="mt-12 md:mt-16 text-center text-sm text-muted-foreground">
         <p>Powered by Firebase & Google AI</p>
       </footer>
     </div>
@@ -59,15 +59,15 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <Card className="hover:shadow-2xl transition-all duration-300 hover:border-primary/50 bg-card/50 backdrop-blur-sm group">
+    <Card className="hover:shadow-xl transition-all duration-300 hover:border-primary/50 bg-card/50 backdrop-blur-sm group">
       <CardHeader className="flex flex-col items-center text-center">
-        <div className="p-5 bg-primary/10 rounded-full mb-4 border border-primary/20 group-hover:scale-110 transition-transform">
+        <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20 group-hover:scale-110 transition-transform">
           {icon}
         </div>
-        <CardTitle className="font-headline text-3xl">{title}</CardTitle>
+        <CardTitle className="font-headline text-2xl md:text-3xl">{title}</CardTitle>
       </CardHeader>
       <CardContent className="text-center flex flex-col items-center gap-6">
-        <p className="text-muted-foreground min-h-[60px]">{description}</p>
+        <p className="text-muted-foreground min-h-[4.5rem]">{description}</p>
         <Button asChild size="lg" className="mt-auto w-full max-w-[220px] group-hover:bg-primary/90 transition-colors">
           <Link href={href}>Go to {title}</Link>
         </Button>

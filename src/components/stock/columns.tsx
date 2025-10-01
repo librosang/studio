@@ -61,6 +61,9 @@ export const columns: ColumnDef<Product>[] = [
      cell: ({ row }) => {
       const date = row.original.updatedAt.toDate();
       return <span>{format(date, 'PPP p')}</span>
+    },
+    meta: {
+      className: "hidden md:table-cell"
     }
   },
   {

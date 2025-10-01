@@ -96,9 +96,9 @@ export function ShopClient({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <div className="lg:col-span-2">
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[200px] bg-card">
+            <SelectTrigger className="w-full sm:w-[200px] bg-card">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -111,7 +111,7 @@ export function ShopClient({
             </SelectContent>
           </Select>
           <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger className="w-[200px] bg-card">
+            <SelectTrigger className="w-full sm:w-[200px] bg-card">
               <SelectValue placeholder="Filter by brand" />
             </SelectTrigger>
             <SelectContent>
@@ -125,7 +125,7 @@ export function ShopClient({
           </Select>
         </div>
         <ScrollArea className="h-[70vh] pr-4 -mr-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -152,7 +152,7 @@ export function ShopClient({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[40vh] pr-3 -mr-3">
+          <ScrollArea className="h-[35vh] md:h-[40vh] pr-3 -mr-3">
             {cartItems.length > 0 ? (
               <ul className="space-y-4">
                 {cartItems.map(item => (
@@ -176,8 +176,8 @@ export function ShopClient({
             )}
           </ScrollArea>
         </CardContent>
-        <Separator className="my-4" />
-        <CardFooter className="flex flex-col gap-4 text-sm">
+        <Separator/>
+        <CardFooter className="flex flex-col gap-4 text-sm p-4">
             <div className='w-full flex justify-between items-center'>
                 <span className="text-muted-foreground">Sales</span>
                 <span className="font-semibold">{salesCount} items</span>
@@ -186,8 +186,8 @@ export function ShopClient({
                 <span className="text-muted-foreground">Returns</span>
                 <span className="font-semibold">{Math.abs(returnsCount)} items</span>
             </div>
-             <Separator className="my-2" />
-             <div className='w-full text-lg font-bold flex justify-between items-center'>
+             <Separator/>
+             <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
                 <span>Total Items:</span>
                 <span>{totalItems}</span>
             </div>
