@@ -212,7 +212,7 @@ export async function processTransaction(cart: { [id: string]: number }) {
       }
     }
 
-    const logDetails = `Transaction completed with ${salesCount} sale(s) and ${returnsCount} return(s).`;
+    const logDetails = `${salesCount} sale(s) - ${returnsCount} return(s)`;
     if(logItems.length > 0) {
       await addLog('TRANSACTION', logDetails, logItems);
     }
