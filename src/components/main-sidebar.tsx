@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard },
   { href: '/stock', label: 'Stockage', icon: Icons.stock },
   { href: '/shop', label: 'Shop', icon: Icons.shop },
   { href: '/log', label: 'Log', icon: Icons.log },

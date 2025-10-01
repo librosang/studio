@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Product } from '@/lib/types';
+import { Product, SerializableProduct } from '@/lib/types';
 import { ProductCard } from './product-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,7 @@ import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
 
 type ShopClientProps = {
-  initialProducts: Product[];
+  initialProducts: SerializableProduct[];
   categories: string[];
   brands: string[];
 };
@@ -35,7 +35,7 @@ export function ShopClient({
   categories,
   brands,
 }: ShopClientProps) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<SerializableProduct[]>(initialProducts);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [brandFilter, setBrandFilter] = useState('all');
   const [cart, setCart] = useState<Map<string, number>>(new Map());
@@ -92,7 +92,7 @@ export function ShopClient({
     setIsProcessing(false);
   };
   
-  const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as Product[];
+  const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as SerializableProduct[];
   const totalItems = Array.from(cart.values()).reduce((sum, qty) => sum + Math.abs(qty), 0);
   const salesCount = Array.from(cart.values()).filter(q => q > 0).reduce((sum, q) => sum + q, 0);
   const returnsCount = Array.from(cart.values()).filter(q => q < 0).reduce((sum, q) => sum + q, 0);

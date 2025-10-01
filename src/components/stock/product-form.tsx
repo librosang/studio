@@ -25,6 +25,7 @@ const FormSchema = z.object({
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   quantity: z.coerce.number().int(),
   price: z.coerce.number().positive('Price must be a positive number.'),
+  imageUrl: z.string().url('Must be a valid URL.').optional().or(z.literal('')),
 });
 
 type ProductFormProps = {
@@ -44,12 +45,14 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       category: product.category,
       quantity: product.quantity,
       price: product.price,
+      imageUrl: product.imageUrl,
     } : {
       name: '',
       brand: '',
       category: '',
       quantity: 0,
       price: 0,
+      imageUrl: '',
     },
   });
 
@@ -124,6 +127,19 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                     {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
                 </Button>
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://picsum.photos/seed/1/200/300" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

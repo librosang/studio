@@ -7,13 +7,12 @@ import { Icons, Icon } from '../icons';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
-import { Separator } from '../ui/separator';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
   UPDATE: Icons.update,
   DELETE: Icons.delete,
-  TRANSACTION: Icons.shoppingCart,
+  TRANSACTION: Icons.transaction,
 };
 
 const logColorMap: Record<LogType, string> = {
@@ -75,13 +74,13 @@ export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
     <Card>
       <CardContent className="p-0">
         <ScrollArea className="h-[75vh]">
-          <div className="p-4 md:p-6 space-y-6">
+          <div className="p-4 space-y-6 md:p-6">
             {logs.length > 0 ? (
               logs.map((log) => (
                 <LogItem key={log.id} log={log} />
               ))
             ) : (
-              <div className="text-center py-16 text-muted-foreground">
+              <div className="py-16 text-center text-muted-foreground">
                 <Icons.log className="mx-auto h-12 w-12" />
                 <p className="mt-4">No log entries yet.</p>
               </div>

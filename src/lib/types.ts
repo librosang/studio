@@ -7,6 +7,7 @@ export type Product = {
   category: string;
   quantity: number;
   price: number;
+  imageUrl?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -18,7 +19,7 @@ export type LogEntry = {
   timestamp: Timestamp;
   type: LogType;
   details: string;
-  items: { productName: string; quantityChange: number }[];
+  items: { productName: string; quantityChange: number; price: number }[];
 };
 
 export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {
@@ -28,4 +29,14 @@ export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {
 
 export type SerializableLogEntry = Omit<LogEntry, 'timestamp'> & {
   timestamp: string;
+};
+
+export type DashboardStats = {
+  itemsSold: number;
+  totalRevenue: number;
+  itemsReturned: number;
+  totalReturnValue: number;
+  newStockCount: number;
+  restockedItems: number;
+  topSellingProducts: { productName: string; quantity: number }[];
 };

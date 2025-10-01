@@ -1,13 +1,14 @@
 'use client';
 
-import { Product } from '@/lib/types';
+import { Product, SerializableProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '../icons';
 import { Badge } from '../ui/badge';
+import Image from 'next/image';
 
 type ProductCardProps = {
-  product: Product;
+  product: SerializableProduct;
   cartQuantity: number;
   onQuantityChange: (productId: string, newQuantity: number) => void;
 };
@@ -29,6 +30,16 @@ export function ProductCard({ product, cartQuantity, onQuantityChange }: Product
 
   return (
     <Card className="flex flex-col">
+       {product.imageUrl && (
+        <div className="relative h-48 w-full">
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            className="object-cover rounded-t-lg"
+          />
+        </div>
+      )}
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
           <div className="grid gap-0.5">
@@ -42,7 +53,7 @@ export function ProductCard({ product, cartQuantity, onQuantityChange }: Product
          <Badge variant="secondary">{product.category}</Badge>
         <p className="text-sm text-muted-foreground">In Stock: {product.quantity}</p>
       </CardContent>
-      <CardFooter className="flex items-center justify-between">
+      <CardFooter className="flex items-center justify-between mt-auto">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleDecrement}>
             <Icons.minus className="h-4 w-4" />

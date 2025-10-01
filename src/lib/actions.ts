@@ -15,12 +15,15 @@ import {
   where,
   limit,
   getCountFromServer,
+  startOfDay,
+  endOfDay,
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from './firebase';
-import type { Product, LogEntry, SerializableProduct, SerializableLogEntry } from './types';
+import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
+import { generateProductImage as generateProductImageFlow } from '@/ai/flows/generate-product-image';
 import { sampleProducts } from './sample-data';
 
 const ProductSchema = z.object({
@@ -29,13 +32,14 @@ const ProductSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   quantity: z.coerce.number().int('Quantity must be an integer'),
   price: z.coerce.number().positive('Price must be a positive number'),
+  imageUrl: z.string().url('Image URL must be a valid URL.').optional(),
 });
 
 // --- Log Helper ---
 async function addLog(
   type: LogEntry['type'],
   details: string,
-  items: { productName: string; quantityChange: number }[]
+  items: { productName: string; quantityChange: number; price: number }[]
 ) {
   try {
     await addDoc(collection(db, 'logs'), {
@@ -73,6 +77,18 @@ export async function addProduct(formData: unknown) {
     return { error: result.error.flatten().fieldErrors };
   }
   const { name, brand, category, quantity, price } = result.data;
+  
+  let imageUrl = result.data.imageUrl;
+  if (!imageUrl) {
+    try {
+      const imageResult = await generateProductImageFlow({productName: name});
+      imageUrl = imageResult.imageUrl;
+    } catch(e) {
+      console.error("Image generation failed, continuing without image.", e);
+      // Fail gracefully if image generation has an issue.
+    }
+  }
+
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
@@ -81,6 +97,7 @@ export async function addProduct(formData: unknown) {
       category,
       quantity,
       price,
+      imageUrl,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -88,11 +105,12 @@ export async function addProduct(formData: unknown) {
     await addLog(
       'CREATE',
       `Added new product: ${name}.`,
-      [{ productName: name, quantityChange: quantity }]
+      [{ productName: name, quantityChange: quantity, price }]
     );
 
     revalidatePath('/stock');
-    return { data: { id: docRef.id, ...result.data } };
+    revalidatePath('/dashboard');
+    return { data: { id: docRef.id, ...result.data, imageUrl } };
   } catch (error) {
     return { error: 'Failed to add product.' };
   }
@@ -110,7 +128,7 @@ export async function updateProduct(id: string, formData: unknown) {
     return { error: 'Product not found.' };
   }
   const oldData = productSnap.data();
-  const { name, brand, category, quantity, price } = result.data;
+  const { name, brand, category, quantity, price, imageUrl } = result.data;
   const quantityChange = quantity - oldData.quantity;
 
   try {
@@ -120,17 +138,19 @@ export async function updateProduct(id: string, formData: unknown) {
       category,
       quantity,
       price,
+      imageUrl,
       updatedAt: Timestamp.now(),
     });
     
     await addLog(
       'UPDATE',
       `Updated product: ${name}.`,
-      [{ productName: name, quantityChange: quantityChange }]
+      [{ productName: name, quantityChange: quantityChange, price }]
     );
 
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/dashboard');
     return { data: { id, ...result.data } };
   } catch (error) {
     return { error: 'Failed to update product.' };
@@ -143,18 +163,19 @@ export async function deleteProduct(id: string) {
   if (!productSnap.exists()) {
     return { error: 'Product not found.' };
   }
-  const { name, quantity } = productSnap.data();
+  const { name, quantity, price } = productSnap.data();
 
   try {
     await deleteDoc(productRef);
     await addLog(
       'DELETE',
       `Deleted product: ${name}.`,
-      [{ productName: name, quantityChange: -quantity }]
+      [{ productName: name, quantityChange: -quantity, price }]
     );
     
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/dashboard');
     return { data: 'Product deleted successfully.' };
   } catch (error) {
     return { error: 'Failed to delete product.' };
@@ -173,7 +194,7 @@ export async function getUniqueCategoriesAndBrands() {
 export async function processTransaction(cart: { [id: string]: number }) {
   const batch = writeBatch(db);
   const productIds = Object.keys(cart);
-  const logItems: { productName: string; quantityChange: number }[] = [];
+  const logItems: { productName: string; quantityChange: number; price: number }[] = [];
   let salesCount = 0;
   let returnsCount = 0;
 
@@ -195,7 +216,7 @@ export async function processTransaction(cart: { [id: string]: number }) {
         
         batch.update(productRef, { quantity: newQuantity, updatedAt: Timestamp.now() });
         
-        logItems.push({ productName: product.name, quantityChange: -quantityChange });
+        logItems.push({ productName: product.name, quantityChange: -quantityChange, price: product.price });
         
         if (quantityChange > 0) {
           salesCount += quantityChange;
@@ -206,13 +227,17 @@ export async function processTransaction(cart: { [id: string]: number }) {
     }
 
     const logDetails = `Transaction completed with ${salesCount} sale(s) and ${returnsCount} return(s).`;
-    await addLog('TRANSACTION', logDetails, logItems);
+    if(logItems.length > 0) {
+      await addLog('TRANSACTION', logDetails, logItems);
+    }
+    
 
     await batch.commit();
 
     revalidatePath('/stock');
     revalidatePath('/shop');
     revalidatePath('/log');
+    revalidatePath('/dashboard');
     return { data: 'Transaction successful.' };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Transaction failed.';
@@ -264,21 +289,94 @@ export async function seedDatabase() {
 
     const batch = writeBatch(db);
 
-    sampleProducts.forEach(product => {
+    for (const product of sampleProducts) {
         const docRef = doc(productsCollection);
+        let imageUrl = product.imageUrl;
+        if (!imageUrl) {
+           try {
+            const imageResult = await generateProductImageFlow({productName: product.name});
+            imageUrl = imageResult.imageUrl;
+           } catch(e) {
+             console.error("Image generation failed for seed data.", e);
+           }
+        }
+
         batch.set(docRef, {
             ...product,
+            imageUrl,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
         });
-    });
+    }
 
     try {
         await batch.commit();
         revalidatePath('/stock');
         revalidatePath('/shop');
+        revalidatePath('/dashboard');
         return { data: `${sampleProducts.length} products have been added.` };
     } catch (error) {
+        console.log(error);
         return { error: 'Failed to seed database.' };
     }
+}
+
+
+// --- Dashboard Actions ---
+export async function getDashboardStats(): Promise<DashboardStats> {
+  const today = new Date();
+  const todayStart = startOfDay(today);
+  const todayEnd = endOfDay(today);
+
+  const logsRef = collection(db, 'logs');
+  const q = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
+  
+  const querySnapshot = await getDocs(q);
+  const logs = querySnapshot.docs.map(doc => doc.data() as LogEntry);
+
+  let itemsSold = 0;
+  let totalRevenue = 0;
+  let itemsReturned = 0;
+  let totalReturnValue = 0;
+  let newStockCount = 0;
+  let restockedItems = 0;
+  const productSales: Record<string, number> = {};
+
+  logs.forEach(log => {
+    log.items.forEach(item => {
+      if (log.type === 'TRANSACTION') {
+        if (item.quantityChange > 0) {
+          itemsSold += item.quantityChange;
+          totalRevenue += item.quantityChange * item.price;
+          productSales[item.productName] = (productSales[item.productName] || 0) + item.quantityChange;
+        } else {
+          itemsReturned += Math.abs(item.quantityChange);
+          totalReturnValue += Math.abs(item.quantityChange) * item.price;
+        }
+      }
+      if (log.type === 'CREATE') {
+        newStockCount++;
+        restockedItems += item.quantityChange;
+      }
+      if (log.type === 'UPDATE' && item.quantityChange > 0) {
+         restockedItems += item.quantityChange;
+      }
+    });
+  });
+
+  const topSellingProducts = Object.entries(productSales)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([productName, quantity]) => ({ productName, quantity }));
+
+
+  return {
+    itemsSold,
+    totalRevenue,
+    itemsReturned,
+    totalReturnValue,
+    newStockCount,
+    restockedItems,
+    topSellingProducts
+  };
 }

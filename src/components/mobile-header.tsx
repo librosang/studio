@@ -6,13 +6,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from './ui/button';
-import { Menu, Package2 } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Icons } from './icons';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard },
   { href: '/stock', label: 'Stockage', icon: Icons.stock },
   { href: '/shop', label: 'Shop', icon: Icons.shop },
   { href: '/log', label: 'Log', icon: Icons.log },
