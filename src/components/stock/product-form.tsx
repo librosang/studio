@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
+import { Wand2 } from 'lucide-react';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -60,7 +61,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       toast({
         title: 'Success!',
         description: `Product has been ${product ? 'updated' : 'added'}.`,
-        className: 'bg-accent text-accent-foreground',
+        className: 'bg-green-600 text-white',
       });
       setOpen(false);
     }
@@ -76,7 +77,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
     const result = await getCategorySuggestion(productName);
     if (result.category) {
         form.setValue('category', result.category, { shouldValidate: true });
-        toast({ title: 'Suggestion applied!', description: `Category set to "${result.category}".` });
+        toast({ title: 'Suggestion applied!', description: `Category set to "${result.category}".`, className: 'bg-blue-500 text-white' });
     } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
     }
@@ -93,7 +94,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             <FormItem>
               <FormLabel>Product Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. T-Shirt" {...field} />
+                <Input placeholder="e.g. Organic Cotton T-Shirt" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -109,8 +110,8 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                 <FormControl>
                   <Input placeholder="e.g. Apparel" {...field} />
                 </FormControl>
-                <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting}>
-                    {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : 'Suggest'}
+                <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
+                    {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Wand2 className="h-4 w-4 text-primary" />}
                 </Button>
               </div>
               <FormMessage />
@@ -124,7 +125,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             <FormItem>
               <FormLabel>Brand</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Acme" {...field} />
+                <Input placeholder="e.g. EcoThreads" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,7 +144,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting}>
+        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
           {product ? 'Save Changes' : 'Add Product'}
         </Button>

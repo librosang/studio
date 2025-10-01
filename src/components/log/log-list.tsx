@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons, Icon } from '../icons';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useState, useEffect } from 'react';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
@@ -22,6 +23,42 @@ const logColorMap: Record<LogType, string> = {
   RETURN: 'bg-purple-500',
 }
 
+function LogItem({ log }: { log: LogEntry }) {
+  const [formattedDate, setFormattedDate] = useState('');
+  const [relativeDate, setRelativeDate] = useState('');
+
+  useEffect(() => {
+    if (log.timestamp) {
+      const date = log.timestamp.toDate();
+      setFormattedDate(format(date, 'PPP p'));
+      setRelativeDate(formatDistanceToNow(date, { addSuffix: true }));
+    }
+  }, [log.timestamp]);
+
+
+  const LogIcon = logIconMap[log.type] || Icons.log;
+  const iconBgColor = logColorMap[log.type] || 'bg-gray-500';
+
+  return (
+    <div className="flex items-start gap-4">
+      <div className={`mt-1 rounded-full p-2 text-primary-foreground ${iconBgColor}`}>
+         <LogIcon className="h-5 w-5" />
+      </div>
+      <div className="flex-1">
+        <div className="flex justify-between items-center">
+          <p className="font-semibold">{log.productName}</p>
+          <p className="text-xs text-muted-foreground" title={formattedDate}>
+              {relativeDate}
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground">{log.details}</p>
+        <p className="text-xs text-muted-foreground">Type: {log.type}</p>
+      </div>
+    </div>
+  );
+}
+
+
 export function LogList({ logs }: { logs: LogEntry[] }) {
   return (
     <Card>
@@ -29,28 +66,9 @@ export function LogList({ logs }: { logs: LogEntry[] }) {
         <ScrollArea className="h-[75vh]">
           <div className="p-6 space-y-6">
             {logs.length > 0 ? (
-              logs.map((log) => {
-                const LogIcon = logIconMap[log.type] || Icons.log;
-                const iconBgColor = logColorMap[log.type] || 'bg-gray-500';
-                
-                return (
-                  <div key={log.id} className="flex items-start gap-4">
-                    <div className={`mt-1 rounded-full p-2 text-primary-foreground ${iconBgColor}`}>
-                       <LogIcon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <p className="font-semibold">{log.productName}</p>
-                        <p className="text-xs text-muted-foreground" title={format(log.timestamp.toDate(), 'PPP p')}>
-                            {formatDistanceToNow(log.timestamp.toDate(), { addSuffix: true })}
-                        </p>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{log.details}</p>
-                      <p className="text-xs text-muted-foreground">Type: {log.type}</p>
-                    </div>
-                  </div>
-                );
-              })
+              logs.map((log) => (
+                <LogItem key={log.id} log={log} />
+              ))
             ) : (
               <div className="text-center py-16 text-muted-foreground">
                 <Icons.log className="mx-auto h-12 w-12" />

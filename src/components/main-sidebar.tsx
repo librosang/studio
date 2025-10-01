@@ -19,9 +19,9 @@ export default function MainSidebar() {
   return (
     <aside className="w-16 md:w-64 bg-card border-r flex flex-col transition-all duration-300">
       <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-3">
           <Icons.logo className="h-8 w-8 text-primary" />
-          <span className="hidden md:block font-bold font-headline text-xl text-foreground">StockFlow</span>
+          <span className="hidden md:block font-bold font-headline text-2xl text-foreground">StockFlow</span>
         </Link>
       </div>
       <nav className="flex-1 p-2 md:p-4 space-y-2">
@@ -34,10 +34,13 @@ export default function MainSidebar() {
                   <Button
                     asChild
                     variant={isActive ? 'default' : 'ghost'}
-                    className="w-full flex items-center justify-center md:justify-start gap-3"
+                    className={cn(
+                      "w-full flex items-center justify-center md:justify-start gap-3 text-lg py-6",
+                       isActive && "text-primary-foreground"
+                    )}
                   >
                     <Link href={item.href}>
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-6 w-6" />
                       <span className="hidden md:block">{item.label}</span>
                     </Link>
                   </Button>

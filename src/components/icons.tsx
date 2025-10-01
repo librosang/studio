@@ -23,7 +23,8 @@ import {
   PackageMinus,
   PackageX,
   Store,
-  BookText
+  BookText,
+  Package
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -40,19 +41,17 @@ export const Icons = {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M2 8.5V17a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5" />
-      <path d="M6 19v-6" />
-      <path d="M10 19v-6" />
-      <path d="M14 19v-6" />
-      <path d="M18 19v-6" />
-      <path d="M2 8.5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2" />
-      <path d="M12 3v5.5" />
+        <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v2"/>
+        <path d="m7 19 5-3 5 3"/>
+        <path d="M22 19H2"/>
+        <path d="M3.28 10.22A6.995 6.995 0 0 1 12 7a6.995 6.995 0 0 1 8.72 3.22"/>
     </svg>
   ),
   dashboard: LayoutDashboard,
-  stock: Archive,
+  stock: Package,
   shop: Store,
   log: BookText,
+  shoppingCart: ShoppingCart,
   add: PlusCircle,
   more: MoreHorizontal,
   arrowUpDown: ArrowUpDown,

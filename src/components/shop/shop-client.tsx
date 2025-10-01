@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { processTransaction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '../icons';
+import { Separator } from '../ui/separator';
 
 type ShopClientProps = {
   initialProducts: Product[];
@@ -71,7 +72,7 @@ export function ShopClient({
     if (result.error) {
       toast({ title: 'Transaction Failed', description: result.error, variant: 'destructive' });
     } else {
-      toast({ title: 'Success!', description: 'Transaction completed successfully.', className: 'bg-accent text-accent-foreground' });
+      toast({ title: 'Success!', description: 'Transaction completed successfully.', className: 'bg-green-600 text-white' });
       setCart(new Map());
       // Re-fetch products to update quantities, though revalidatePath should handle this
       // For instant client-side update:
@@ -88,13 +89,16 @@ export function ShopClient({
   
   const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as Product[];
   const totalItems = Array.from(cart.values()).reduce((sum, qty) => sum + Math.abs(qty), 0);
+  const salesCount = Array.from(cart.values()).filter(q => q > 0).reduce((sum, q) => sum + q, 0);
+  const returnsCount = Array.from(cart.values()).filter(q => q < 0).reduce((sum, q) => sum + q, 0);
+
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <div className="lg:col-span-2">
         <div className="flex gap-4 mb-6">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[200px] bg-card">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -107,7 +111,7 @@ export function ShopClient({
             </SelectContent>
           </Select>
           <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[200px] bg-card">
               <SelectValue placeholder="Filter by brand" />
             </SelectTrigger>
             <SelectContent>
@@ -120,7 +124,7 @@ export function ShopClient({
             </SelectContent>
           </Select>
         </div>
-        <ScrollArea className="h-[60vh] pr-4">
+        <ScrollArea className="h-[70vh] pr-4 -mr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
@@ -130,19 +134,25 @@ export function ShopClient({
                 onQuantityChange={handleQuantityChange}
               />
             ))}
+             {filteredProducts.length === 0 && (
+              <div className="col-span-full text-center py-16 text-muted-foreground">
+                <Icons.stock className="mx-auto h-12 w-12" />
+                <p className="mt-4">No products match the current filters.</p>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
 
-      <Card className="lg:col-span-1 h-fit">
+      <Card className="lg:col-span-1 h-fit sticky top-8">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Icons.shop className="h-6 w-6" />
-            Current Transaction
+          <CardTitle className="flex items-center gap-3">
+            <Icons.shoppingCart className="h-7 w-7" />
+            <span className="text-2xl">Current Transaction</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[40vh]">
+          <ScrollArea className="h-[40vh] pr-3 -mr-3">
             {cartItems.length > 0 ? (
               <ul className="space-y-4">
                 {cartItems.map(item => (
@@ -151,23 +161,37 @@ export function ShopClient({
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{item.brand}</p>
                     </div>
-                     <Badge variant={ (cart.get(item.id) || 0) > 0 ? "default" : "destructive"}>
+                     <Badge variant={ (cart.get(item.id) || 0) > 0 ? "secondary" : "destructive"}>
                       Qty: {cart.get(item.id)}
                     </Badge>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground text-center py-10">Your cart is empty.</p>
+              <div className="text-muted-foreground text-center py-10 h-full flex flex-col justify-center items-center">
+                <Icons.shop className="h-12 w-12 mb-4" />
+                <p>Your cart is empty.</p>
+                <p className="text-sm">Add products from the list.</p>
+              </div>
             )}
           </ScrollArea>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-            <div className='w-full text-lg font-bold flex justify-between'>
+        <Separator className="my-4" />
+        <CardFooter className="flex flex-col gap-4 text-sm">
+            <div className='w-full flex justify-between items-center'>
+                <span className="text-muted-foreground">Sales</span>
+                <span className="font-semibold">{salesCount} items</span>
+            </div>
+            <div className='w-full flex justify-between items-center'>
+                <span className="text-muted-foreground">Returns</span>
+                <span className="font-semibold">{Math.abs(returnsCount)} items</span>
+            </div>
+             <Separator className="my-2" />
+             <div className='w-full text-lg font-bold flex justify-between items-center'>
                 <span>Total Items:</span>
                 <span>{totalItems}</span>
             </div>
-          <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
             {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
             Validate Transaction
           </Button>
