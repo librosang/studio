@@ -24,7 +24,8 @@ import {
   PackageX,
   Store,
   BookText,
-  Package
+  Package,
+  Wand2
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -47,24 +48,7 @@ export const Icons = {
         <path d="M3.28 10.22A6.995 6.995 0 0 1 12 7a6.995 6.995 0 0 1 8.72 3.22"/>
     </svg>
   ),
-  magic: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      {...props}
-    >
-      <path d="M5 12V3H3v9a5 5 0 0 0 5 5h9V3h-2v9a3 3 0 0 1-3 3H5Z"/>
-      <path d="M11 3v魔法v3"/>
-      <path d="M19 3v魔法v3"/>
-    </svg>
-  ),
+  magic: Wand2,
   dashboard: LayoutDashboard,
   stock: Package,
   shop: Store,
