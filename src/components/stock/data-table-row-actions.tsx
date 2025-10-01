@@ -28,7 +28,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Icons } from '../icons';
-import { Product } from '@/lib/types';
+import { SerializableProduct } from '@/lib/types';
 import { ProductForm } from './product-form';
 import { deleteProduct } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -40,7 +40,7 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const product = row.original as Product;
+  const product = row.original as SerializableProduct;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();

@@ -1,6 +1,6 @@
 'use client';
 
-import { LogEntry, LogType } from '@/lib/types';
+import { SerializableLogEntry, LogType } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons, Icon } from '../icons';
@@ -24,13 +24,13 @@ const logColorMap: Record<LogType, string> = {
   RETURN: 'bg-purple-500',
 }
 
-function LogItem({ log }: { log: LogEntry }) {
+function LogItem({ log }: { log: SerializableLogEntry }) {
   const [formattedDate, setFormattedDate] = useState('');
   const [relativeDate, setRelativeDate] = useState('');
 
   useEffect(() => {
     if (log.timestamp) {
-      const date = log.timestamp.toDate();
+      const date = new Date(log.timestamp);
       setFormattedDate(format(date, 'PPP p'));
       setRelativeDate(formatDistanceToNow(date, { addSuffix: true }));
     }
@@ -60,7 +60,7 @@ function LogItem({ log }: { log: LogEntry }) {
 }
 
 
-export function LogList({ logs }: { logs: LogEntry[] }) {
+export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
   return (
     <Card>
       <CardContent className="p-0">

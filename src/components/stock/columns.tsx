@@ -1,14 +1,14 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Product } from '@/lib/types';
+import { SerializableProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import { format } from 'date-fns';
 
-export const columns: ColumnDef<Product>[] = [
+export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => {
@@ -59,7 +59,7 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: 'updatedAt',
     header: 'Last Updated',
      cell: ({ row }) => {
-      const date = row.original.updatedAt.toDate();
+      const date = new Date(row.original.updatedAt);
       return <span>{format(date, 'PPP p')}</span>
     },
     meta: {

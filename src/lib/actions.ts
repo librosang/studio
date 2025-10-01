@@ -19,7 +19,7 @@ import {
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from './firebase';
-import type { Product, LogEntry } from './types';
+import type { Product, LogEntry, SerializableProduct, SerializableLogEntry } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
 
@@ -52,14 +52,19 @@ async function addLog(
 
 // --- Product Actions ---
 
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(): Promise<SerializableProduct[]> {
   const productsCol = collection(db, 'products');
   const q = query(productsCol, orderBy('updatedAt', 'desc'));
   const productSnapshot = await getDocs(q);
-  const productList = productSnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Product[];
+  const productList = productSnapshot.docs.map(doc => {
+    const data = doc.data() as Product;
+    return {
+      ...data,
+      id: doc.id,
+      createdAt: data.createdAt.toDate().toISOString(),
+      updatedAt: data.updatedAt.toDate().toISOString(),
+    }
+  }) as SerializableProduct[];
   return productList;
 }
 
@@ -213,7 +218,7 @@ export async function processTransaction(cart: { [id: string]: number }) {
 
     await batch.commit();
     revalidatePath('/stock');
-    revalidatePath('/shop');
+revalidatePath('/shop');
     revalidatePath('/log');
     return { data: 'Transaction successful.' };
   } catch (error) {
@@ -224,14 +229,17 @@ export async function processTransaction(cart: { [id: string]: number }) {
 
 
 // --- Log Actions ---
-export async function getLogs(): Promise<LogEntry[]> {
+export async function getLogs(): Promise<SerializableLogEntry[]> {
   const logsCol = collection(db, 'logs');
   const q = query(logsCol, orderBy('timestamp', 'desc'), limit(100));
   const logSnapshot = await getDocs(q);
-  const logList = logSnapshot.docs.map(doc => ({
+  const logList = logSnapshot.docs.map(doc => {
+    const data = doc.data() as LogEntry;
+    return {
     id: doc.id,
-    ...doc.data(),
-  })) as LogEntry[];
+    ...data,
+    timestamp: data.timestamp.toDate().toISOString(),
+  }}) as SerializableLogEntry[];
   return logList;
 }
 

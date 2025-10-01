@@ -20,3 +20,12 @@ export type LogEntry = {
   details: string;
   quantityChange?: number;
 };
+
+export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SerializableLogEntry = Omit<LogEntry, 'timestamp'> & {
+  timestamp: string;
+};

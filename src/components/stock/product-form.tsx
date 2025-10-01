@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { addProduct, updateProduct, getCategorySuggestion } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Product } from '@/lib/types';
+import { SerializableProduct } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
 
@@ -27,7 +27,7 @@ const FormSchema = z.object({
 });
 
 type ProductFormProps = {
-  product?: Product;
+  product?: SerializableProduct;
   setOpen: (open: boolean) => void;
 };
 

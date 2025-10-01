@@ -2,11 +2,12 @@ import { getProducts } from '@/lib/actions';
 import { PageHeader } from '@/components/page-header';
 import { ProductsDataTable } from '@/components/stock/products-data-table';
 import { columns } from '@/components/stock/columns';
+import { SerializableProduct } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 export default async function StockPage() {
-  const products = await getProducts();
+  const products: SerializableProduct[] = await getProducts();
 
   return (
     <div className="container mx-auto py-10">
