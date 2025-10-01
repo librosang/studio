@@ -231,6 +231,9 @@ export async function getCategorySuggestion(productName: string): Promise<{ cate
     return { category: result.category };
   } catch (error) {
     console.error('AI suggestion failed:', error);
-    return { error: 'Failed to get AI suggestion.' };
+    if (error instanceof Error && error.message.includes('permission')) {
+        return { error: 'AI suggestion failed. This may be due to billing settings on your Firebase project. Please ensure you are on the Blaze plan.' };
+    }
+    return { error: 'An unexpected error occurred while getting an AI suggestion.' };
   }
 }
