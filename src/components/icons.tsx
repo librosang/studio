@@ -29,6 +29,7 @@ import {
   Wand2,
   ArrowRightLeft,
   MonitorSmartphone,
+  ScanBarcode,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -77,4 +78,5 @@ export const Icons = {
   update: Edit,
   delete: PackageX,
   transaction: ArrowRightLeft,
+  scanBarcode: ScanBarcode
 };

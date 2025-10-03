@@ -12,6 +12,9 @@ import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
 import { Input } from '../ui/input';
 import { ProductGridItem } from './product-grid-item';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { BarcodeScanner } from './barcode-scanner';
+import { ScanBarcode } from 'lucide-react';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -31,6 +34,7 @@ export function PosClient({
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredProducts = useMemo(() => {
@@ -99,16 +103,37 @@ export function PosClient({
   }, [cart, cartItems]);
 
 
+  const onBarcodeScanned = (barcode: string) => {
+    setSearchTerm(barcode);
+    setIsScannerOpen(false);
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full">
       <div className="md:col-span-2 h-full flex flex-col">
-        <div className="mb-6">
+        <div className="mb-6 flex gap-2">
             <Input 
                 placeholder='Search products by name, brand, or barcode...'
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="text-base"
+                className="text-base flex-1"
             />
+             <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <ScanBarcode className="h-6 w-6" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Scan Barcode</DialogTitle>
+                </DialogHeader>
+                <BarcodeScanner
+                  onScan={onBarcodeScanned}
+                  onClose={() => setIsScannerOpen(false)}
+                />
+              </DialogContent>
+            </Dialog>
         </div>
         <ScrollArea className="flex-grow pr-4 -mr-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
