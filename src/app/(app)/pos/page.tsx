@@ -44,17 +44,18 @@ export default function PosPage() {
 
   return (
     <div className={cn(
-        "container mx-auto py-10 transition-all duration-300",
+        "container mx-auto py-10 transition-all duration-300 relative",
         isFullscreen ? "h-screen w-screen max-w-full !p-4" : "h-[calc(100vh-theme(spacing.20))]"
     )}>
+       <Button onClick={toggleFullscreen} variant="outline" size="icon" className="absolute top-4 right-4 z-10">
+          <Icons.fullscreen className="h-5 w-5" />
+      </Button>
+
        {!isFullscreen && (
          <PageHeader
             title="POS Mode"
             description="Quickly process sales and returns in a cashier-friendly interface."
         >
-            <Button onClick={toggleFullscreen} variant="outline" size="icon">
-                <Icons.fullscreen className="h-5 w-5" />
-            </Button>
         </PageHeader>
        )}
       <PosClient
