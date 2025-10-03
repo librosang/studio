@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Scanner } from '@yudiel/react-qr-scanner';
+import { Scanner, type IResult } from '@yudiel/react-qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Icons } from '../icons';
-import { type IResult } from '@yudiel/react-qr-scanner';
 
 
 interface BarcodeScannerProps {
@@ -46,7 +45,7 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
         <>
           <div className="relative w-full max-w-sm aspect-video bg-muted rounded-md overflow-hidden">
             <Scanner
-              onScan={handleResult}
+              onResult={handleResult}
               onError={handleError}
               options={{
                 delayBetweenScanAttempts: 100,
