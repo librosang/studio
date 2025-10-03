@@ -136,6 +136,10 @@ export function PosClient({
     const product = initialProducts.find(p => p.barcode === barcode);
     if (product) {
       handleQuantityChange(product.id, 1);
+      toast({
+        title: 'Product Added',
+        description: `${product.name} has been added to the cart.`,
+      });
     } else {
       toast({
         title: 'Product not found',
@@ -210,7 +214,7 @@ export function PosClient({
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-grow">
-          <ScrollArea className="h-[40vh] pr-3 -mr-3">
+          <ScrollArea className="h-full pr-3 -mr-3">
             {cartItems.length > 0 ? (
               <ul className="space-y-4">
                 {cartItems.map(item => {
