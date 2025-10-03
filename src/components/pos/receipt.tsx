@@ -28,7 +28,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
         <Icons.logo className="h-10 w-10 mx-auto" />
         <h2 className="text-lg font-bold">StockFlow</h2>
         <p>123 App Lane, Dev City, 10101</p>
-        <p>{format(new Date(transactionDate), 'PPP p')}</p>
+        {transactionDate && <p>{format(new Date(transactionDate), 'PPP p')}</p>}
       </div>
 
       <hr className="my-2 border-dashed border-black" />
