@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { QrReader } from '@yudiel/react-qr-scanner';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Icons } from '../icons';
+import { type IResult } from '@yudiel/react-qr-scanner';
+
 
 interface BarcodeScannerProps {
   onScan: (result: string) => void;
@@ -13,7 +15,7 @@ interface BarcodeScannerProps {
 export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
 
-  const handleResult = (result: any) => {
+  const handleResult = (result: IResult) => {
     if (result) {
       onScan(result.text);
     }
@@ -43,31 +45,28 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
       ) : (
         <>
           <div className="relative w-full max-w-sm aspect-video bg-muted rounded-md overflow-hidden">
-            <QrReader
-              onResult={handleResult}
+            <Scanner
+              onScan={handleResult}
               onError={handleError}
-              constraints={{ facingMode: 'environment' }}
-              videoStyle={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
+              options={{
+                delayBetweenScanAttempts: 100,
+                delayBetweenScanSuccess: 100,
               }}
-              containerStyle={{
-                width: '100%',
-                height: '100%',
-                paddingTop: 0,
+              components={{
+                tracker: true,
+                torch: true,
+                finder: true,
+              }}
+              styles={{
+                container: {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                }
               }}
             />
-            <div
-              className="absolute inset-0 border-4 border-red-500/50 rounded-md"
-              style={{
-                clipPath:
-                  'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 20% 20%, 80% 20%, 80% 80%, 20% 80%, 20% 20%)',
-              }}
-            ></div>
           </div>
           <p className="text-sm text-muted-foreground">
             Point the camera at a barcode.
