@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { ProductGridItem } from './product-grid-item';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { BarcodeScanner } from './barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
+import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -36,6 +37,15 @@ export function PosClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { toast } = useToast();
+
+  const [lastTransaction, setLastTransaction] = useState<{
+    cartItems: ReceiptCartItem[];
+    total: number;
+    transactionDate: string;
+  } | null>(null);
+
+  const receiptRef = useRef<HTMLDivElement>(null);
+
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -66,6 +76,10 @@ export function PosClient({
     setCart(new Map());
   }
 
+  const handlePrintReceipt = () => {
+    window.print();
+  }
+
   const handleValidate = async () => {
     if (cart.size === 0) {
       toast({ title: "Cart is empty", description: "Add items to the cart to proceed.", variant: "destructive"});
@@ -81,7 +95,31 @@ export function PosClient({
       toast({ title: 'Transaction Failed', description: result.error, variant: 'destructive' });
     } else {
       toast({ title: 'Success!', description: 'Transaction completed successfully.', className: 'bg-green-600 text-white' });
-      handleClearCart();
+      
+      const completedCartItems: ReceiptCartItem[] = Array.from(cart.keys()).map(id => {
+        const product = initialProducts.find(p => p.id === id);
+        return {
+            id: id,
+            name: product?.name || 'Unknown',
+            quantity: cart.get(id) || 0,
+            price: product?.price || 0
+        }
+      }).filter(Boolean);
+
+      setLastTransaction({
+        cartItems: completedCartItems,
+        total: totalAmount,
+        transactionDate: new Date().toISOString()
+      });
+
+      // We need a short delay to allow React to re-render with the new receipt data
+      // before we trigger the print dialog.
+      setTimeout(() => {
+        handlePrintReceipt();
+        setCart(new Map());
+      }, 250);
+
+
       const updatedProducts = products.map(p => {
         if(cart.has(p.id)){
           return {...p, quantity: p.quantity - (cart.get(p.id) || 0)}
@@ -109,6 +147,7 @@ export function PosClient({
   }
 
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full">
       <div className="md:col-span-2 h-full flex flex-col">
         <div className="mb-6 flex gap-2">
@@ -214,5 +253,9 @@ export function PosClient({
         </CardFooter>
       </Card>
     </div>
+    <div className="hidden">
+      {lastTransaction && <Receipt ref={receiptRef} {...lastTransaction} />}
+    </div>
+    </>
   );
 }
