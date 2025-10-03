@@ -12,23 +12,31 @@ import { usePathname } from 'next/navigation';
 import { Icons } from './icons';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useUser } from '@/context/user-context';
+import { UserRole } from '@/lib/types';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard },
-  { href: '/stock', label: 'Stockage', icon: Icons.stock },
-  { href: '/shop', label: 'Shop', icon: Icons.shop },
-  { href: '/pos', label: 'POS', icon: Icons.pos },
-  { href: '/log', label: 'Log', icon: Icons.log },
+
+const allNavItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
+  { href: '/stock', label: 'Stockage', icon: Icons.stock, roles: ['manager'] as UserRole[] },
+  { href: '/shop', label: 'Shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/pos', label: 'POS', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/log', label: 'Log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/accounts', label: 'Accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
 ];
 
 export default function MobileHeader() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    const { user } = useUser();
+    
+    const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
+
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 sm:hidden">
       <nav className="flex w-full items-center justify-between">
       <Link
-          href="/"
+          href="/dashboard"
           className="flex items-center gap-2 text-lg font-semibold"
         >
           <Icons.logo className="h-8 w-8 text-primary" />
@@ -48,7 +56,7 @@ export default function MobileHeader() {
           <SheetContent side="right">
             <nav className="grid gap-6 text-lg font-medium">
             <Link
-                href="/"
+                href="/dashboard"
                 className="flex items-center gap-2 text-lg font-semibold mb-4"
                 onClick={() => setIsOpen(false)}
             >

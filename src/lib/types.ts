@@ -1,5 +1,14 @@
 import type { Timestamp } from 'firebase/firestore';
 
+export type UserRole = 'manager' | 'cashier';
+
+export type UserProfile = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
 export type Product = {
   id: string;
   name: string;
@@ -20,6 +29,8 @@ export type LogEntry = {
   timestamp: Timestamp;
   type: LogType;
   details: string;
+  userId: string;
+  userName: string;
   items: { productName: string; quantityChange: number; price: number }[];
 };
 

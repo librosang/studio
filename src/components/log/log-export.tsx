@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
+import { useUser } from "@/context/user-context";
 
 type LogExportProps = {
   logs: SerializableLogEntry[];
@@ -19,11 +20,16 @@ type LogExportProps = {
 export function LogExport({ logs }: LogExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [date, setDate] = useState<Date | undefined>();
+  const { user } = useUser();
 
   const handleExport = () => {
     setIsExporting(true);
 
-    const filteredLogs = logs.filter(log => {
+    const dataForRole = user?.role === 'manager'
+        ? logs
+        : logs.filter(log => log.userId === user?.id);
+
+    const filteredLogs = dataForRole.filter(log => {
         if (!date) return true;
         const logDate = new Date(log.timestamp);
         const from = new Date(date.setHours(0,0,0,0));
@@ -42,6 +48,7 @@ export function LogExport({ logs }: LogExportProps) {
           Timestamp: format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss'),
           Type: log.type,
           Details: log.details,
+          "User": log.userName,
           "Product Name": item.productName,
           "Quantity Change": item.quantityChange,
         }))
@@ -55,6 +62,7 @@ export function LogExport({ logs }: LogExportProps) {
       { wch: 20 }, // Timestamp
       { wch: 15 }, // Type
       { wch: 50 }, // Details
+      { wch: 20 }, // User
       { wch: 30 }, // Product Name
       { wch: 15 }, // Quantity Change
     ];

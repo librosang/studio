@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +22,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { BarcodeScanner } from '../pos/barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
+import { useUser } from '@/context/user-context';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -41,6 +43,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const { toast } = useToast();
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const { user } = useUser();
 
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -65,9 +68,13 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    if (!user) {
+        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        return;
+    }
     const result = product
-      ? await updateProduct(product.id, data)
-      : await addProduct(data);
+      ? await updateProduct(product.id, data, user)
+      : await addProduct(data, user);
 
     if (result.error) {
       toast({

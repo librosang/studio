@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { History, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
@@ -19,7 +18,7 @@ export default function Home() {
         </p>
       </header>
 
-       <main className="w-full max-w-lg">
+       <main className="w-full max-w-lg grid gap-4">
          <Card className="bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-center text-3xl font-headline">Get Started</CardTitle>
@@ -29,7 +28,7 @@ export default function Home() {
               Jump right into managing your inventory.
             </p>
              <Button asChild size="lg" className="mt-2 w-full max-w-xs">
-                <Link href="/dashboard">Go to Dashboard</Link>
+                <Link href="/login">Go to Login</Link>
              </Button>
           </CardContent>
          </Card>

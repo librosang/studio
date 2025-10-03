@@ -1,3 +1,4 @@
+
 'use client';
 import React, { forwardRef } from 'react';
 import { format } from 'date-fns';
@@ -14,6 +15,7 @@ type ReceiptProps = {
   cartItems: CartItem[];
   total: number;
   transactionDate: string;
+  cashierName?: string;
 };
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -21,7 +23,7 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
     currency: 'USD',
   });
 
-export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, total, transactionDate }, ref) => {
+export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, total, transactionDate, cashierName }, ref) => {
   return (
     <div id="receipt-print" ref={ref} className="bg-white text-black text-xs font-mono p-2" style={{ width: '300px' }}>
       <div className="text-center">
@@ -29,6 +31,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
         <h2 className="text-lg font-bold">StockFlow</h2>
         <p>123 App Lane, Dev City, 10101</p>
         {transactionDate && <p>{format(new Date(transactionDate), 'PPP p')}</p>}
+        {cashierName && <p>Cashier: {cashierName}</p>}
       </div>
 
       <hr className="my-2 border-dashed border-black" />

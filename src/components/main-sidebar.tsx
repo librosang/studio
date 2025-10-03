@@ -7,22 +7,28 @@ import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { useUser } from '@/context/user-context';
+import { UserRole } from '@/lib/types';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard },
-  { href: '/stock', label: 'Stockage', icon: Icons.stock },
-  { href: '/shop', label: 'Shop', icon: Icons.shop },
-  { href: '/pos', label: 'POS', icon: Icons.pos },
-  { href: '/log', label: 'Log', icon: Icons.log },
+const allNavItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
+  { href: '/stock', label: 'Stockage', icon: Icons.stock, roles: ['manager'] as UserRole[] },
+  { href: '/shop', label: 'Shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/pos', label: 'POS', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/log', label: 'Log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/accounts', label: 'Accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
 ];
 
 export default function MainSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
 
   return (
     <aside className={cn("w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex", className)}>
       <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3">
           <Icons.logo className="h-8 w-8 text-primary" />
           <span className="hidden md:block font-bold font-headline text-2xl text-foreground">StockFlow</span>
         </Link>

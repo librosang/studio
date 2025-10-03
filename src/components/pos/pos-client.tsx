@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { SerializableProduct } from '@/lib/types';
+import { SerializableProduct, UserProfile } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,7 +19,7 @@ import { ScanBarcode } from 'lucide-react';
 import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
 import { ReceiptDialog } from './receipt-dialog';
 import { useFullscreen } from '@/app/(app)/layout';
-import { cn } from '@/lib/utils';
+import { useUser } from '@/context/user-context';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -42,11 +42,13 @@ export function PosClient({
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { toast } = useToast();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { user } = useUser();
 
   const [lastTransaction, setLastTransaction] = useState<{
     cartItems: ReceiptCartItem[];
     total: number;
     transactionDate: string;
+    cashierName?: string;
   } | null>(null);
 
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -86,11 +88,15 @@ export function PosClient({
       toast({ title: "Cart is empty", description: "Add items to the cart to proceed.", variant: "destructive"});
       return;
     }
+    if (!user) {
+        toast({ title: "Authentication error", description: "You must be logged in to process a transaction.", variant: "destructive"});
+        return;
+    }
     
     setIsProcessing(true);
     const cartObject = Object.fromEntries(cart);
     
-    const result = await processTransaction(cartObject);
+    const result = await processTransaction(cartObject, user);
 
     if (result.error) {
       toast({ title: 'Transaction Failed', description: result.error, variant: 'destructive' });
@@ -110,7 +116,8 @@ export function PosClient({
       setLastTransaction({
         cartItems: completedCartItems,
         total: totalAmount,
-        transactionDate: new Date().toISOString()
+        transactionDate: new Date().toISOString(),
+        cashierName: user.name,
       });
 
       const updatedProducts = products.map(p => {
@@ -211,7 +218,7 @@ export function PosClient({
         </ScrollArea>
       </div>
 
-      <Card className="md:col-span-1 h-screen flex flex-col fixed top-0 right-0">
+       <Card className="rounded-lg border bg-card text-card-foreground shadow-sm md:col-span-1 flex flex-col sticky top-0 h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -284,7 +291,7 @@ export function PosClient({
     
     <div className="hidden">
         {/* This is kept for print styling purposes, the actual visible receipt is in the dialog */}
-        <Receipt ref={receiptRef} cartItems={lastTransaction?.cartItems || []} total={lastTransaction?.total || 0} transactionDate={lastTransaction?.transactionDate || ''} />
+        <Receipt ref={receiptRef} cartItems={lastTransaction?.cartItems || []} total={lastTransaction?.total || 0} transactionDate={lastTransaction?.transactionDate || ''} cashierName={lastTransaction?.cashierName} />
     </div>
     </>
   );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -18,6 +19,7 @@ import { processTransaction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
+import { useUser } from '@/context/user-context';
 
 type ShopClientProps = {
   initialProducts: SerializableProduct[];
@@ -41,6 +43,7 @@ export function ShopClient({
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { user } = useUser();
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -68,19 +71,21 @@ export function ShopClient({
       toast({ title: "Cart is empty", description: "Add items to the cart to proceed.", variant: "destructive"});
       return;
     }
+    if (!user) {
+      toast({ title: "Authentication error", description: "You must be logged in to process a transaction.", variant: "destructive"});
+      return;
+    }
     
     setIsProcessing(true);
     const cartObject = Object.fromEntries(cart);
     
-    const result = await processTransaction(cartObject);
+    const result = await processTransaction(cartObject, user);
 
     if (result.error) {
       toast({ title: 'Transaction Failed', description: result.error, variant: 'destructive' });
     } else {
       toast({ title: 'Success!', description: 'Transaction completed successfully.', className: 'bg-green-600 text-white' });
       setCart(new Map());
-      // Re-fetch products to update quantities, though revalidatePath should handle this
-      // For instant client-side update:
       const updatedProducts = products.map(p => {
         if(cart.has(p.id)){
           return {...p, quantity: p.quantity - (cart.get(p.id) || 0)}

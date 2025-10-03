@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -32,6 +33,7 @@ import { SerializableProduct } from '@/lib/types';
 import { ProductForm } from './product-form';
 import { deleteProduct } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/context/user-context';
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -44,9 +46,14 @@ export function DataTableRowActions<TData>({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useUser();
 
   const handleDelete = async () => {
-    const result = await deleteProduct(product.id);
+    if (!user) {
+        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        return;
+    }
+    const result = await deleteProduct(product.id, user);
     if (result.error) {
       toast({
         title: 'Error',

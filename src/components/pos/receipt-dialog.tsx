@@ -20,6 +20,7 @@ type ReceiptDialogProps = {
     cartItems: CartItem[];
     total: number;
     transactionDate: string;
+    cashierName?: string;
   };
 };
 

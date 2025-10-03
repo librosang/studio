@@ -20,7 +20,7 @@ import {
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from './firebase';
-import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats } from './types';
+import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
 import { startOfDay, endOfDay } from 'date-fns';
@@ -35,11 +35,19 @@ const ProductSchema = z.object({
   barcode: z.string().optional().or(z.literal('')),
 });
 
+const UserSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    role: z.enum(['manager', 'cashier']),
+});
+
 // --- Log Helper ---
 async function addLog(
   type: LogEntry['type'],
   details: string,
-  items: { productName: string; quantityChange: number; price: number }[]
+  items: { productName: string; quantityChange: number; price: number }[],
+  user: UserProfile,
 ) {
   try {
     await addDoc(collection(db, 'logs'), {
@@ -47,6 +55,8 @@ async function addLog(
       details,
       items,
       timestamp: Timestamp.now(),
+      userId: user.id,
+      userName: user.name,
     });
   } catch (error) {
     console.error('Failed to add log:', error);
@@ -71,7 +81,8 @@ export async function getProducts(): Promise<SerializableProduct[]> {
   return productList;
 }
 
-export async function addProduct(formData: unknown) {
+export async function addProduct(formData: unknown, user: UserProfile) {
+  if (user.role !== 'manager') return { error: 'Permission denied.' };
   const result = ProductSchema.safeParse(formData);
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
@@ -94,7 +105,8 @@ export async function addProduct(formData: unknown) {
     await addLog(
       'CREATE',
       `Added new product: ${name}.`,
-      [{ productName: name, quantityChange: quantity, price }]
+      [{ productName: name, quantityChange: quantity, price }],
+      user
     );
 
     revalidatePath('/stock');
@@ -105,7 +117,8 @@ export async function addProduct(formData: unknown) {
   }
 }
 
-export async function updateProduct(id: string, formData: unknown) {
+export async function updateProduct(id: string, formData: unknown, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
   const result = ProductSchema.safeParse(formData);
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
@@ -135,7 +148,8 @@ export async function updateProduct(id: string, formData: unknown) {
     await addLog(
       'UPDATE',
       `Updated product: ${name}.`,
-      [{ productName: name, quantityChange: quantityChange, price }]
+      [{ productName: name, quantityChange: quantityChange, price }],
+      user
     );
 
     revalidatePath('/stock');
@@ -147,7 +161,8 @@ export async function updateProduct(id: string, formData: unknown) {
   }
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
   const productRef = doc(db, 'products', id);
   const productSnap = await getDoc(productRef);
   if (!productSnap.exists()) {
@@ -160,7 +175,8 @@ export async function deleteProduct(id: string) {
     await addLog(
       'DELETE',
       `Deleted product: ${name}.`,
-      [{ productName: name, quantityChange: -quantity, price }]
+      [{ productName: name, quantityChange: -quantity, price }],
+      user
     );
     
     revalidatePath('/stock');
@@ -181,7 +197,7 @@ export async function getUniqueCategoriesAndBrands() {
   return { categories, brands };
 }
 
-export async function processTransaction(cart: { [id: string]: number }) {
+export async function processTransaction(cart: { [id: string]: number }, user: UserProfile) {
   const batch = writeBatch(db);
   const productIds = Object.keys(cart);
   const logItems: { productName: string; quantityChange: number; price: number }[] = [];
@@ -219,7 +235,7 @@ export async function processTransaction(cart: { [id: string]: number }) {
 
     const logDetails = `${salesCount} sale(s) - ${returnsCount} return(s)`;
     if(logItems.length > 0) {
-      await addLog('TRANSACTION', logDetails, logItems);
+      await addLog('TRANSACTION', logDetails, logItems, user);
     }
     
 
@@ -361,4 +377,36 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     restockedItems,
     topSellingProducts
   };
+}
+
+
+// --- Account Management Actions ---
+export async function getAccounts(user: UserProfile): Promise<UserProfile[]> {
+    if (user.role !== 'manager') return [];
+    // This is a mock implementation. In a real app, you would fetch from Firestore.
+    return [
+        { id: '1', name: 'Admin Manager', email: 'manager@test.com', role: 'manager' },
+        { id: '2', name: 'John Cashier', email: 'john@test.com', role: 'cashier' },
+        { id: '3', name: 'Jane Cashier', email: 'jane@test.com', role: 'cashier' },
+    ];
+}
+
+export async function addAccount(formData: unknown, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+
+    const NewAccountSchema = z.object({
+        name: z.string().min(2, 'Name is required'),
+        email: z.string().email('Invalid email address'),
+        role: z.enum(['cashier']), // Managers can only create cashiers
+    });
+    
+    const result = NewAccountSchema.safeParse(formData);
+    if (!result.success) {
+        return { error: result.error.flatten().fieldErrors };
+    }
+
+    // This is a mock implementation. In a real app, you would use Firebase Admin SDK to create a user.
+    console.log("Creating new user:", result.data);
+    revalidatePath('/accounts');
+    return { data: `User ${result.data.name} created.` };
 }

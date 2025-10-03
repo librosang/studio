@@ -5,6 +5,9 @@ import MainSidebar from '@/components/main-sidebar';
 import MobileHeader from '@/components/mobile-header';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useUser } from '@/context/user-context';
+import { useRouter } from 'next/navigation';
+
 
 // --- Fullscreen Context Logic ---
 type FullscreenContextType = {
@@ -62,6 +65,20 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isFullscreen } = useFullscreen();
   const pathname = usePathname();
   const isPosPage = pathname === '/pos';
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    // You can render a loading spinner here
+    return <div className="h-screen w-screen flex items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin"/></div>;
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background sm:flex-row">

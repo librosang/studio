@@ -1,12 +1,14 @@
+
 'use client';
 
-import { SerializableLogEntry, LogType } from '@/lib/types';
+import { SerializableLogEntry, LogType, UserProfile } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons, Icon } from '../icons';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
+import { useUser } from '@/context/user-context';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
@@ -48,6 +50,7 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
            <div className="flex items-center gap-2">
             <p className="font-semibold">{log.type}</p>
             <Badge variant="outline" className="text-xs">{log.details}</Badge>
+            <Badge variant="secondary" className="text-xs">{log.userName}</Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1 sm:mt-0" title={formattedDate}>
               {relativeDate}
@@ -70,13 +73,19 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
 
 
 export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
+  const { user } = useUser();
+
+  const filteredLogs = user?.role === 'manager'
+    ? logs
+    : logs.filter(log => log.userId === user?.id);
+
   return (
     <Card>
       <CardContent className="p-0">
         <ScrollArea className="h-[75vh]">
           <div className="p-4 space-y-6 md:p-6">
-            {logs.length > 0 ? (
-              logs.map((log) => (
+            {filteredLogs.length > 0 ? (
+              filteredLogs.map((log) => (
                 <LogItem key={log.id} log={log} />
               ))
             ) : (
