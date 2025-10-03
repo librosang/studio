@@ -13,30 +13,47 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '../icons';
-import { addAccount } from '@/lib/actions';
+import { addAccount, updateAccount } from '@/lib/actions';
 import { useUser } from '@/context/user-context';
+import { UserProfile } from '@/lib/types';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email.'),
+  role: z.enum(['cashier', 'manager'], {
+    required_error: 'You need to select a role.',
+  }),
 });
 
 type AddAccountFormProps = {
+  account?: UserProfile;
   setOpen: (open: boolean) => void;
 };
 
-export function AddAccountForm({ setOpen }: AddAccountFormProps) {
+export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
   const { toast } = useToast();
   const { user } = useUser();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
+    defaultValues: account ? {
+      name: account.name,
+      email: account.email,
+      role: account.role,
+    } : {
       name: '',
       email: '',
+      role: 'cashier',
     },
   });
 
@@ -46,19 +63,20 @@ export function AddAccountForm({ setOpen }: AddAccountFormProps) {
         return;
     }
 
-    const payload = { ...data, role: 'cashier' as const };
-    const result = await addAccount(payload, user);
+    const result = account
+      ? await updateAccount(account.id, data, user)
+      : await addAccount(data, user);
 
     if (result.error) {
       toast({
         title: 'Error',
-        description: 'Failed to create account.',
+        description: 'Failed to save account.',
         variant: 'destructive',
       });
     } else {
       toast({
         title: 'Success!',
-        description: `Account for ${data.name} created.`,
+        description: `Account for ${data.name} has been ${account ? 'updated' : 'created'}.`,
         className: 'bg-green-600 text-white',
       });
       form.reset();
@@ -95,9 +113,30 @@ export function AddAccountForm({ setOpen }: AddAccountFormProps) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Role</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="cashier">Cashier</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          Create Account
+          {account ? 'Save Changes' : 'Create Account'}
         </Button>
       </form>
     </Form>

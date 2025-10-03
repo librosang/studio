@@ -410,3 +410,37 @@ export async function addAccount(formData: unknown, user: UserProfile) {
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} created.` };
 }
+
+export async function updateAccount(id: string, formData: unknown, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+
+    const UpdateAccountSchema = z.object({
+        name: z.string().min(2, 'Name is required'),
+        email: z.string().email('Invalid email address'),
+        role: z.enum(['cashier', 'manager']),
+    });
+
+    const result = UpdateAccountSchema.safeParse(formData);
+    if (!result.success) {
+        return { error: result.error.flatten().fieldErrors };
+    }
+    
+    // This is a mock implementation.
+    console.log(`Updating user ${id}:`, result.data);
+    revalidatePath('/accounts');
+    return { data: `User ${result.data.name} updated.` };
+}
+
+export async function deleteAccount(id: string, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+    
+    // You cannot delete the main manager account
+    if (id === '1') {
+        return { error: "Cannot delete the primary manager account." };
+    }
+    
+    // This is a mock implementation.
+    console.log(`Deleting user ${id}`);
+    revalidatePath('/accounts');
+    return { data: 'User deleted successfully.' };
+}
