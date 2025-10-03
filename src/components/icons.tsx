@@ -1,3 +1,4 @@
+
 import {
   type LucideIcon,
   Archive,
@@ -26,7 +27,8 @@ import {
   BookText,
   Package,
   Wand2,
-  ArrowRightLeft
+  ArrowRightLeft,
+  MonitorSmartphone,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -53,6 +55,7 @@ export const Icons = {
   dashboard: LayoutDashboard,
   stock: Package,
   shop: Store,
+  pos: MonitorSmartphone,
   log: BookText,
   shoppingCart: ShoppingCart,
   add: PlusCircle,
