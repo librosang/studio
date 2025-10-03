@@ -16,11 +16,11 @@ const navItems = [
   { href: '/log', label: 'Log', icon: Icons.log },
 ];
 
-export default function MainSidebar() {
+export default function MainSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex">
+    <aside className={cn("w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex", className)}>
       <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-3">
           <Icons.logo className="h-8 w-8 text-primary" />

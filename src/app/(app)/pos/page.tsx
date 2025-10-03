@@ -8,12 +8,15 @@ import { useEffect, useState } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { useFullscreen } from '@/hooks/use-fullscreen';
+import { cn } from '@/lib/utils';
 
 export default function PosPage() {
   const [products, setProducts] = useState<SerializableProduct[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   useEffect(() => {
     async function loadData() {
@@ -30,15 +33,6 @@ export default function PosPage() {
     loadData();
   }, []);
 
-  const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -49,15 +43,20 @@ export default function PosPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 h-[calc(100vh-theme(spacing.20))]">
-      <PageHeader
-        title="POS Mode"
-        description="Quickly process sales and returns in a cashier-friendly interface."
-      >
-        <Button onClick={handleFullscreen} variant="outline" size="icon">
-            <Icons.fullscreen className="h-5 w-5" />
-        </Button>
-      </PageHeader>
+    <div className={cn(
+        "container mx-auto py-10 transition-all duration-300",
+        isFullscreen ? "h-screen w-screen max-w-full !p-4" : "h-[calc(100vh-theme(spacing.20))]"
+    )}>
+       {!isFullscreen && (
+         <PageHeader
+            title="POS Mode"
+            description="Quickly process sales and returns in a cashier-friendly interface."
+        >
+            <Button onClick={toggleFullscreen} variant="outline" size="icon">
+                <Icons.fullscreen className="h-5 w-5" />
+            </Button>
+        </PageHeader>
+       )}
       <PosClient
         initialProducts={products}
         categories={categories}
