@@ -44,10 +44,20 @@ export default function PosPage() {
 
   return (
     <div className={cn(
-        "container mx-auto py-10 transition-all duration-300 relative",
-        isFullscreen ? "h-screen w-screen max-w-full !p-4" : "h-[calc(100vh-theme(spacing.20))]"
+        "transition-all duration-300 relative",
+        isFullscreen 
+          ? "h-screen w-full p-4" 
+          : "container mx-auto py-10 h-[calc(100vh-theme(spacing.20))]"
     )}>
-       <Button onClick={toggleFullscreen} variant="outline" size="icon" className="absolute top-4 right-4 z-10">
+       <Button 
+          onClick={toggleFullscreen} 
+          variant="outline" 
+          size="icon" 
+          className={cn(
+            "absolute top-4 right-4 z-10",
+            isFullscreen && "fixed top-4 right-4 z-50"
+          )}
+        >
           <Icons.fullscreen className="h-5 w-5" />
       </Button>
 
