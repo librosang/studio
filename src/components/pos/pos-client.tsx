@@ -18,6 +18,8 @@ import { BarcodeScanner } from './barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
 import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
 import { ReceiptDialog } from './receipt-dialog';
+import { useFullscreen } from '@/app/(app)/layout';
+import { cn } from '@/lib/utils';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -39,6 +41,7 @@ export function PosClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { toast } = useToast();
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const [lastTransaction, setLastTransaction] = useState<{
     cartItems: ReceiptCartItem[];
@@ -181,6 +184,13 @@ export function PosClient({
                 />
               </DialogContent>
             </Dialog>
+            <Button 
+                onClick={toggleFullscreen} 
+                variant="outline" 
+                size="icon" 
+            >
+                <Icons.fullscreen className="h-5 w-5" />
+            </Button>
         </div>
         <ScrollArea className="flex-grow pr-4 -mr-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

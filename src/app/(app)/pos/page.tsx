@@ -7,7 +7,6 @@ import { PosClient } from '@/components/pos/pos-client';
 import { useEffect, useState } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
 import { useFullscreen } from '@/app/(app)/layout';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +15,7 @@ export default function PosPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { isFullscreen } = useFullscreen();
 
   useEffect(() => {
     async function loadData() {
@@ -49,18 +48,6 @@ export default function PosPage() {
           ? "h-screen w-full p-4" 
           : "container mx-auto py-10 h-[calc(100vh-theme(spacing.20))]"
     )}>
-       <Button 
-          onClick={toggleFullscreen} 
-          variant="outline" 
-          size="icon" 
-          className={cn(
-            "absolute top-4 right-4 z-10",
-            isFullscreen && "fixed top-4 right-4 z-50"
-          )}
-        >
-          <Icons.fullscreen className="h-5 w-5" />
-      </Button>
-
        {!isFullscreen && (
          <PageHeader
             title="POS Mode"
