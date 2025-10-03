@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { BarcodeScanner } from './barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
 import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
+import { ReceiptDialog } from './receipt-dialog';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -76,10 +77,6 @@ export function PosClient({
     setCart(new Map());
   }
 
-  const handlePrintReceipt = () => {
-    window.print();
-  }
-
   const handleValidate = async () => {
     if (cart.size === 0) {
       toast({ title: "Cart is empty", description: "Add items to the cart to proceed.", variant: "destructive"});
@@ -112,14 +109,6 @@ export function PosClient({
         transactionDate: new Date().toISOString()
       });
 
-      // We need a short delay to allow React to re-render with the new receipt data
-      // before we trigger the print dialog.
-      setTimeout(() => {
-        handlePrintReceipt();
-        setCart(new Map());
-      }, 250);
-
-
       const updatedProducts = products.map(p => {
         if(cart.has(p.id)){
           return {...p, quantity: p.quantity - (cart.get(p.id) || 0)}
@@ -127,6 +116,7 @@ export function PosClient({
         return p;
       })
       setProducts(updatedProducts);
+      setCart(new Map());
     }
     setIsProcessing(false);
   };
@@ -144,6 +134,10 @@ export function PosClient({
   const onBarcodeScanned = (barcode: string) => {
     setSearchTerm(barcode);
     setIsScannerOpen(false);
+  }
+
+  const closeReceiptDialog = () => {
+    setLastTransaction(null);
   }
 
   return (
@@ -253,8 +247,18 @@ export function PosClient({
         </CardFooter>
       </Card>
     </div>
+    
+    {lastTransaction && (
+      <ReceiptDialog
+        isOpen={!!lastTransaction}
+        onClose={closeReceiptDialog}
+        transaction={lastTransaction}
+      />
+    )}
+    
     <div className="hidden">
-      {lastTransaction && <Receipt ref={receiptRef} {...lastTransaction} />}
+        {/* This is kept for print styling purposes, the actual visible receipt is in the dialog */}
+        <Receipt ref={receiptRef} cartItems={lastTransaction?.cartItems || []} total={lastTransaction?.total || 0} transactionDate={lastTransaction?.transactionDate || ''} />
     </div>
     </>
   );
