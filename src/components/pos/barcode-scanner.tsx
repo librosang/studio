@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Scanner, type IDetectedBarcode } from '@yudiel/react-qr-scanner';
+import { Scanner as ScannerComp, IDetectedBarcode, outline, boundingBox, centerText, useDevices } from '@yudiel/react-qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Icons } from '../icons';
 
@@ -14,9 +14,9 @@ interface BarcodeScannerProps {
 export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
 
-  const handleResult = (result: IDetectedBarcode) => {
+  const handleResult = (result: IDetectedBarcode[]) => {
     if (result) {
-      onScan(result.rawValue);
+      onScan(result[0].rawValue);
     }
   };
 
@@ -44,26 +44,46 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
       ) : (
         <>
           <div className="relative w-full max-w-sm aspect-video bg-muted rounded-md overflow-hidden">
-            <Scanner
-              onResult={handleResult}
+            <ScannerComp
+              onScan={handleResult}
               onError={handleError}
-              options={{
-                delayBetweenScanAttempts: 100,
-                delayBetweenScanSuccess: 100,
-              }}
+              formats={[
+                'qr_code',
+                'micro_qr_code',
+                'rm_qr_code',
+                'maxi_code',
+                'pdf417',
+                'aztec',
+                'data_matrix',
+                'matrix_codes',
+                'dx_film_edge',
+                'databar',
+                'databar_expanded',
+                'codabar',
+                'code_39',
+                'code_93',
+                'code_128',
+                'ean_8',
+                'ean_13',
+                'itf',
+                'linear_codes',
+                'upc_a',
+                'upc_e'
+            ]}
+            
               components={{
-                tracker: true,
+                tracker: outline,
+                onOff: true,
                 torch: true,
+                zoom: true,
                 finder: true,
               }}
               styles={{
                 container: {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                }
+                  width: '80%',
+                  maxWidth: 500,
+                  margin: 'auto'
+              }
               }}
             />
           </div>
