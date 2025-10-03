@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Scanner, type IResult } from '@yudiel/react-qr-scanner';
+import { Scanner, type IDetectedBarcode } from '@yudiel/react-qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Icons } from '../icons';
 
@@ -14,9 +14,9 @@ interface BarcodeScannerProps {
 export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
 
-  const handleResult = (result: IResult) => {
+  const handleResult = (result: IDetectedBarcode) => {
     if (result) {
-      onScan(result.text);
+      onScan(result.rawValue);
     }
   };
 
