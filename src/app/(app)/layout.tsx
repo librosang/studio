@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
+import { Icons } from '@/components/icons';
 
 
 // --- Fullscreen Context Logic ---
