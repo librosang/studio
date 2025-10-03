@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { useFullscreen } from '@/hooks/use-fullscreen';
+import { useFullscreen } from '@/app/(app)/layout';
 import { cn } from '@/lib/utils';
 
 export default function PosPage() {
