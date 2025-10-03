@@ -213,40 +213,42 @@ export function PosClient({
              </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-grow">
-          <ScrollArea className="h-full pr-3 -mr-3">
-            {cartItems.length > 0 ? (
-              <ul className="space-y-4">
-                {cartItems.map(item => {
-                    const quantity = cart.get(item.id) || 0;
-                    return (
-                        <li key={item.id} className="flex justify-between items-center text-sm">
-                            <div>
-                            <p className="font-semibold">{item.name}</p>
-                            <p className="text-muted-foreground">{currencyFormatter.format(item.price)}</p>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
-                                    <Icons.minus className="h-3 w-3" />
-                                </Button>
-                                <Badge variant={ quantity > 0 ? "secondary" : "destructive"} className="w-10 justify-center text-base">
-                                     {quantity}
-                                </Badge>
-                                 <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, 1)}>
-                                    <Icons.plus className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </li>
-                    )
-                })}
-              </ul>
-            ) : (
-              <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
-                <Icons.shop className="h-12 w-12 mb-4" />
-                <p>Click on a product to start.</p>
-              </div>
-            )}
-          </ScrollArea>
+        <CardContent className="flex-grow p-0 flex flex-col">
+            <div className="h-full p-6">
+                 <ScrollArea className="h-full pr-3 -mr-3">
+                    {cartItems.length > 0 ? (
+                    <ul className="space-y-4">
+                        {cartItems.map(item => {
+                            const quantity = cart.get(item.id) || 0;
+                            return (
+                                <li key={item.id} className="flex justify-between items-center text-sm">
+                                    <div>
+                                    <p className="font-semibold">{item.name}</p>
+                                    <p className="text-muted-foreground">{currencyFormatter.format(item.price)}</p>
+                                    </div>
+                                    <div className='flex items-center gap-2'>
+                                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
+                                            <Icons.minus className="h-3 w-3" />
+                                        </Button>
+                                        <Badge variant={ quantity > 0 ? "secondary" : "destructive"} className="w-10 justify-center text-base">
+                                            {quantity}
+                                        </Badge>
+                                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, 1)}>
+                                            <Icons.plus className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </li>
+                            )
+                        })}
+                    </ul>
+                    ) : (
+                    <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
+                        <Icons.shop className="h-12 w-12 mb-4" />
+                        <p>Click on a product to start.</p>
+                    </div>
+                    )}
+                </ScrollArea>
+            </div>
         </CardContent>
         <Separator/>
         <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
