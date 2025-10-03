@@ -48,9 +48,6 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
               onScan={handleResult}
               onError={handleError}
               formats={[
-                'qr_code',
-                'micro_qr_code',
-                'rm_qr_code',
                 'maxi_code',
                 'pdf417',
                 'aztec',
