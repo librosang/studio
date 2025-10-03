@@ -1,19 +1,21 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 
-export function useFullscreen() {
+type FullscreenContextType = {
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
+};
+
+const FullscreenContext = createContext<FullscreenContextType | undefined>(undefined);
+
+export function FullscreenProvider({ children }: { children: ReactNode }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleFullscreenChange = useCallback(() => {
     const isCurrentlyFullscreen = document.fullscreenElement !== null;
     setIsFullscreen(isCurrentlyFullscreen);
-    if(isCurrentlyFullscreen){
-        document.body.setAttribute('data-fullscreen', 'true');
-    } else {
-        document.body.removeAttribute('data-fullscreen');
-    }
   }, []);
 
   useEffect(() => {
@@ -35,5 +37,17 @@ export function useFullscreen() {
     }
   }, []);
 
-  return { isFullscreen, toggleFullscreen };
+  return (
+    <FullscreenContext.Provider value={{ isFullscreen, toggleFullscreen }}>
+      {children}
+    </FullscreenContext.Provider>
+  );
+}
+
+export function useFullscreen() {
+  const context = useContext(FullscreenContext);
+  if (context === undefined) {
+    throw new Error('useFullscreen must be used within a FullscreenProvider');
+  }
+  return context;
 }
