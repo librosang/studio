@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
@@ -132,7 +133,16 @@ export function PosClient({
 
 
   const onBarcodeScanned = (barcode: string) => {
-    setSearchTerm(barcode);
+    const product = initialProducts.find(p => p.barcode === barcode);
+    if (product) {
+      handleQuantityChange(product.id, 1);
+    } else {
+      toast({
+        title: 'Product not found',
+        description: `No product with barcode "${barcode}" was found.`,
+        variant: 'destructive',
+      })
+    }
     setIsScannerOpen(false);
   }
 
