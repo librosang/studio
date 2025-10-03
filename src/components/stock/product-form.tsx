@@ -18,6 +18,9 @@ import { useToast } from '@/hooks/use-toast';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { BarcodeScanner } from '../pos/barcode-scanner';
+import { ScanBarcode } from 'lucide-react';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -37,6 +40,8 @@ type ProductFormProps = {
 export function ProductForm({ product, setOpen }: ProductFormProps) {
   const { toast } = useToast();
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -98,6 +103,11 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
     }
     setIsSuggesting(false);
+  }
+
+  const onBarcodeScanned = (barcode: string) => {
+    form.setValue('barcode', barcode, { shouldValidate: true });
+    setIsScannerOpen(false);
   }
 
   return (
@@ -168,9 +178,27 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Barcode (EAN, UPC)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. 9780201379624" {...field} />
-              </FormControl>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Input placeholder="e.g. 9780201379624" {...field} />
+                </FormControl>
+                <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" className='px-3'>
+                      <ScanBarcode className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Scan Barcode</DialogTitle>
+                    </DialogHeader>
+                    <BarcodeScanner
+                      onScan={onBarcodeScanned}
+                      onClose={() => setIsScannerOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
               <FormMessage />
             </FormItem>
           )}
