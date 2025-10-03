@@ -211,7 +211,7 @@ export function PosClient({
         </ScrollArea>
       </div>
 
-      <Card className="md:col-span-1 h-screen flex flex-col sticky top-0">
+      <Card className="md:col-span-1 h-screen flex flex-col fixed top-0 right-0">
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
