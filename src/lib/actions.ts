@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -189,28 +190,29 @@ export async function processTransaction(cart: { [id: string]: number }) {
 
   try {
     for (const productId of productIds) {
-      const quantityChange = cart[productId];
-      if (quantityChange === 0) continue;
+      const quantityChangeInCart = cart[productId];
+      if (quantityChangeInCart === 0) continue;
 
       const productRef = doc(db, 'products', productId);
       const productSnap = await getDoc(productRef);
 
       if (productSnap.exists()) {
         const product = productSnap.data() as Omit<Product, 'id'>;
-        const newQuantity = product.quantity - quantityChange;
+        const newQuantityInStock = product.quantity - quantityChangeInCart;
 
-        if (newQuantity < 0) {
+        if (newQuantityInStock < 0) {
           throw new Error(`Not enough stock for ${product.name}.`);
         }
         
-        batch.update(productRef, { quantity: newQuantity, updatedAt: Timestamp.now() });
+        batch.update(productRef, { quantity: newQuantityInStock, updatedAt: Timestamp.now() });
         
-        logItems.push({ productName: product.name, quantityChange: -quantityChange, price: product.price });
+        // Log quantity change is negative for sales (stock decreases), positive for returns
+        logItems.push({ productName: product.name, quantityChange: -quantityChangeInCart, price: product.price });
         
-        if (quantityChange > 0) {
-          salesCount += quantityChange;
+        if (quantityChangeInCart > 0) {
+          salesCount += quantityChangeInCart;
         } else {
-          returnsCount += Math.abs(quantityChange);
+          returnsCount += Math.abs(quantityChangeInCart);
         }
       }
     }
@@ -322,14 +324,16 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   logs.forEach(log => {
     log.items.forEach(item => {
+      // In logs, a sale is a negative quantityChange, a return is positive.
       if (log.type === 'TRANSACTION') {
-        if (item.quantityChange > 0) {
-          itemsSold += item.quantityChange;
-          totalRevenue += item.quantityChange * item.price;
-          productSales[item.productName] = (productSales[item.productName] || 0) + item.quantityChange;
-        } else {
-          itemsReturned += Math.abs(item.quantityChange);
-          totalReturnValue += Math.abs(item.quantityChange) * item.price;
+        if (item.quantityChange < 0) { // Sale
+          const quantitySold = Math.abs(item.quantityChange);
+          itemsSold += quantitySold;
+          totalRevenue += quantitySold * item.price;
+          productSales[item.productName] = (productSales[item.productName] || 0) + quantitySold;
+        } else if (item.quantityChange > 0) { // Return
+          itemsReturned += item.quantityChange;
+          totalReturnValue += item.quantityChange * item.price;
         }
       }
       if (log.type === 'CREATE') {
