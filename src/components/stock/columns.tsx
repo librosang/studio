@@ -40,6 +40,10 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     }
   },
   {
+    accessorKey: 'barcode',
+    header: 'Barcode',
+  },
+  {
     accessorKey: 'price',
     header: ({ column }) => {
        return (

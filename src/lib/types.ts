@@ -8,6 +8,7 @@ export type Product = {
   quantity: number;
   price: number;
   imageUrl?: string;
+  barcode?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -36,9 +35,11 @@ export function PosClient({
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
+    const lowercasedTerm = searchTerm.toLowerCase();
     return products.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+      product.name.toLowerCase().includes(lowercasedTerm) ||
+      product.brand.toLowerCase().includes(lowercasedTerm) ||
+      product.barcode?.toLowerCase().includes(lowercasedTerm)
     );
   }, [products, searchTerm]);
 
@@ -103,7 +104,7 @@ export function PosClient({
       <div className="md:col-span-2 h-full flex flex-col">
         <div className="mb-6">
             <Input 
-                placeholder='Search products by name or brand...'
+                placeholder='Search products by name, brand, or barcode...'
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="text-base"

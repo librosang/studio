@@ -26,6 +26,7 @@ const FormSchema = z.object({
   quantity: z.coerce.number().int(),
   price: z.coerce.number().positive('Price must be a positive number.'),
   imageUrl: z.string().url('Must be a valid URL.').optional().or(z.literal('')),
+  barcode: z.string().optional().or(z.literal('')),
 });
 
 type ProductFormProps = {
@@ -46,6 +47,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       quantity: product.quantity,
       price: product.price,
       imageUrl: product.imageUrl,
+      barcode: product.barcode,
     } : {
       name: '',
       brand: '',
@@ -53,6 +55,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       quantity: 0,
       price: 0,
       imageUrl: '',
+      barcode: '',
     },
   });
 
@@ -113,24 +116,39 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <div className="flex gap-2">
-                <FormControl>
-                  <Input placeholder="e.g. Apparel" {...field} />
-                </FormControl>
-                <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
-                    {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
-                </Button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-4">
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem className='flex-1'>
+                  <FormLabel>Category</FormLabel>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="e.g. Apparel" {...field} />
+                    </FormControl>
+                    <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
+                        {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="brand"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Brand</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. EcoThreads" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
          <FormField
           control={form.control}
           name="imageUrl"
@@ -144,19 +162,20 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             </FormItem>
           )}
         />
-        <FormField
+         <FormField
           control={form.control}
-          name="brand"
+          name="barcode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Brand</FormLabel>
+              <FormLabel>Barcode (EAN, UPC)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. EcoThreads" {...field} />
+                <Input placeholder="e.g. 9780201379624" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <div className="flex gap-4">
           <FormField
             control={form.control}

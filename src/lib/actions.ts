@@ -31,6 +31,7 @@ const ProductSchema = z.object({
   quantity: z.coerce.number().int('Quantity must be an integer'),
   price: z.coerce.number().positive('Price must be a positive number'),
   imageUrl: z.string().url('Image URL must be a valid URL.').optional().or(z.literal('')),
+  barcode: z.string().optional().or(z.literal('')),
 });
 
 // --- Log Helper ---
@@ -74,7 +75,7 @@ export async function addProduct(formData: unknown) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, quantity, price, imageUrl } = result.data;
+  const { name, brand, category, quantity, price, imageUrl, barcode } = result.data;
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
@@ -84,6 +85,7 @@ export async function addProduct(formData: unknown) {
       quantity,
       price,
       imageUrl,
+      barcode,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -114,7 +116,7 @@ export async function updateProduct(id: string, formData: unknown) {
     return { error: 'Product not found.' };
   }
   const oldData = productSnap.data();
-  const { name, brand, category, quantity, price, imageUrl } = result.data;
+  const { name, brand, category, quantity, price, imageUrl, barcode } = result.data;
   const quantityChange = quantity - oldData.quantity;
 
   try {
@@ -125,6 +127,7 @@ export async function updateProduct(id: string, formData: unknown) {
       quantity,
       price,
       imageUrl,
+      barcode,
       updatedAt: Timestamp.now(),
     });
     
