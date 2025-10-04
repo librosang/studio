@@ -21,6 +21,8 @@ const fontHeadline = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'StockFlow',
   description: 'Manage your inventory with ease.',
+  manifest: '/manifest.json',
+  themeColor: '#000000',
 };
 
 export default function RootLayout({
