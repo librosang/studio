@@ -122,7 +122,7 @@ export function PosClient({
 
       const updatedProducts = products.map(p => {
         if(cart.has(p.id)){
-          return {...p, quantity: p.quantity - (cart.get(p.id) || 0)}
+          return {...p, shopQuantity: p.shopQuantity - (cart.get(p.id) || 0)}
         }
         return p;
       })

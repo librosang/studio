@@ -28,7 +28,8 @@ const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   brand: z.string().min(2, 'Brand must be at least 2 characters.'),
   category: z.string().min(2, 'Category must be at least 2 characters.'),
-  quantity: z.coerce.number().int(),
+  stockQuantity: z.coerce.number().int(),
+  shopQuantity: z.coerce.number().int(),
   price: z.coerce.number().positive('Price must be a positive number.'),
   imageUrl: z.string().url('Must be a valid URL.').optional().or(z.literal('')),
   barcode: z.string().optional().or(z.literal('')),
@@ -52,7 +53,8 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       name: product.name,
       brand: product.brand,
       category: product.category,
-      quantity: product.quantity,
+      stockQuantity: product.stockQuantity,
+      shopQuantity: product.shopQuantity,
       price: product.price,
       imageUrl: product.imageUrl,
       barcode: product.barcode,
@@ -60,7 +62,8 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       name: '',
       brand: '',
       category: '',
-      quantity: 0,
+      stockQuantity: 0,
+      shopQuantity: 0,
       price: 0,
       imageUrl: '',
       barcode: '',
@@ -214,10 +217,10 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         <div className="flex gap-4">
           <FormField
             control={form.control}
-            name="quantity"
+            name="stockQuantity"
             render={({ field }) => (
               <FormItem className='flex-1'>
-                <FormLabel>Quantity</FormLabel>
+                <FormLabel>Stock Quantity</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="0" {...field} />
                 </FormControl>
@@ -225,19 +228,34 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
               </FormItem>
             )}
           />
-          <FormField
+           <FormField
             control={form.control}
-            name="price"
+            name="shopQuantity"
             render={({ field }) => (
               <FormItem className='flex-1'>
-                <FormLabel>Price</FormLabel>
+                <FormLabel>Shop Quantity</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                  <Input type="number" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </div>
+        <div className="flex gap-4">
+            <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                <FormItem className='flex-1'>
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                    <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
         </div>
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}

@@ -10,11 +10,12 @@ export type UserProfile = {
 }
 
 export type Product = {
-  id: string;
+  id:string;
   name: string;
   brand: string;
   category: string;
-  quantity: number;
+  stockQuantity: number;
+  shopQuantity: number;
   price: number;
   imageUrl?: string;
   barcode?: string;
@@ -22,7 +23,7 @@ export type Product = {
   updatedAt: Timestamp;
 };
 
-export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION';
+export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION' | 'TRANSFER';
 
 export type LogEntry = {
   id: string;
@@ -34,7 +35,9 @@ export type LogEntry = {
   items: { productName: string; quantityChange: number; price: number }[];
 };
 
-export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {
+export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt' | 'quantity'> & {
+  stockQuantity: number;
+  shopQuantity: number;
   createdAt: string;
   updatedAt: string;
 };

@@ -9,12 +9,14 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/context/user-context';
+import { ArrowRightLeft } from 'lucide-react';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
   UPDATE: Icons.update,
   DELETE: Icons.delete,
   TRANSACTION: Icons.transaction,
+  TRANSFER: ArrowRightLeft,
 };
 
 const logColorMap: Record<LogType, string> = {
@@ -22,6 +24,7 @@ const logColorMap: Record<LogType, string> = {
   UPDATE: 'bg-yellow-500',
   DELETE: 'bg-red-500',
   TRANSACTION: 'bg-green-500',
+  TRANSFER: 'bg-purple-500',
 }
 
 function LogItem({ log }: { log: SerializableLogEntry }) {

@@ -36,7 +36,7 @@ export function ProductGridItem({ product, onAddToCart }: ProductGridItemProps) 
       </CardHeader>
       <CardContent className="p-2 pt-0 mt-auto">
         <p className="text-sm font-semibold">{currencyFormatter.format(product.price)}</p>
-        <p className="text-xs text-muted-foreground">In Stock: {product.quantity}</p>
+        <p className="text-xs text-muted-foreground">In Shop: {product.shopQuantity}</p>
       </CardContent>
     </Card>
   );

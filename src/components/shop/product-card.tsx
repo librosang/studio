@@ -51,7 +51,7 @@ export function ProductCard({ product, cartQuantity, onQuantityChange }: Product
       </CardHeader>
       <CardContent className="flex-grow space-y-2">
          <Badge variant="secondary">{product.category}</Badge>
-        <p className="text-sm text-muted-foreground">In Stock: {product.quantity}</p>
+        <p className="text-sm text-muted-foreground">In Shop: {product.shopQuantity}</p>
       </CardContent>
       <CardFooter className="flex items-center justify-between mt-auto">
         <div className="flex items-center gap-2">

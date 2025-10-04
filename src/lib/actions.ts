@@ -29,7 +29,8 @@ const ProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   brand: z.string().min(1, 'Brand is required'),
   category: z.string().min(1, 'Category is required'),
-  quantity: z.coerce.number().int('Quantity must be an integer'),
+  stockQuantity: z.coerce.number().int('Stock Quantity must be an integer'),
+  shopQuantity: z.coerce.number().int('Shop Quantity must be an integer'),
   price: z.coerce.number().positive('Price must be a positive number'),
   imageUrl: z.string().url('Image URL must be a valid URL.').optional().or(z.literal('')),
   barcode: z.string().optional().or(z.literal('')),
@@ -87,14 +88,15 @@ export async function addProduct(formData: unknown, user: UserProfile) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, quantity, price, imageUrl, barcode } = result.data;
+  const { name, brand, category, stockQuantity, price, imageUrl, barcode } = result.data;
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
       name,
       brand,
       category,
-      quantity,
+      stockQuantity,
+      shopQuantity: 0, // New products start with 0 in shop
       price,
       imageUrl,
       barcode,
@@ -104,8 +106,8 @@ export async function addProduct(formData: unknown, user: UserProfile) {
 
     await addLog(
       'CREATE',
-      `Added new product: ${name}.`,
-      [{ productName: name, quantityChange: quantity, price }],
+      `Added new product to stock: ${name}.`,
+      [{ productName: name, quantityChange: stockQuantity, price }],
       user
     );
 
@@ -129,16 +131,17 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
   if (!productSnap.exists()) {
     return { error: 'Product not found.' };
   }
-  const oldData = productSnap.data();
-  const { name, brand, category, quantity, price, imageUrl, barcode } = result.data;
-  const quantityChange = quantity - oldData.quantity;
+  const oldData = productSnap.data() as Product;
+  const { name, brand, category, stockQuantity, shopQuantity, price, imageUrl, barcode } = result.data;
+  const quantityChange = (stockQuantity - oldData.stockQuantity) + (shopQuantity - oldData.shopQuantity);
 
   try {
     await updateDoc(productRef, {
       name,
       brand,
       category,
-      quantity,
+      stockQuantity,
+      shopQuantity,
       price,
       imageUrl,
       barcode,
@@ -154,6 +157,7 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
 
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/pos');
     revalidatePath('/dashboard');
     return { data: { id, ...result.data } };
   } catch (error) {
@@ -168,23 +172,69 @@ export async function deleteProduct(id: string, user: UserProfile) {
   if (!productSnap.exists()) {
     return { error: 'Product not found.' };
   }
-  const { name, quantity, price } = productSnap.data();
+  const { name, stockQuantity, shopQuantity, price } = productSnap.data() as Product;
+  const totalQuantity = stockQuantity + shopQuantity;
 
   try {
     await deleteDoc(productRef);
     await addLog(
       'DELETE',
       `Deleted product: ${name}.`,
-      [{ productName: name, quantityChange: -quantity, price }],
+      [{ productName: name, quantityChange: -totalQuantity, price }],
       user
     );
     
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/pos');
     revalidatePath('/dashboard');
     return { data: 'Product deleted successfully.' };
   } catch (error) {
     return { error: 'Failed to delete product.' };
+  }
+}
+
+export async function transferStockToShop(id: string, quantityToTransfer: number, user: UserProfile) {
+  if (user.role !== 'manager') return { error: 'Permission denied.' };
+  if (quantityToTransfer <= 0) return { error: 'Transfer quantity must be positive.' };
+
+  const productRef = doc(db, 'products', id);
+  const productSnap = await getDoc(productRef);
+
+  if (!productSnap.exists()) {
+    return { error: 'Product not found.' };
+  }
+
+  const product = productSnap.data() as Product;
+
+  if (product.stockQuantity < quantityToTransfer) {
+    return { error: 'Not enough stock to transfer.' };
+  }
+
+  const newStockQuantity = product.stockQuantity - quantityToTransfer;
+  const newShopQuantity = product.shopQuantity + quantityToTransfer;
+
+  try {
+    await updateDoc(productRef, {
+      stockQuantity: newStockQuantity,
+      shopQuantity: newShopQuantity,
+      updatedAt: Timestamp.now(),
+    });
+
+    await addLog(
+      'TRANSFER',
+      `Transferred ${quantityToTransfer} unit(s) of ${product.name} to shop.`,
+      [{ productName: product.name, quantityChange: quantityToTransfer, price: product.price }],
+      user
+    );
+
+    revalidatePath('/stock');
+    revalidatePath('/shop');
+    revalidatePath('/pos');
+    revalidatePath('/log');
+    return { success: true };
+  } catch (error) {
+    return { error: 'Failed to transfer stock.' };
   }
 }
 
@@ -213,16 +263,15 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
       const productSnap = await getDoc(productRef);
 
       if (productSnap.exists()) {
-        const product = productSnap.data() as Omit<Product, 'id'>;
-        const newQuantityInStock = product.quantity - quantityChangeInCart;
+        const product = productSnap.data() as Product;
+        const newShopQuantity = product.shopQuantity - quantityChangeInCart;
 
-        if (newQuantityInStock < 0) {
-          throw new Error(`Not enough stock for ${product.name}.`);
+        if (quantityChangeInCart > 0 && newShopQuantity < 0) {
+          throw new Error(`Not enough stock for ${product.name} in the shop.`);
         }
         
-        batch.update(productRef, { quantity: newQuantityInStock, updatedAt: Timestamp.now() });
+        batch.update(productRef, { shopQuantity: newShopQuantity, updatedAt: Timestamp.now() });
         
-        // Log quantity change is negative for sales (stock decreases), positive for returns
         logItems.push({ productName: product.name, quantityChange: -quantityChangeInCart, price: product.price });
         
         if (quantityChangeInCart > 0) {
@@ -238,11 +287,11 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
       await addLog('TRANSACTION', logDetails, logItems, user);
     }
     
-
     await batch.commit();
 
     revalidatePath('/stock');
     revalidatePath('/shop');
+    revalidatePath('/pos');
     revalidatePath('/log');
     revalidatePath('/dashboard');
     return { data: 'Transaction successful.' };
@@ -309,6 +358,7 @@ export async function seedDatabase() {
         await batch.commit();
         revalidatePath('/stock');
         revalidatePath('/shop');
+        revalidatePath('/pos');
         revalidatePath('/dashboard');
         return { data: `${sampleProducts.length} products have been added.` };
     } catch (error) {
@@ -340,7 +390,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   logs.forEach(log => {
     log.items.forEach(item => {
-      // In logs, a sale is a negative quantityChange, a return is positive.
       if (log.type === 'TRANSACTION') {
         if (item.quantityChange < 0) { // Sale
           const quantitySold = Math.abs(item.quantityChange);

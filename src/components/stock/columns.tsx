@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
@@ -40,10 +41,6 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     }
   },
   {
-    accessorKey: 'barcode',
-    header: 'Barcode',
-  },
-  {
     accessorKey: 'price',
     header: ({ column }) => {
        return (
@@ -64,7 +61,7 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     },
   },
   {
-    accessorKey: 'quantity',
+    accessorKey: 'stockQuantity',
     header: ({ column }) => {
        return (
         <div className="text-right">
@@ -72,14 +69,35 @@ export const columns: ColumnDef<SerializableProduct>[] = [
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Quantity
+            Stock Qty
             <Icons.arrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         </div>
       );
     },
     cell: ({ row }) => {
-      const quantity = row.original.quantity;
+      const quantity = row.original.stockQuantity;
+      const color = quantity < 10 ? 'text-destructive' : 'text-foreground';
+      return <div className={`text-right font-medium ${color}`}>{quantity}</div>;
+    },
+  },
+  {
+    accessorKey: 'shopQuantity',
+    header: ({ column }) => {
+       return (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Shop Qty
+            <Icons.arrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      const quantity = row.original.shopQuantity;
       const color = quantity < 10 ? 'text-destructive' : 'text-foreground';
       return <div className={`text-right font-medium ${color}`}>{quantity}</div>;
     },
