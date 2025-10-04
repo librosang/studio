@@ -75,73 +75,73 @@ export function DataTableRowActions<TData>({
 
   return (
     <>
+        <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <Icons.more className="h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsTransferDialogOpen(true)}>
+                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                Transfer to Shop
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+            <Icons.edit className="mr-2 h-4 w-4" />
+            Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Icons.trash className="mr-2 h-4 w-4" />
+                Delete
+                </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the
+                    product and its data from our servers.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Continue</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+            </AlertDialog>
+        </DropdownMenuContent>
+        </DropdownMenu>
+
+      <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Transfer Stock to Shop</DialogTitle>
+            </DialogHeader>
+              <ScrollArea className="max-h-[80vh] p-0">
+                <div className="p-6">
+                    <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
+                </div>
+            </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <Icons.more className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsTransferDialogOpen(true)}>
-                    <ArrowRightLeft className="mr-2 h-4 w-4" />
-                    Transfer to Shop
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                <Icons.edit className="mr-2 h-4 w-4" />
-                Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Icons.trash className="mr-2 h-4 w-4" />
-                    Delete
-                    </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the
-                        product and its data from our servers.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-                </AlertDialog>
-            </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Transfer Stock to Shop</DialogTitle>
-                </DialogHeader>
-                 <ScrollArea className="max-h-[80vh] p-0">
-                    <div className="p-6">
-                        <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
-                    </div>
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
-
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
-           <ScrollArea className="max-h-[80vh] p-0">
-             <div className="p-6">
+            <ScrollArea className="max-h-[80vh] p-0">
+              <div className="p-6">
                 <ProductForm
                     product={product}
                     setOpen={setIsEditDialogOpen}
                 />
               </div>
-           </ScrollArea>
+            </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
