@@ -1,3 +1,4 @@
+
 'use client';
 
 import { I18nProvider } from '@/locales/client';
