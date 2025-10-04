@@ -1,7 +1,6 @@
 
 'use client';
 
-import { getUniqueCategoriesAndBrands } from '@/lib/actions';
 import { PageHeader } from '@/components/page-header';
 import { PosClient } from '@/components/pos/pos-client';
 import { useEffect, useState } from 'react';
@@ -27,7 +26,7 @@ export default function PosPage() {
     const productsRef = collection(db, 'products');
     const q = query(productsRef, where('shopQuantity', '>', 0));
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
         const productsData: SerializableProduct[] = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -46,9 +45,15 @@ export default function PosPage() {
         });
         setProducts(productsData);
 
-        const uniqueData = await getUniqueCategoriesAndBrands();
-        setCategories(uniqueData.categories);
-        setBrands(uniqueData.brands);
+        // Derive categories and brands from the fetched products
+        const uniqueCategories = [...new Set(productsData.map(p => p.category))];
+        const uniqueBrands = [...new Set(productsData.map(p => p.brand))];
+        setCategories(uniqueCategories);
+        setBrands(uniqueBrands);
+
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching POS products: ", error);
         setLoading(false);
     });
 
@@ -86,5 +91,3 @@ export default function PosPage() {
     </div>
   );
 }
-
-    
