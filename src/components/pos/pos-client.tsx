@@ -156,6 +156,19 @@ export function PosClient({
       const currentQty = newCart.get(productId) || 0;
       const newQuantity = currentQty + change;
       
+      const product = initialProducts.find(p => p.id === productId);
+      if (!product) return newCart;
+
+      // Prevent selling more than available in shop
+      if (change > 0 && newQuantity > product.shopQuantity) {
+        toast({
+          title: "Not enough stock",
+          description: `Only ${product.shopQuantity} units of ${product.name} available in shop.`,
+          variant: "destructive",
+        });
+        return newCart;
+      }
+      
       if (newQuantity === 0) {
         newCart.delete(productId);
       } else {
@@ -169,7 +182,7 @@ export function PosClient({
     setCart(new Map());
   }
 
-  const handleValidate = async () => {
+  const handleValidate = () => {
     if (cart.size === 0) {
       toast({ title: t('transaction.cart_is_empty'), description: t('transaction.add_items_to_proceed'), variant: "destructive"});
       return;
@@ -182,40 +195,42 @@ export function PosClient({
     setIsProcessing(true);
     const cartObject = Object.fromEntries(cart);
     
-    const result = await processTransaction(cartObject, user);
+    processTransaction(cartObject, user).then(result => {
+        if (result.error) {
+            toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
+        } else {
+            toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
+            
+            const completedCartItems: ReceiptCartItem[] = Array.from(cart.keys()).map(id => {
+                const product = initialProducts.find(p => p.id === id);
+                return {
+                    id: id,
+                    name: product?.name || 'Unknown',
+                    quantity: cart.get(id) || 0,
+                    price: product?.price || 0
+                }
+            }).filter(Boolean) as ReceiptCartItem[];
 
-    if (result.error) {
-      toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
-    } else {
-      toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
-      
-      const completedCartItems: ReceiptCartItem[] = Array.from(cart.keys()).map(id => {
-        const product = initialProducts.find(p => p.id === id);
-        return {
-            id: id,
-            name: product?.name || 'Unknown',
-            quantity: cart.get(id) || 0,
-            price: product?.price || 0
+            setLastTransaction({
+                cartItems: completedCartItems,
+                total: totalAmount,
+                transactionDate: new Date().toISOString(),
+                cashierName: user.name,
+            });
+
+            // This is now handled by the realtime listener
+            // const updatedProducts = products.map(p => {
+            //     if(cart.has(p.id)){
+            //     return {...p, shopQuantity: p.shopQuantity - (cart.get(p.id) || 0)}
+            //     }
+            //     return p;
+            // })
+            // setProducts(updatedProducts);
+            setCart(new Map());
         }
-      }).filter(Boolean);
-
-      setLastTransaction({
-        cartItems: completedCartItems,
-        total: totalAmount,
-        transactionDate: new Date().toISOString(),
-        cashierName: user.name,
-      });
-
-      const updatedProducts = products.map(p => {
-        if(cart.has(p.id)){
-          return {...p, shopQuantity: p.shopQuantity - (cart.get(p.id) || 0)}
-        }
-        return p;
-      })
-      setProducts(updatedProducts);
-      setCart(new Map());
-    }
-    setIsProcessing(false);
+    }).finally(() => {
+        setIsProcessing(false);
+    });
   };
   
   const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as SerializableProduct[];

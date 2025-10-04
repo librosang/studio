@@ -72,32 +72,38 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
     if (!user) {
         toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
-    const result = product
-      ? await updateProduct(product.id, data, user)
-      : await addProduct(data, user);
+    
+    // Disable submission while processing
+    form.handleSubmit(async (formData) => {
+        const result = product
+        ? await updateProduct(product.id, formData, user)
+        : await addProduct(formData, user);
 
-    if (result.error) {
-      toast({
-        title: t('general.error'),
-        description: typeof result.error === 'string' ? result.error : 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: t('general.success'),
-        description: product ? t('product_form.success_updated') : t('product_form.success_added'),
-        className: 'bg-green-600 text-white',
-      });
-      if (!product) {
-        form.reset();
-      }
-      setOpen(false);
-    }
+        // We handle this optimistically. The UI will update due to Firestore's listener.
+        // The `result` from the action is now also optimistic.
+        if (result.error) {
+            toast({
+                title: t('general.error'),
+                description: typeof result.error === 'string' ? result.error : 'An unexpected error occurred.',
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+                title: t('general.success'),
+                description: product ? t('product_form.success_updated') : t('product_form.success_added'),
+                className: 'bg-green-600 text-white',
+            });
+            if (!product) {
+                form.reset();
+            }
+            setOpen(false);
+        }
+    })(data);
   };
 
   const handleSuggestCategory = async () => {

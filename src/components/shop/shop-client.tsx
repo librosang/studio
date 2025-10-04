@@ -133,6 +133,19 @@ export function ShopClient({
   }, [products, categoryFilter, brandFilter]);
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Prevent selling more than available in shop
+    if (newQuantity > 0 && newQuantity > product.shopQuantity) {
+        toast({
+            title: "Not enough stock",
+            description: `Only ${product.shopQuantity} units of ${product.name} available in shop.`,
+            variant: "destructive",
+        });
+        return;
+    }
+
     setCart((prevCart) => {
       const newCart = new Map(prevCart);
       if (newQuantity === 0) {
@@ -144,7 +157,7 @@ export function ShopClient({
     });
   };
 
-  const handleValidate = async () => {
+  const handleValidate = () => {
     if (cart.size === 0) {
       toast({ title: t('transaction.cart_is_empty'), description: t('transaction.add_items_to_proceed'), variant: "destructive"});
       return;
@@ -157,22 +170,17 @@ export function ShopClient({
     setIsProcessing(true);
     const cartObject = Object.fromEntries(cart);
     
-    const result = await processTransaction(cartObject, user);
-
-    if (result.error) {
-      toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
-    } else {
-      toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
-      setCart(new Map());
-      const updatedProducts = products.map(p => {
-        if(cart.has(p.id)){
-          return {...p, shopQuantity: p.shopQuantity - (cart.get(p.id) || 0)}
+    processTransaction(cartObject, user).then(result => {
+        if (result.error) {
+            toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
+        } else {
+            toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
+            setCart(new Map());
+            // Data will be updated by the realtime listener, no need to manually update state
         }
-        return p;
-      })
-      setProducts(updatedProducts);
-    }
-    setIsProcessing(false);
+    }).finally(() => {
+        setIsProcessing(false);
+    });
   };
   
   const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as SerializableProduct[];

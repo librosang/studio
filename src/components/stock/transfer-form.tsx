@@ -42,7 +42,7 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
     if (!user) {
         toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
@@ -56,23 +56,25 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
       return;
     }
 
-    const result = await transferStockToShop(product.id, data.quantity, user);
+    form.handleSubmit(async (formData) => {
+        const result = await transferStockToShop(product.id, formData.quantity, user);
 
-    if (result.error) {
-      toast({
-        title: t('general.error'),
-        description: result.error,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: t('general.success'),
-        description: t('transfer_form.success', {quantity: data.quantity, name: product.name}),
-        className: 'bg-green-600 text-white',
-      });
-      form.reset();
-      setOpen(false);
-    }
+        if (result.error) {
+            toast({
+                title: t('general.error'),
+                description: result.error,
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+                title: t('general.success'),
+                description: t('transfer_form.success', {quantity: formData.quantity, name: product.name}),
+                className: 'bg-green-600 text-white',
+            });
+            form.reset();
+            setOpen(false);
+        }
+    })(data);
   };
 
   return (

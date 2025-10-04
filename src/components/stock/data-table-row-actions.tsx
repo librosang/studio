@@ -54,25 +54,27 @@ export function DataTableRowActions<TData>({
   const { user } = useUser();
   const { t } = useTranslation();
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!user) {
         toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
-    const result = await deleteProduct(product.id, user);
-    if (result.error) {
-      toast({
-        title: t('general.error'),
-        description: result.error,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: t('general.success'),
-        description: t('data_table.product_deleted'),
-      });
-      setIsDeleteDialogOpen(false);
-    }
+    
+    deleteProduct(product.id, user).then(result => {
+        if (result.error) {
+            toast({
+                title: t('general.error'),
+                description: result.error,
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+                title: t('general.success'),
+                description: t('data_table.product_deleted'),
+            });
+            setIsDeleteDialogOpen(false);
+        }
+    });
   };
 
   return (
