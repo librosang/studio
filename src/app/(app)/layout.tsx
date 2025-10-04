@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, createContext, useContext, ReactNode 
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { Icons } from '@/components/icons';
+import { useTranslation } from '@/context/language-context';
 
 
 // --- Fullscreen Context Logic ---
@@ -68,6 +69,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const isPosPage = pathname === '/pos';
   const { user, loading } = useUser();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -76,8 +78,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    // You can render a loading spinner here
-    return <div className="h-screen w-screen flex items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin"/></div>;
+    return <div className="h-screen w-screen flex flex-col items-center justify-center gap-4">
+        <Icons.spinner className="h-8 w-8 animate-spin"/>
+        <p>{t('general.loading')}</p>
+    </div>;
   }
 
 

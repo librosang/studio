@@ -3,6 +3,7 @@
 import React, { forwardRef } from 'react';
 import { format } from 'date-fns';
 import { Icons } from '../icons';
+import { useTranslation } from '@/context/language-context';
 
 export type CartItem = {
   id: string;
@@ -24,14 +25,15 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   });
 
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, total, transactionDate, cashierName }, ref) => {
+  const { t } = useTranslation();
   return (
     <div id="receipt-print" ref={ref} className="bg-white text-black text-xs font-mono p-2" style={{ width: '300px' }}>
       <div className="text-center">
         <Icons.logo className="h-10 w-10 mx-auto" />
-        <h2 className="text-lg font-bold">StockFlow</h2>
+        <h2 className="text-lg font-bold">{t('home.title')}</h2>
         <p>123 App Lane, Dev City, 10101</p>
         {transactionDate && <p>{format(new Date(transactionDate), 'PPP p')}</p>}
-        {cashierName && <p>Cashier: {cashierName}</p>}
+        {cashierName && <p>{t('receipt.cashier')} {cashierName}</p>}
       </div>
 
       <hr className="my-2 border-dashed border-black" />
@@ -65,7 +67,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
        <hr className="my-2 border-dashed border-black" />
 
        <div className="text-center mt-4">
-        <p>Thank you for your purchase!</p>
+        <p>{t('receipt.thank_you')}</p>
        </div>
     </div>
   );

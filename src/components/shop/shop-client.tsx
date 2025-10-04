@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Product, SerializableProduct } from '@/lib/types';
+import { SerializableProduct } from '@/lib/types';
 import { ProductCard } from './product-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
 import { useUser } from '@/context/user-context';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '../ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { useTranslation } from '@/context/language-context';
 
 type ShopClientProps = {
   initialProducts: SerializableProduct[];
@@ -50,12 +51,13 @@ function TransactionPanel({
     isProcessing: boolean;
     cart: Map<string, number>;
 }) {
+    const { t } = useTranslation();
     return (
         <>
             <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                     <Icons.shoppingCart className="h-7 w-7" />
-                    <span className="text-2xl">Current Transaction</span>
+                    <span className="text-2xl">{t('transaction.title')}</span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
@@ -77,8 +79,8 @@ function TransactionPanel({
                     ) : (
                         <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
                             <Icons.shop className="h-12 w-12 mb-4" />
-                            <p>Your cart is empty.</p>
-                            <p className="text-sm">Add products from the list.</p>
+                            <p>{t('transaction.cart_empty')}</p>
+                            <p className="text-sm">{t('transaction.add_products_prompt')}</p>
                         </div>
                     )}
                 </ScrollArea>
@@ -86,21 +88,21 @@ function TransactionPanel({
             <Separator />
             <CardFooter className="flex flex-col gap-4 text-sm p-4">
                 <div className='w-full flex justify-between items-center'>
-                    <span className="text-muted-foreground">Sales</span>
-                    <span className="font-semibold">{salesCount} items</span>
+                    <span className="text-muted-foreground">{t('transaction.sales')}</span>
+                    <span className="font-semibold">{salesCount} {t('transaction.items')}</span>
                 </div>
                 <div className='w-full flex justify-between items-center'>
-                    <span className="text-muted-foreground">Returns</span>
-                    <span className="font-semibold">{Math.abs(returnsCount)} items</span>
+                    <span className="text-muted-foreground">{t('transaction.returns')}</span>
+                    <span className="font-semibold">{Math.abs(returnsCount)} {t('transaction.items')}</span>
                 </div>
                 <Separator />
                 <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
-                    <span>Total:</span>
+                    <span>{t('transaction.total')}</span>
                     <span>{currencyFormatter.format(totalAmount)}</span>
                 </div>
                 <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
-                    Validate Transaction
+                    {t('transaction.validate')}
                 </Button>
             </CardFooter>
         </>
@@ -119,6 +121,7 @@ export function ShopClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -143,11 +146,11 @@ export function ShopClient({
 
   const handleValidate = async () => {
     if (cart.size === 0) {
-      toast({ title: "Cart is empty", description: "Add items to the cart to proceed.", variant: "destructive"});
+      toast({ title: t('transaction.cart_is_empty'), description: t('transaction.add_items_to_proceed'), variant: "destructive"});
       return;
     }
     if (!user) {
-      toast({ title: "Authentication error", description: "You must be logged in to process a transaction.", variant: "destructive"});
+      toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: "destructive"});
       return;
     }
     
@@ -157,9 +160,9 @@ export function ShopClient({
     const result = await processTransaction(cartObject, user);
 
     if (result.error) {
-      toast({ title: 'Transaction Failed', description: result.error, variant: 'destructive' });
+      toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
     } else {
-      toast({ title: 'Success!', description: 'Transaction completed successfully.', className: 'bg-green-600 text-white' });
+      toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
       setCart(new Map());
       const updatedProducts = products.map(p => {
         if(cart.has(p.id)){
@@ -202,10 +205,10 @@ export function ShopClient({
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full sm:w-[200px] bg-card">
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder={t('shop.filter_category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('shop.all_categories')}</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
@@ -215,10 +218,10 @@ export function ShopClient({
             </Select>
             <Select value={brandFilter} onValueChange={setBrandFilter}>
               <SelectTrigger className="w-full sm:w-[200px] bg-card">
-                <SelectValue placeholder="Filter by brand" />
+                <SelectValue placeholder={t('shop.filter_brand')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Brands</SelectItem>
+                <SelectItem value="all">{t('shop.all_brands')}</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -240,7 +243,7 @@ export function ShopClient({
               {filteredProducts.length === 0 && (
                 <div className="col-span-full text-center py-16 text-muted-foreground">
                   <Icons.stock className="mx-auto h-12 w-12" />
-                  <p className="mt-4">No products match the current filters.</p>
+                  <p className="mt-4">{t('shop.no_products_match')}</p>
                 </div>
               )}
             </div>
@@ -274,5 +277,3 @@ export function ShopClient({
     </>
   );
 }
-
-    

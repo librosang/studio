@@ -8,6 +8,7 @@ import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import { format } from 'date-fns';
+import { useTranslation } from '@/context/language-context';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -18,12 +19,13 @@ export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => {
+        const { t } = useTranslation();
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Product Name
+          {t('product_form.product_name')}
           <Icons.arrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -46,13 +48,14 @@ export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'price',
     header: ({ column }) => {
+        const { t } = useTranslation();
        return (
         <div className="text-right">
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Price
+            {t('product_form.price')}
             <Icons.arrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -66,13 +69,14 @@ export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'stockQuantity',
     header: ({ column }) => {
+        const { t } = useTranslation();
        return (
         <div className="text-right">
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Stock Qty
+            {t('product_form.stock_quantity')}
             <Icons.arrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -87,13 +91,14 @@ export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'shopQuantity',
     header: ({ column }) => {
+        const { t } = useTranslation();
        return (
         <div className="text-right">
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Shop Qty
+            {t('product_form.shop_quantity')}
             <Icons.arrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         </div>

@@ -25,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Icons } from '../icons';
 import { UserProfile } from '@/lib/types';
@@ -33,6 +32,7 @@ import { AddAccountForm } from './add-account-form';
 import { deleteAccount } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/context/user-context';
+import { useTranslation } from '@/context/language-context';
 
 interface DataTableRowActionsProps {
   row: {
@@ -48,23 +48,24 @@ export function DataTableRowActions({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const handleDelete = async () => {
     if (!user) {
-        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
     const result = await deleteAccount(account.id, user);
     if (result.error) {
       toast({
-        title: 'Error',
-        description: result.error,
+        title: t('general.error'),
+        description: t(result.error as any),
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
-        description: 'Account deleted successfully.',
+        title: t('general.success'),
+        description: t('accounts.account_deleted'),
       });
       setIsDeleteDialogOpen(false);
       // Here you would typically refetch the data or remove the item from the local state
@@ -80,14 +81,14 @@ export function DataTableRowActions({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">{t('data_table.open_menu')}</span>
               <Icons.more className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
               <Icons.edit className="mr-2 h-4 w-4" />
-              Edit
+              {t('data_table.edit')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -97,20 +98,19 @@ export function DataTableRowActions({
                   disabled={!canPerformActions}
                 >
                   <Icons.trash className="mr-2 h-4 w-4" />
-                  Delete
+                  {t('data_table.delete')}
                 </DropdownMenuItem>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('data_table.are_you_sure')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the
-                    account for <span className="font-semibold">{account.name}</span>.
+                    {t('accounts.delete_account_confirm', {name: account.name})}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Continue</AlertDialogAction>
+                  <AlertDialogCancel>{t('data_table.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">{t('data_table.continue')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -119,7 +119,7 @@ export function DataTableRowActions({
 
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Account</DialogTitle>
+            <DialogTitle>{t('accounts.edit_account')}</DialogTitle>
           </DialogHeader>
           <AddAccountForm
             account={account}

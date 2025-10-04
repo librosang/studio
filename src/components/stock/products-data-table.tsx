@@ -31,6 +31,7 @@ import { seedDatabase } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import { useTranslation } from '@/context/language-context';
 
 
 interface DataTableProps<TData, TValue> {
@@ -47,6 +48,7 @@ export function ProductsDataTable<TData, TValue>({
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [isSeeding, setIsSeeding] = React.useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
 
   const table = useReactTable({
@@ -68,9 +70,9 @@ export function ProductsDataTable<TData, TValue>({
     setIsSeeding(true);
     const result = await seedDatabase();
     if (result.error) {
-      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+      toast({ title: t('general.error'), description: result.error, variant: 'destructive' });
     } else {
-      toast({ title: 'Success', description: result.data });
+      toast({ title: t('general.success'), description: result.data });
     }
     setIsSeeding(false);
   }
@@ -79,7 +81,7 @@ export function ProductsDataTable<TData, TValue>({
     <div>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
         <Input
-          placeholder="Filter products..."
+          placeholder={t('stock.filter_products')}
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('name')?.setFilterValue(event.target.value)
@@ -90,12 +92,12 @@ export function ProductsDataTable<TData, TValue>({
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
               <Icons.add className="mr-2 h-4 w-4" />
-              Add Product
+              {t('stock.add_product')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
+              <DialogTitle>{t('product_form.add_title')}</DialogTitle>
             </DialogHeader>
              <ScrollArea className="max-h-[80vh] p-0">
                 <div className="p-6">
@@ -147,10 +149,10 @@ export function ProductsDataTable<TData, TValue>({
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
                   <div className='flex flex-col items-center gap-4'>
-                     <p>No products found.</p>
+                     <p>{t('stock.no_products_found')}</p>
                      <Button onClick={handleSeed} disabled={isSeeding} variant="secondary">
                       {isSeeding ? <Icons.spinner className="animate-spin mr-2" /> :  <Icons.add className="mr-2 h-4 w-4" />}
-                       Seed Sample Data
+                       {t('stock.seed_data')}
                      </Button>
                   </div>
                 </TableCell>
@@ -166,7 +168,7 @@ export function ProductsDataTable<TData, TValue>({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Previous
+          {t('stock.previous')}
         </Button>
         <Button
           variant="outline"
@@ -174,7 +176,7 @@ export function ProductsDataTable<TData, TValue>({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Next
+          {t('stock.next')}
         </Button>
       </div>
     </div>

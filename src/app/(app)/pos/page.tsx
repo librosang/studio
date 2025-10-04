@@ -9,6 +9,7 @@ import { SerializableProduct } from '@/lib/types';
 import { Icons } from '@/components/icons';
 import { useFullscreen } from '@/app/(app)/layout';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/context/language-context';
 
 export default function PosPage() {
   const [products, setProducts] = useState<SerializableProduct[]>([]);
@@ -16,6 +17,7 @@ export default function PosPage() {
   const [brands, setBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { isFullscreen } = useFullscreen();
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function loadData() {
@@ -50,8 +52,8 @@ export default function PosPage() {
     )}>
        {!isFullscreen && (
          <PageHeader
-            title="POS Mode"
-            description="Quickly process sales and returns in a cashier-friendly interface."
+            title={t('pos.title')}
+            description={t('pos.description')}
         >
         </PageHeader>
        )}

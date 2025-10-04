@@ -1,3 +1,5 @@
+
+'use client';
 import { getDashboardStats } from '@/lib/actions';
 import { PageHeader } from '@/components/page-header';
 import {
@@ -9,58 +11,68 @@ import {
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import { SalesChart } from '@/components/dashboard/sales-chart';
+import { useTranslation } from '@/context/language-context';
+import { useEffect, useState } from 'react';
+import { DashboardStats } from '@/lib/types';
 
-
-export const dynamic = 'force-dynamic';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
 
-export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+export default function DashboardPage() {
+  const { t } = useTranslation();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+
+  useEffect(() => {
+    getDashboardStats().then(setStats);
+  }, [])
+
+  if (!stats) {
+    return <div className="h-screen w-screen flex items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin"/></div>;
+  }
 
   return (
     <div className="container mx-auto py-10">
       <PageHeader
-        title="Dashboard"
-        description={`Here's a summary of your activity for today, ${new Date().toLocaleDateString()}.`}
+        title={t('dashboard.title')}
+        description={t('dashboard.description', {date: new Date().toLocaleDateString()})}
       />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Revenue"
+          title={t('dashboard.total_revenue')}
           value={currencyFormatter.format(stats.totalRevenue)}
           icon={Icons.sale}
-          description={`${stats.itemsSold} items sold`}
+          description={t('dashboard.items_sold', {count: stats.itemsSold})}
         />
         <StatCard
-          title="Total Returns"
+          title={t('dashboard.total_returns')}
           value={currencyFormatter.format(stats.totalReturnValue)}
           icon={Icons.return}
-          description={`${stats.itemsReturned} items returned`}
+          description={t('dashboard.items_returned', {count: stats.itemsReturned})}
           isLoss
         />
         <StatCard
-          title="New Stock"
+          title={t('dashboard.new_stock')}
           value={`+${stats.newStockCount}`}
           icon={Icons.create}
-          description={`${stats.restockedItems} items restocked`}
+          description={t('dashboard.restocked_items', {count: stats.restockedItems})}
         />
          <StatCard
-          title="Net Items Change"
+          title={t('dashboard.net_items_change')}
           value={`${stats.itemsSold - stats.itemsReturned}`}
           icon={Icons.transaction}
-          description="Net inventory movement"
+          description={t('dashboard.net_inventory_movement')}
         />
       </div>
 
        <div className="mt-8">
           <Card>
             <CardHeader>
-              <CardTitle>Top Selling Products Today</CardTitle>
+              <CardTitle>{t('dashboard.top_selling_today')}</CardTitle>
               <CardDescription>
-                Your most popular products based on today's sales.
+                {t('dashboard.top_selling_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>

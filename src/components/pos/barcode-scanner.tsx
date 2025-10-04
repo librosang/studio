@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState } from 'react';
-import { Scanner as ScannerComp, IDetectedBarcode, outline, boundingBox, centerText, useDevices } from '@yudiel/react-qr-scanner';
+import { Scanner as ScannerComp, IDetectedBarcode } from '@yudiel/react-qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Icons } from '../icons';
+import { useTranslation } from '@/context/language-context';
 
 
 interface BarcodeScannerProps {
@@ -13,6 +15,7 @@ interface BarcodeScannerProps {
 
 export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleResult = (result: IDetectedBarcode[]) => {
     if (result) {
@@ -38,7 +41,7 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
       {error ? (
         <Alert variant="destructive">
           <Icons.xCircle className="h-4 w-4" />
-          <AlertTitle>Scanning Error</AlertTitle>
+          <AlertTitle>{t('general.error')}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : (
@@ -69,7 +72,7 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
             ]}
             
               components={{
-                tracker: outline,
+                tracker: true,
                 onOff: true,
                 torch: true,
                 zoom: true,

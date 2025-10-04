@@ -1,19 +1,26 @@
+
+'use client';
 import { getProducts } from '@/lib/actions';
 import { PageHeader } from '@/components/page-header';
 import { ProductsDataTable } from '@/components/stock/products-data-table';
 import { columns } from '@/components/stock/columns';
 import { SerializableProduct } from '@/lib/types';
+import { useTranslation } from '@/context/language-context';
+import { useEffect, useState } from 'react';
 
-export const dynamic = 'force-dynamic';
+export default function StockPage() {
+  const { t } = useTranslation();
+  const [products, setProducts] = useState<SerializableProduct[]>([]);
 
-export default async function StockPage() {
-  const products: SerializableProduct[] = await getProducts();
+  useEffect(() => {
+    getProducts().then(setProducts);
+  }, []);
 
   return (
     <div className="container mx-auto py-10">
       <PageHeader
-        title="Stockage"
-        description="Manage your products here. Add, edit, or delete items."
+        title={t('stock.title')}
+        description={t('stock.description')}
       />
       <ProductsDataTable columns={columns} data={products} />
     </div>

@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '../ui/card';
 import { DataTableRowActions } from './data-table-row-actions';
+import { useTranslation } from '@/context/language-context';
 
 type AccountsClientProps = {
   initialAccounts: UserProfile[];
@@ -21,6 +22,7 @@ type AccountsClientProps = {
 
 export function AccountsClient({ initialAccounts }: AccountsClientProps) {
   const [accounts, setAccounts] = useState(initialAccounts);
+  const { t } = useTranslation();
 
   // In a real app, you'd have functions to edit/delete users.
   // For now, we just display them.
@@ -31,10 +33,10 @@ export function AccountsClient({ initialAccounts }: AccountsClientProps) {
             <Table>
                 <TableHeader>
                 <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('general.name')}</TableHead>
+                    <TableHead>{t('general.email')}</TableHead>
+                    <TableHead>{t('general.role')}</TableHead>
+                    <TableHead className="text-right">{t('general.actions')}</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -44,7 +46,7 @@ export function AccountsClient({ initialAccounts }: AccountsClientProps) {
                         <TableCell>{account.email}</TableCell>
                         <TableCell>
                             <Badge variant={account.role === 'manager' ? 'default' : 'secondary'}>
-                            {account.role}
+                            {t(account.role === 'manager' ? 'accounts.manager_role' : 'accounts.cashier_role')}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">

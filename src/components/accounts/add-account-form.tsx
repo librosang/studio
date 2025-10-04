@@ -26,6 +26,7 @@ import { Icons } from '../icons';
 import { addAccount, updateAccount } from '@/lib/actions';
 import { useUser } from '@/context/user-context';
 import { UserProfile } from '@/lib/types';
+import { useTranslation } from '@/context/language-context';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -43,6 +44,7 @@ type AddAccountFormProps = {
 export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -59,7 +61,7 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (!user) {
-        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
 
@@ -69,14 +71,14 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('general.error'),
         description: 'Failed to save account.',
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success!',
-        description: `Account for ${data.name} has been ${account ? 'updated' : 'created'}.`,
+        title: t('general.success'),
+        description: t('accounts.account_saved_success', { name: data.name, action: account ? t('accounts.action_updated') : t('accounts.action_created') }),
         className: 'bg-green-600 text-white',
       });
       form.reset();
@@ -92,9 +94,9 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>{t('accounts.full_name')}</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder={t('accounts.name_placeholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -105,9 +107,9 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>{t('general.email')}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="j.doe@example.com" {...field} />
+                <Input type="email" placeholder={t('accounts.email_placeholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,16 +120,16 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel>{t('general.role')}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={t('accounts.select_role')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="cashier">Cashier</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="cashier">{t('accounts.cashier_role')}</SelectItem>
+                  <SelectItem value="manager">{t('accounts.manager_role')}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -136,7 +138,7 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
         />
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          {account ? 'Save Changes' : 'Create Account'}
+          {account ? t('product_form.save_button') : t('accounts.create_account_button')}
         </Button>
       </form>
     </Form>

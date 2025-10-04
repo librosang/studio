@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { useUser } from "@/context/user-context";
+import { useTranslation } from "@/context/language-context";
 
 type LogExportProps = {
   logs: SerializableLogEntry[];
@@ -21,6 +22,7 @@ export function LogExport({ logs }: LogExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [date, setDate] = useState<Date | undefined>();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const handleExport = () => {
     setIsExporting(true);
@@ -85,7 +87,7 @@ export function LogExport({ logs }: LogExportProps) {
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
+              {date ? format(date, "PPP") : <span>{t('log.pick_date')}</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
@@ -103,7 +105,7 @@ export function LogExport({ logs }: LogExportProps) {
         ) : (
           <Icons.sale className="mr-2 h-4 w-4" />
         )}
-        Export to Excel
+        {t('log.export_excel')}
       </Button>
     </div>
   );

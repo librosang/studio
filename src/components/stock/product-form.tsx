@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { BarcodeScanner } from '../pos/barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
 import { useUser } from '@/context/user-context';
+import { useTranslation } from '@/context/language-context';
 
 const FormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -45,6 +46,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { user } = useUser();
+  const { t } = useTranslation();
 
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -72,7 +74,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (!user) {
-        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
     const result = product
@@ -81,14 +83,14 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('general.error'),
         description: typeof result.error === 'string' ? result.error : 'An unexpected error occurred.',
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success!',
-        description: `Product has been ${product ? 'updated' : 'added'}.`,
+        title: t('general.success'),
+        description: product ? t('product_form.success_updated') : t('product_form.success_added'),
         className: 'bg-green-600 text-white',
       });
       if (!product) {
@@ -101,16 +103,16 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const handleSuggestCategory = async () => {
     const productName = form.getValues('name');
     if (!productName) {
-        toast({ title: 'Error', description: 'Please enter a product name first.', variant: 'destructive' });
+        toast({ title: t('general.error'), description: t('product_form.suggest_category_error'), variant: 'destructive' });
         return;
     }
     setIsSuggesting(true);
     const result = await getCategorySuggestion(productName);
     if (result.category) {
         form.setValue('category', result.category, { shouldValidate: true });
-        toast({ title: 'Suggestion applied!', description: `Category set to "${result.category}".`, className: 'bg-blue-500 text-white' });
+        toast({ title: t('product_form.suggestion_applied'), description: t('product_form.category_set_to', {category: result.category}), className: 'bg-blue-500 text-white' });
     } else {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        toast({ title: t('general.error'), description: result.error, variant: 'destructive' });
     }
     setIsSuggesting(false);
   }
@@ -128,9 +130,9 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Product Name</FormLabel>
+              <FormLabel>{t('product_form.product_name')}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Organic Cotton T-Shirt" {...field} />
+                <Input placeholder={t('product_form.name_placeholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -142,10 +144,10 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
               name="category"
               render={({ field }) => (
                 <FormItem className='flex-1'>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{t('product_form.category')}</FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
-                      <Input placeholder="e.g. Apparel" {...field} />
+                      <Input placeholder={t('product_form.category_placeholder')} {...field} />
                     </FormControl>
                     <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
                         {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
@@ -160,9 +162,9 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
               name="brand"
               render={({ field }) => (
                 <FormItem className="flex-1">
-                  <FormLabel>Brand</FormLabel>
+                  <FormLabel>{t('product_form.brand')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. EcoThreads" {...field} />
+                    <Input placeholder={t('product_form.brand_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,9 +176,9 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <FormLabel>{t('product_form.image_url')}</FormLabel>
               <FormControl>
-                <Input placeholder="https://picsum.photos/seed/1/200/300" {...field} />
+                <Input placeholder={t('product_form.image_url_placeholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -187,10 +189,10 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
           name="barcode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Barcode (EAN, UPC)</FormLabel>
+              <FormLabel>{t('product_form.barcode')}</FormLabel>
               <div className="flex gap-2">
                 <FormControl>
-                  <Input placeholder="e.g. 9780201379624" {...field} />
+                  <Input placeholder={t('product_form.barcode_placeholder')} {...field} />
                 </FormControl>
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                   <DialogTrigger asChild>
@@ -200,7 +202,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Scan Barcode</DialogTitle>
+                      <DialogTitle>{t('product_form.scan_barcode')}</DialogTitle>
                     </DialogHeader>
                     <BarcodeScanner
                       onScan={onBarcodeScanned}
@@ -220,7 +222,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             name="stockQuantity"
             render={({ field }) => (
               <FormItem className='flex-1'>
-                <FormLabel>Stock Quantity</FormLabel>
+                <FormLabel>{t('product_form.stock_quantity')}</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="0" {...field} />
                 </FormControl>
@@ -233,7 +235,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             name="shopQuantity"
             render={({ field }) => (
               <FormItem className='flex-1'>
-                <FormLabel>Shop Quantity</FormLabel>
+                <FormLabel>{t('product_form.shop_quantity')}</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="0" {...field} />
                 </FormControl>
@@ -248,7 +250,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                 name="price"
                 render={({ field }) => (
                 <FormItem className='flex-1'>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>{t('product_form.price')}</FormLabel>
                     <FormControl>
                     <Input type="number" placeholder="0.00" step="0.01" {...field} />
                     </FormControl>
@@ -259,7 +261,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         </div>
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          {product ? 'Save Changes' : 'Add Product'}
+          {product ? t('product_form.save_button') : t('product_form.add_button')}
         </Button>
       </form>
     </Form>

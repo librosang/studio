@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/context/user-context';
 import { ArrowRightLeft } from 'lucide-react';
+import { useTranslation } from '@/context/language-context';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
@@ -77,6 +78,7 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
 
 export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const filteredLogs = user?.role === 'manager'
     ? logs
@@ -94,7 +96,7 @@ export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
             ) : (
               <div className="py-16 text-center text-muted-foreground">
                 <Icons.log className="mx-auto h-12 w-12" />
-                <p className="mt-4">No log entries yet.</p>
+                <p className="mt-4">{t('log.no_entries')}</p>
               </div>
             )}
           </div>

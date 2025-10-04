@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Bar,
@@ -9,26 +10,28 @@ import {
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Icons } from '../icons';
+import { useTranslation } from '@/context/language-context';
 
 type SalesChartProps = {
   data: { productName: string; quantity: number }[];
 };
 
-const chartConfig = {
-  quantity: {
-    label: 'Quantity',
-    color: 'hsl(var(--primary))',
-  },
-};
-
-
 export function SalesChart({ data }: SalesChartProps) {
+  const { t } = useTranslation();
+
+  const chartConfig = {
+    quantity: {
+      label: t('product_form.stock_quantity'),
+      color: 'hsl(var(--primary))',
+    },
+  };
+
   if (data.length === 0) {
     return (
       <div className="flex h-[350px] flex-col items-center justify-center text-center text-muted-foreground">
         <Icons.shop className="h-12 w-12" />
-        <p className="mt-4">No sales recorded yet today.</p>
-        <p className="text-sm">Come back after you've made some sales!</p>
+        <p className="mt-4">{t('dashboard.no_sales_yet')}</p>
+        <p className="text-sm">{t('dashboard.come_back_later')}</p>
       </div>
     );
   }

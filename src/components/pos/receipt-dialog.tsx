@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Receipt, type CartItem } from './receipt';
 import { useRef } from 'react';
 import { Icons } from '../icons';
+import { useTranslation } from '@/context/language-context';
 
 type ReceiptDialogProps = {
   isOpen: boolean;
@@ -26,6 +28,7 @@ type ReceiptDialogProps = {
 
 export function ReceiptDialog({ isOpen, onClose, transaction }: ReceiptDialogProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const handlePrint = () => {
     window.print();
@@ -35,7 +38,7 @@ export function ReceiptDialog({ isOpen, onClose, transaction }: ReceiptDialogPro
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Transaction Successful</DialogTitle>
+          <DialogTitle>{t('receipt.title')}</DialogTitle>
         </DialogHeader>
         <div className="py-4">
             <div className="mx-auto w-[300px] border rounded-sm">
@@ -45,12 +48,12 @@ export function ReceiptDialog({ isOpen, onClose, transaction }: ReceiptDialogPro
         <DialogFooter className="sm:justify-between gap-2">
            <DialogClose asChild>
             <Button type="button" variant="secondary">
-                Close
+                {t('receipt.close')}
             </Button>
           </DialogClose>
           <Button onClick={handlePrint}>
             <Icons.sale className="mr-2 h-4 w-4" />
-            Print Receipt
+            {t('receipt.print')}
           </Button>
         </DialogFooter>
       </DialogContent>

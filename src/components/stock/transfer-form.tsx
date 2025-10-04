@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '../icons';
 import { useUser } from '@/context/user-context';
+import { useTranslation } from '@/context/language-context';
 
 const FormSchema = z.object({
   quantity: z.coerce.number().int().positive('Quantity must be a positive number.'),
@@ -32,6 +33,7 @@ type TransferFormProps = {
 export function TransferForm({ product, setOpen }: TransferFormProps) {
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -42,14 +44,14 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (!user) {
-        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
     
     if (data.quantity > product.stockQuantity) {
       form.setError('quantity', {
         type: 'manual',
-        message: `Cannot transfer more than available stock (${product.stockQuantity}).`,
+        message: t('transfer_form.error_not_enough_stock', {count: product.stockQuantity}),
       });
       return;
     }
@@ -58,14 +60,14 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('general.error'),
         description: result.error,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success!',
-        description: `${data.quantity} unit(s) of ${product.name} transferred to shop.`,
+        title: t('general.success'),
+        description: t('transfer_form.success', {quantity: data.quantity, name: product.name}),
         className: 'bg-green-600 text-white',
       });
       form.reset();
@@ -79,10 +81,10 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
         <div>
           <h3 className="font-semibold">{product.name}</h3>
           <p className="text-sm text-muted-foreground">
-            Available in Stock: <span className="font-bold">{product.stockQuantity}</span>
+            {t('transfer_form.available_stock')} <span className="font-bold">{product.stockQuantity}</span>
           </p>
           <p className="text-sm text-muted-foreground">
-            Available in Shop: <span className="font-bold">{product.shopQuantity}</span>
+            {t('transfer_form.available_shop')} <span className="font-bold">{product.shopQuantity}</span>
           </p>
         </div>
         <FormField
@@ -90,7 +92,7 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
           name="quantity"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quantity to Transfer</FormLabel>
+              <FormLabel>{t('transfer_form.quantity_to_transfer')}</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="0" {...field} autoFocus />
               </FormControl>
@@ -100,7 +102,7 @@ export function TransferForm({ product, setOpen }: TransferFormProps) {
         />
         <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
           {form.formState.isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          Transfer to Shop
+          {t('transfer_form.button')}
         </Button>
       </form>
     </Form>

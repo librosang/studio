@@ -1,31 +1,34 @@
 
+'use client';
 import { PageHeader } from '@/components/page-header';
 import { UserProfile } from '@/lib/types';
 import { getAccounts } from '@/lib/actions';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from '@/components/ui/badge';
 import { AddAccountDialog } from '@/components/accounts/add-account-dialog';
 import { AccountsClient } from '@/components/accounts/accounts-client';
+import { useTranslation } from '@/context/language-context';
+import { useEffect, useState } from 'react';
+import { useUser } from '@/context/user-context';
 
-export const dynamic = 'force-dynamic';
+export default function AccountsPage() {
+    const { t } = useTranslation();
+    const { user } = useUser();
+    const [accounts, setAccounts] = useState<UserProfile[]>([]);
 
-export default async function AccountsPage() {
-    // This is a mock implementation since we don't have a real user session on the server
-    const mockManagerUser: UserProfile = { id: '1', name: 'Admin Manager', email: 'manager@test.com', role: 'manager' };
-    const accounts: UserProfile[] = await getAccounts(mockManagerUser);
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            if(user) {
+                const fetchedAccounts = await getAccounts(user);
+                setAccounts(fetchedAccounts);
+            }
+        }
+        fetchAccounts();
+    }, [user]);
 
   return (
     <div className="container mx-auto py-10">
       <PageHeader
-        title="Account Management"
-        description="View and manage user accounts and their roles."
+        title={t('accounts.title')}
+        description={t('accounts.description')}
       >
         <AddAccountDialog />
       </PageHeader>

@@ -13,23 +13,25 @@ import {
 } from '@/components/ui/dialog';
 import { Icons } from '../icons';
 import { AddAccountForm } from './add-account-form';
+import { useTranslation } from '@/context/language-context';
 
 export function AddAccountDialog() {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Icons.add className="mr-2 h-4 w-4" />
-          Add Account
+          {t('accounts.add_account')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Account</DialogTitle>
+          <DialogTitle>{t('accounts.create_new_account')}</DialogTitle>
           <DialogDescription>
-            Create a new cashier account. They will receive an invitation to set their password.
+            {t('accounts.create_cashier_desc')}
           </DialogDescription>
         </DialogHeader>
         <AddAccountForm setOpen={setOpen} />

@@ -26,7 +26,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Icons } from '../icons';
 import { SerializableProduct } from '@/lib/types';
@@ -37,6 +36,7 @@ import { useUser } from '@/context/user-context';
 import { TransferForm } from './transfer-form';
 import { ArrowRightLeft } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
+import { useTranslation } from '@/context/language-context';
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -51,23 +51,24 @@ export function DataTableRowActions<TData>({
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const handleDelete = async () => {
     if (!user) {
-        toast({ title: 'Not Authenticated', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;
     }
     const result = await deleteProduct(product.id, user);
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('general.error'),
         description: result.error,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
-        description: 'Product deleted successfully.',
+        title: t('general.success'),
+        description: t('data_table.product_deleted'),
       });
       setIsDeleteDialogOpen(false);
     }
@@ -75,73 +76,69 @@ export function DataTableRowActions<TData>({
 
   return (
     <>
-        <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <Icons.more className="h-4 w-4" />
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsTransferDialogOpen(true)}>
-                <ArrowRightLeft className="mr-2 h-4 w-4" />
-                Transfer to Shop
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-            <Icons.edit className="mr-2 h-4 w-4" />
-            Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Icons.trash className="mr-2 h-4 w-4" />
-                Delete
-                </DropdownMenuItem>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the
-                    product and its data from our servers.
-                </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Continue</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-            </AlertDialog>
-        </DropdownMenuContent>
-        </DropdownMenu>
-
       <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-                <DialogTitle>Transfer Stock to Shop</DialogTitle>
-            </DialogHeader>
-              <ScrollArea className="max-h-[80vh] p-0">
-                <div className="p-6">
-                    <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
-                </div>
-            </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">{t('data_table.open_menu')}</span>
+                <Icons.more className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsTransferDialogOpen(true)}>
+                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                {t('data_table.transfer_to_shop')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                <Icons.edit className="mr-2 h-4 w-4" />
+                {t('data_table.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Icons.trash className="mr-2 h-4 w-4" />
+                    {t('data_table.delete')}
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('data_table.are_you_sure')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('data_table.delete_product_confirm')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('data_table.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">{t('data_table.continue')}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-          </DialogHeader>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{t('product_form.edit_title')}</DialogTitle>
+            </DialogHeader>
             <ScrollArea className="max-h-[80vh] p-0">
               <div className="p-6">
-                <ProductForm
-                    product={product}
-                    setOpen={setIsEditDialogOpen}
-                />
+                <ProductForm product={product} setOpen={setIsEditDialogOpen} />
               </div>
             </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('transfer_form.title')}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[80vh] p-0">
+            <div className="p-6">
+              <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </>

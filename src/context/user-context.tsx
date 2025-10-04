@@ -2,8 +2,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { UserProfile, UserRole } from '@/lib/types';
+import { UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from './language-context';
 
 // Mock users - in a real app, this would come from an API/Firebase Auth
 const mockUsers: UserProfile[] = [
@@ -24,7 +26,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
+  const { toast } = useToast();
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     // Simulate checking for a logged-in user
@@ -43,8 +46,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(foundUser);
       router.push('/dashboard');
     } else {
-        // In a real app, you'd show an error
-      alert('User not found');
+      toast({
+        title: t('general.error'),
+        description: t('login.user_not_found'),
+        variant: 'destructive'
+      });
     }
   };
 
