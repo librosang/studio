@@ -24,19 +24,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string }
 }>) {
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <body className={cn('font-body antialiased', fontBody.variable, fontHeadline.variable)}>
-        <Providers locale={locale}>
-          {children}
-        </Providers>
-        <Toaster />
-      </body>
-    </html>
+    <Providers>
+        <html lang="en">
+            <body className={cn('font-body antialiased', fontBody.variable, fontHeadline.variable)}>
+                    {children}
+                <Toaster />
+            </body>
+        </html>
+    </Providers>
   );
 }

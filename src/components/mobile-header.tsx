@@ -14,24 +14,24 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useUser } from '@/context/user-context';
 import { UserRole } from '@/lib/types';
-import { useI18n } from '@/locales/client';
+import { useTranslation } from '@/context/language-context';
 
 
 const allNavItems = [
-  { href: '/dashboard', label: 'nav.dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
-  { href: '/stock', label: 'nav.stock', icon: Icons.stock, roles: ['manager'] as UserRole[] },
-  { href: '/shop', label: 'nav.shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/pos', label: 'nav.pos', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/log', label: 'nav.log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/accounts', label: 'nav.accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
-  { href: '/settings', label: 'nav.settings', icon: Icons.settings, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/dashboard', labelKey: 'nav.dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
+  { href: '/stock', labelKey: 'nav.stock', icon: Icons.stock, roles: ['manager'] as UserRole[] },
+  { href: '/shop', labelKey: 'nav.shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/pos', labelKey: 'nav.pos', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/log', labelKey: 'nav.log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/accounts', labelKey: 'nav.accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
+  { href: '/settings', labelKey: 'nav.settings', icon: Icons.settings, roles: ['manager', 'cashier'] as UserRole[] },
 ];
 
 export default function MobileHeader() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const { user } = useUser();
-    const t = useI18n();
+    const { t } = useTranslation();
     
     const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
 
@@ -68,7 +68,7 @@ export default function MobileHeader() {
             </Link>
               {navItems.map(item => {
                 const isActive = pathname === item.href;
-                const label = t(item.label as any);
+                const label = t(item.labelKey);
                 return (
                     <Link
                         key={item.href}

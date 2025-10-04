@@ -55,3 +55,5 @@ export type DashboardStats = {
   restockedItems: number;
   topSellingProducts: { productName: string; quantity: number }[];
 };
+
+export type Language = 'en' | 'ar';

@@ -1,21 +1,19 @@
 
 'use client';
 
-import { I18nProvider } from '@/locales/client';
 import { UserProvider } from '@/context/user-context';
+import { LanguageProvider } from '@/context/language-context';
 
 export function Providers({
     children,
-    locale
 }: {
     children: React.ReactNode;
-    locale: string;
 }) {
     return (
-        <I18nProvider locale={locale}>
+        <LanguageProvider>
             <UserProvider>
                 {children}
             </UserProvider>
-        </I18nProvider>
+        </LanguageProvider>
     );
 }
