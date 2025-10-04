@@ -28,6 +28,9 @@ export const columns: ColumnDef<SerializableProduct>[] = [
         </Button>
       );
     },
+    meta: {
+        className: "min-w-[200px]"
+    }
   },
   {
     accessorKey: 'brand',
@@ -107,7 +110,7 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     header: 'Last Updated',
      cell: ({ row }) => {
       const date = new Date(row.original.updatedAt);
-      return <span>{format(date, 'PPP p')}</span>
+      return <span className="whitespace-nowrap">{format(date, 'PPP p')}</span>
     },
     meta: {
       className: "hidden md:table-cell"
@@ -118,5 +121,8 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     cell: ({ row }) => {
       return <DataTableRowActions row={row} />;
     },
+     meta: {
+      className: "sticky right-0 bg-card/80 backdrop-blur-sm"
+    }
   },
 ];

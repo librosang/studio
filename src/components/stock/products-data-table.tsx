@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -29,6 +30,7 @@ import { Icons } from '../icons';
 import { seedDatabase } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '../ui/scroll-area';
 
 
 interface DataTableProps<TData, TValue> {
@@ -95,7 +97,11 @@ export function ProductsDataTable<TData, TValue>({
             <DialogHeader>
               <DialogTitle>Add New Product</DialogTitle>
             </DialogHeader>
-            <ProductForm setOpen={setIsFormOpen} />
+             <ScrollArea className="max-h-[80vh] p-0">
+                <div className="p-6">
+                    <ProductForm setOpen={setIsFormOpen} />
+                </div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>

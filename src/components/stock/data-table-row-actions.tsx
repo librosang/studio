@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/context/user-context';
 import { TransferForm } from './transfer-form';
 import { ArrowRightLeft } from 'lucide-react';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -121,7 +122,11 @@ export function DataTableRowActions<TData>({
                 <DialogHeader>
                     <DialogTitle>Transfer Stock to Shop</DialogTitle>
                 </DialogHeader>
-                <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
+                 <ScrollArea className="max-h-[80vh] p-0">
+                    <div className="p-6">
+                        <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
+                    </div>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
 
@@ -129,10 +134,14 @@ export function DataTableRowActions<TData>({
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
-          <ProductForm
-            product={product}
-            setOpen={setIsEditDialogOpen}
-          />
+           <ScrollArea className="max-h-[80vh] p-0">
+             <div className="p-6">
+                <ProductForm
+                    product={product}
+                    setOpen={setIsEditDialogOpen}
+                />
+              </div>
+           </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
