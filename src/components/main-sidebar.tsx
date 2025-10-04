@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { useUser } from '@/context/user-context';
 import { UserRole } from '@/lib/types';
 import { useTranslation } from '@/context/language-context';
+import { OnlineStatusIndicator } from './online-status-indicator';
 
 const allNavItems = [
   { href: '/dashboard', labelKey: 'nav.dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
@@ -32,7 +33,8 @@ export default function MainSidebar({ className }: { className?: string }) {
     <aside className={cn("w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex", className)}>
       <div className="flex items-center justify-center md:justify-start h-20 border-b px-4 md:px-6">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <Icons.logo className="h-8 w-8 text-primary" />
+          <OnlineStatusIndicator />
+          <Icons.logo className="h-8 w-8 text-primary hidden md:block" />
           <span className="hidden md:block font-bold font-headline text-2xl text-foreground">StockFlow</span>
         </Link>
       </div>

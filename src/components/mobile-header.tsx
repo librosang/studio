@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useUser } from '@/context/user-context';
 import { UserRole } from '@/lib/types';
 import { useTranslation } from '@/context/language-context';
+import { OnlineStatusIndicator } from './online-status-indicator';
 
 
 const allNavItems = [
@@ -38,13 +39,16 @@ export default function MobileHeader() {
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 sm:hidden">
       <nav className="flex w-full items-center justify-between">
-      <Link
-          href="/dashboard"
-          className="flex items-center gap-2 text-lg font-semibold"
-        >
-          <Icons.logo className="h-8 w-8 text-primary" />
-          <span className="sr-only">StockFlow</span>
-        </Link>
+        <div className="flex items-center gap-2">
+            <OnlineStatusIndicator />
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 text-lg font-semibold"
+            >
+              <Icons.logo className="h-8 w-8 text-primary" />
+              <span className="sr-only">StockFlow</span>
+            </Link>
+        </div>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button
