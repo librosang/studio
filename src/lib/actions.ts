@@ -106,7 +106,7 @@ export async function addProduct(formData: unknown, user: UserProfile) {
 
     await addLog(
       'CREATE',
-      `Added new product to stock: ${name}.`,
+      `Created: ${name}`,
       [{ productName: name, quantityChange: stockQuantity, price }],
       user
     );
@@ -150,7 +150,7 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
     
     await addLog(
       'UPDATE',
-      `Updated product: ${name}.`,
+      `Updated: ${name}`,
       [{ productName: name, quantityChange: quantityChange, price }],
       user
     );
@@ -179,7 +179,7 @@ export async function deleteProduct(id: string, user: UserProfile) {
     await deleteDoc(productRef);
     await addLog(
       'DELETE',
-      `Deleted product: ${name}.`,
+      `Deleted: ${name}`,
       [{ productName: name, quantityChange: -totalQuantity, price }],
       user
     );
@@ -223,7 +223,7 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
 
     await addLog(
       'TRANSFER',
-      `Transferred ${quantityToTransfer} unit(s) of ${product.name} to shop.`,
+      `Stock -> Shop`,
       [{ productName: product.name, quantityChange: quantityToTransfer, price: product.price }],
       user
     );
@@ -251,8 +251,6 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
   const batch = writeBatch(db);
   const productIds = Object.keys(cart);
   const logItems: { productName: string; quantityChange: number; price: number }[] = [];
-  let salesCount = 0;
-  let returnsCount = 0;
 
   try {
     for (const productId of productIds) {
@@ -274,17 +272,11 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
         
         logItems.push({ productName: product.name, quantityChange: -quantityChangeInCart, price: product.price });
         
-        if (quantityChangeInCart > 0) {
-          salesCount += quantityChangeInCart;
-        } else {
-          returnsCount += Math.abs(quantityChangeInCart);
-        }
       }
     }
 
-    const logDetails = `${salesCount} sale(s) - ${returnsCount} return(s)`;
     if(logItems.length > 0) {
-      await addLog('TRANSACTION', logDetails, logItems, user);
+      await addLog('TRANSACTION', 'Shop Transaction', logItems, user);
     }
     
     await batch.commit();
