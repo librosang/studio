@@ -1,20 +1,54 @@
 
 'use client';
-import { getProducts } from '@/lib/actions';
 import { PageHeader } from '@/components/page-header';
 import { ProductsDataTable } from '@/components/stock/products-data-table';
 import { columns } from '@/components/stock/columns';
 import { SerializableProduct } from '@/lib/types';
 import { useTranslation } from '@/context/language-context';
 import { useEffect, useState } from 'react';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Icons } from '@/components/icons';
 
 export default function StockPage() {
   const { t } = useTranslation();
   const [products, setProducts] = useState<SerializableProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProducts().then(setProducts);
+    const productsRef = collection(db, 'products');
+    const q = query(productsRef, orderBy('updatedAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const productsData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          brand: data.brand,
+          category: data.category,
+          stockQuantity: data.stockQuantity,
+          shopQuantity: data.shopQuantity,
+          price: data.price,
+          imageUrl: data.imageUrl,
+          barcode: data.barcode,
+          createdAt: data.createdAt.toDate().toISOString(),
+          updatedAt: data.updatedAt.toDate().toISOString(),
+        } as SerializableProduct;
+      });
+      setProducts(productsData);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching products: ", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  if (loading) {
+     return <div className="flex h-[calc(100vh-10rem)] w-full items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin" /></div>;
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -26,3 +60,5 @@ export default function StockPage() {
     </div>
   );
 }
+
+    

@@ -88,7 +88,7 @@ export async function addProduct(formData: unknown, user: UserProfile) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, stockQuantity, price, imageUrl, barcode } = result.data;
+  const { name, brand, category, stockQuantity, price, imageUrl, barcode, shopQuantity } = result.data;
 
   try {
     const docRef = await addDoc(collection(db, 'products'), {
@@ -96,7 +96,7 @@ export async function addProduct(formData: unknown, user: UserProfile) {
       brand,
       category,
       stockQuantity,
-      shopQuantity: 0, // New products start with 0 in shop
+      shopQuantity,
       price,
       imageUrl,
       barcode,
@@ -133,7 +133,7 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
   }
   const oldData = productSnap.data() as Product;
   const { name, brand, category, stockQuantity, shopQuantity, price, imageUrl, barcode } = result.data;
-  const quantityChange = (stockQuantity - oldData.stockQuantity) + (shopQuantity - oldData.shopQuantity);
+  const quantityChange = (stockQuantity - oldData.stockQuantity);
 
   try {
     await updateDoc(productRef, {
@@ -148,12 +148,14 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
       updatedAt: Timestamp.now(),
     });
     
-    await addLog(
-      'UPDATE',
-      `Updated: ${name}`,
-      [{ productName: name, quantityChange: quantityChange, price }],
-      user
-    );
+    if (quantityChange !== 0) {
+        await addLog(
+        'UPDATE',
+        `Updated: ${name}`,
+        [{ productName: name, quantityChange: quantityChange, price }],
+        user
+        );
+    }
 
     revalidatePath('/stock');
     revalidatePath('/shop');
@@ -477,7 +479,7 @@ export async function deleteAccount(id: string, user: UserProfile) {
     
     // You cannot delete the main manager account
     if (id === '1') {
-        return { error: "Cannot delete the primary manager account." };
+        return { error: "accounts.delete_primary_manager_error" };
     }
     
     // This is a mock implementation.
@@ -485,3 +487,5 @@ export async function deleteAccount(id: string, user: UserProfile) {
     revalidatePath('/accounts');
     return { data: 'User deleted successfully.' };
 }
+
+    

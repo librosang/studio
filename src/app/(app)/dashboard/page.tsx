@@ -14,6 +14,9 @@ import { SalesChart } from '@/components/dashboard/sales-chart';
 import { useTranslation } from '@/context/language-context';
 import { useEffect, useState } from 'react';
 import { DashboardStats } from '@/lib/types';
+import { onSnapshot, collection, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { startOfDay, endOfDay } from 'date-fns';
 
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -26,7 +29,64 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    getDashboardStats().then(setStats);
+    const today = new Date();
+    const todayStart = startOfDay(today);
+    const todayEnd = endOfDay(today);
+
+    const logsRef = collection(db, 'logs');
+    const q = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const logs = querySnapshot.docs.map(doc => doc.data());
+        
+        let itemsSold = 0;
+        let totalRevenue = 0;
+        let itemsReturned = 0;
+        let totalReturnValue = 0;
+        let newStockCount = 0;
+        let restockedItems = 0;
+        const productSales: Record<string, number> = {};
+
+        logs.forEach(log => {
+            log.items.forEach((item: any) => {
+            if (log.type === 'TRANSACTION') {
+                if (item.quantityChange < 0) { // Sale
+                const quantitySold = Math.abs(item.quantityChange);
+                itemsSold += quantitySold;
+                totalRevenue += quantitySold * item.price;
+                productSales[item.productName] = (productSales[item.productName] || 0) + quantitySold;
+                } else if (item.quantityChange > 0) { // Return
+                itemsReturned += item.quantityChange;
+                totalReturnValue += item.quantityChange * item.price;
+                }
+            }
+            if (log.type === 'CREATE') {
+                newStockCount++;
+                restockedItems += item.quantityChange;
+            }
+            if (log.type === 'UPDATE' && item.quantityChange > 0) {
+                restockedItems += item.quantityChange;
+            }
+            });
+        });
+
+        const topSellingProducts = Object.entries(productSales)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([productName, quantity]) => ({ productName, quantity }));
+        
+        setStats({
+            itemsSold,
+            totalRevenue,
+            itemsReturned,
+            totalReturnValue,
+            newStockCount,
+            restockedItems,
+            topSellingProducts
+        });
+    });
+
+    return () => unsubscribe();
   }, [])
 
   if (!stats) {
@@ -112,3 +172,5 @@ function StatCard({
     </Card>
   );
 }
+
+    
