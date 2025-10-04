@@ -20,6 +20,7 @@ import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
 import { ReceiptDialog } from './receipt-dialog';
 import { useFullscreen } from '@/app/(app)/layout';
 import { useUser } from '@/context/user-context';
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 
 type PosClientProps = {
   initialProducts: SerializableProduct[];
@@ -31,6 +32,88 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
+
+function TransactionPanel({
+    cartItems,
+    totalAmount,
+    handleValidate,
+    isProcessing,
+    cart,
+    handleQuantityChange,
+    handleClearCart
+}: {
+    cartItems: SerializableProduct[];
+    totalAmount: number;
+    handleValidate: () => void;
+    isProcessing: boolean;
+    cart: Map<string, number>;
+    handleQuantityChange: (productId: string, change: number) => void;
+    handleClearCart: () => void;
+}) {
+    return (
+        <>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <Icons.shoppingCart className="h-7 w-7" />
+                        <span className="text-2xl">Transaction</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={handleClearCart} disabled={cart.size === 0}>
+                        <Icons.trash className='h-5 w-5 text-destructive' />
+                    </Button>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow p-0 flex flex-col">
+                <div className="h-full p-6">
+                    <ScrollArea className="h-full pr-3 -mr-3">
+                        {cartItems.length > 0 ? (
+                            <ul className="space-y-4">
+                                {cartItems.map(item => {
+                                    const quantity = cart.get(item.id) || 0;
+                                    return (
+                                        <li key={item.id} className="flex justify-between items-center text-sm">
+                                            <div>
+                                                <p className="font-semibold">{item.name}</p>
+                                                <p className="text-muted-foreground">{currencyFormatter.format(item.price)}</p>
+                                            </div>
+                                            <div className='flex items-center gap-2'>
+                                                <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
+                                                    <Icons.minus className="h-3 w-3" />
+                                                </Button>
+                                                <Badge variant={quantity > 0 ? "secondary" : "destructive"} className="w-10 justify-center text-base">
+                                                    {quantity}
+                                                </Badge>
+                                                <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, 1)}>
+                                                    <Icons.plus className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        ) : (
+                            <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
+                                <Icons.shop className="h-12 w-12 mb-4" />
+                                <p>Click on a product to start.</p>
+                            </div>
+                        )}
+                    </ScrollArea>
+                </div>
+            </CardContent>
+            <Separator />
+            <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
+                <div className='w-full text-2xl font-bold flex justify-between items-center'>
+                    <span>Total:</span>
+                    <span>{currencyFormatter.format(totalAmount)}</span>
+                </div>
+                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
+                    {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
+                    Validate Transaction
+                </Button>
+            </CardFooter>
+        </>
+    );
+}
 
 export function PosClient({
   initialProducts,
@@ -141,6 +224,10 @@ export function PosClient({
     }, 0);
   }, [cart, cartItems]);
 
+  const totalItemsInCart = useMemo(() => {
+    return Array.from(cart.values()).reduce((sum, qty) => sum + Math.abs(qty), 0);
+  }, [cart]);
+
 
   const onBarcodeScanned = (barcode: string) => {
     const product = initialProducts.find(p => p.barcode === barcode);
@@ -163,6 +250,16 @@ export function PosClient({
   const closeReceiptDialog = () => {
     setLastTransaction(null);
   }
+
+  const transactionPanelProps = {
+    cartItems,
+    totalAmount,
+    handleValidate,
+    isProcessing,
+    cart,
+    handleQuantityChange,
+    handleClearCart
+  };
 
   return (
     <>
@@ -218,67 +315,28 @@ export function PosClient({
         </ScrollArea>
       </div>
 
-       <Card className="rounded-lg border bg-card text-card-foreground shadow-sm md:col-span-1 flex flex-col sticky top-0 h-full">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-                <Icons.shoppingCart className="h-7 w-7" />
-                <span className="text-2xl">Transaction</span>
-            </div>
-             <Button variant="ghost" size="icon" onClick={handleClearCart} disabled={cart.size === 0}>
-                <Icons.trash className='h-5 w-5 text-destructive'/>
-             </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-grow p-0 flex flex-col">
-            <div className="h-full p-6">
-                 <ScrollArea className="h-full pr-3 -mr-3">
-                    {cartItems.length > 0 ? (
-                    <ul className="space-y-4">
-                        {cartItems.map(item => {
-                            const quantity = cart.get(item.id) || 0;
-                            return (
-                                <li key={item.id} className="flex justify-between items-center text-sm">
-                                    <div>
-                                    <p className="font-semibold">{item.name}</p>
-                                    <p className="text-muted-foreground">{currencyFormatter.format(item.price)}</p>
-                                    </div>
-                                    <div className='flex items-center gap-2'>
-                                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
-                                            <Icons.minus className="h-3 w-3" />
-                                        </Button>
-                                        <Badge variant={ quantity > 0 ? "secondary" : "destructive"} className="w-10 justify-center text-base">
-                                            {quantity}
-                                        </Badge>
-                                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, 1)}>
-                                            <Icons.plus className="h-3 w-3" />
-                                        </Button>
-                                    </div>
-                                </li>
-                            )
-                        })}
-                    </ul>
-                    ) : (
-                    <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
-                        <Icons.shop className="h-12 w-12 mb-4" />
-                        <p>Click on a product to start.</p>
-                    </div>
-                    )}
-                </ScrollArea>
-            </div>
-        </CardContent>
-        <Separator/>
-        <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
-             <div className='w-full text-2xl font-bold flex justify-between items-center'>
-                <span>Total:</span>
-                <span>{currencyFormatter.format(totalAmount)}</span>
-            </div>
-          <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
-            {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
-            Validate Transaction
-          </Button>
-        </CardFooter>
+       <Card className="rounded-lg border bg-card text-card-foreground shadow-sm md:col-span-1 h-full flex-col sticky top-0 hidden md:flex">
+        <TransactionPanel {...transactionPanelProps} />
       </Card>
+    </div>
+    
+    {/* Mobile Floating Cart Button & Sheet */}
+    <div className="md:hidden fixed bottom-4 right-4 z-50">
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button size="icon" className="relative h-16 w-16 rounded-full shadow-lg">
+                    <Icons.shoppingCart className="h-8 w-8" />
+                    {totalItemsInCart > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-6 w-6 justify-center rounded-full text-base">
+                            {totalItemsInCart}
+                        </Badge>
+                    )}
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="flex flex-col h-[90vh]">
+                 <TransactionPanel {...transactionPanelProps} />
+            </SheetContent>
+        </Sheet>
     </div>
     
     {lastTransaction && (
@@ -296,3 +354,5 @@ export function PosClient({
     </>
   );
 }
+
+    

@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
 import { useUser } from '@/context/user-context';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '../ui/sheet';
 
 type ShopClientProps = {
   initialProducts: SerializableProduct[];
@@ -31,6 +32,80 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
+
+function TransactionPanel({
+    cartItems,
+    totalAmount,
+    salesCount,
+    returnsCount,
+    handleValidate,
+    isProcessing,
+    cart,
+}: {
+    cartItems: SerializableProduct[];
+    totalAmount: number;
+    salesCount: number;
+    returnsCount: number;
+    handleValidate: () => void;
+    isProcessing: boolean;
+    cart: Map<string, number>;
+}) {
+    return (
+        <>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                    <Icons.shoppingCart className="h-7 w-7" />
+                    <span className="text-2xl">Current Transaction</span>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+                <ScrollArea className="h-full pr-3 -mr-3">
+                    {cartItems.length > 0 ? (
+                        <ul className="space-y-4">
+                            {cartItems.map(item => (
+                                <li key={item.id} className="flex justify-between items-center">
+                                    <div>
+                                        <p className="font-semibold">{item.name}</p>
+                                        <p className="text-sm text-muted-foreground">{currencyFormatter.format(item.price)}</p>
+                                    </div>
+                                    <Badge variant={(cart.get(item.id) || 0) > 0 ? "secondary" : "destructive"}>
+                                        Qty: {cart.get(item.id)}
+                                    </Badge>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="text-muted-foreground text-center h-full flex flex-col justify-center items-center">
+                            <Icons.shop className="h-12 w-12 mb-4" />
+                            <p>Your cart is empty.</p>
+                            <p className="text-sm">Add products from the list.</p>
+                        </div>
+                    )}
+                </ScrollArea>
+            </CardContent>
+            <Separator />
+            <CardFooter className="flex flex-col gap-4 text-sm p-4">
+                <div className='w-full flex justify-between items-center'>
+                    <span className="text-muted-foreground">Sales</span>
+                    <span className="font-semibold">{salesCount} items</span>
+                </div>
+                <div className='w-full flex justify-between items-center'>
+                    <span className="text-muted-foreground">Returns</span>
+                    <span className="font-semibold">{Math.abs(returnsCount)} items</span>
+                </div>
+                <Separator />
+                <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
+                    <span>Total:</span>
+                    <span>{currencyFormatter.format(totalAmount)}</span>
+                </div>
+                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
+                    {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
+                    Validate Transaction
+                </Button>
+            </CardFooter>
+        </>
+    );
+}
 
 export function ShopClient({
   initialProducts,
@@ -109,111 +184,95 @@ export function ShopClient({
     }, 0);
   }, [cart, cartItems]);
 
+  const transactionPanelProps = {
+    cartItems,
+    totalAmount,
+    salesCount,
+    returnsCount,
+    handleValidate,
+    isProcessing,
+    cart,
+  };
+
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-      <div className="lg:col-span-2">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full sm:w-[200px] bg-card">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger className="w-full sm:w-[200px] bg-card">
-              <SelectValue placeholder="Filter by brand" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Brands</SelectItem>
-              {brands.map((brand) => (
-                <SelectItem key={brand} value={brand}>
-                  {brand}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <ScrollArea className="h-[70vh] pr-4 -mr-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                cartQuantity={cart.get(product.id) || 0}
-                onQuantityChange={handleQuantityChange}
-              />
-            ))}
-             {filteredProducts.length === 0 && (
-              <div className="col-span-full text-center py-16 text-muted-foreground">
-                <Icons.stock className="mx-auto h-12 w-12" />
-                <p className="mt-4">No products match the current filters.</p>
-              </div>
-            )}
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-full sm:w-[200px] bg-card">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={brandFilter} onValueChange={setBrandFilter}>
+              <SelectTrigger className="w-full sm:w-[200px] bg-card">
+                <SelectValue placeholder="Filter by brand" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Brands</SelectItem>
+                {brands.map((brand) => (
+                  <SelectItem key={brand} value={brand}>
+                    {brand}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </ScrollArea>
+          <ScrollArea className="h-[70vh] pr-4 -mr-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  cartQuantity={cart.get(product.id) || 0}
+                  onQuantityChange={handleQuantityChange}
+                />
+              ))}
+              {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-16 text-muted-foreground">
+                  <Icons.stock className="mx-auto h-12 w-12" />
+                  <p className="mt-4">No products match the current filters.</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* Desktop Transaction Panel */}
+        <Card className="lg:col-span-1 h-fit sticky top-8 hidden lg:flex lg:flex-col">
+            <TransactionPanel {...transactionPanelProps} />
+        </Card>
       </div>
 
-      <Card className="lg:col-span-1 h-fit sticky top-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <Icons.shoppingCart className="h-7 w-7" />
-            <span className="text-2xl">Current Transaction</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[35vh] md:h-[40vh] pr-3 -mr-3">
-            {cartItems.length > 0 ? (
-              <ul className="space-y-4">
-                {cartItems.map(item => (
-                  <li key={item.id} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">{currencyFormatter.format(item.price)}</p>
-                    </div>
-                     <Badge variant={ (cart.get(item.id) || 0) > 0 ? "secondary" : "destructive"}>
-                      Qty: {cart.get(item.id)}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-muted-foreground text-center py-10 h-full flex flex-col justify-center items-center">
-                <Icons.shop className="h-12 w-12 mb-4" />
-                <p>Your cart is empty.</p>
-                <p className="text-sm">Add products from the list.</p>
-              </div>
-            )}
-          </ScrollArea>
-        </CardContent>
-        <Separator/>
-        <CardFooter className="flex flex-col gap-4 text-sm p-4">
-            <div className='w-full flex justify-between items-center'>
-                <span className="text-muted-foreground">Sales</span>
-                <span className="font-semibold">{salesCount} items</span>
-            </div>
-            <div className='w-full flex justify-between items-center'>
-                <span className="text-muted-foreground">Returns</span>
-                <span className="font-semibold">{Math.abs(returnsCount)} items</span>
-            </div>
-             <Separator/>
-             <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
-                <span>Total:</span>
-                <span>{currencyFormatter.format(totalAmount)}</span>
-            </div>
-          <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
-            {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
-            Validate Transaction
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+       {/* Mobile Floating Cart Button & Sheet */}
+       <div className="lg:hidden fixed bottom-4 right-4 z-50">
+           <Sheet>
+                <SheetTrigger asChild>
+                    <Button size="icon" className="relative h-16 w-16 rounded-full shadow-lg">
+                        <Icons.shoppingCart className="h-8 w-8" />
+                        {totalItems > 0 && (
+                            <Badge className="absolute -top-1 -right-1 h-6 w-6 justify-center rounded-full text-base">
+                                {totalItems}
+                            </Badge>
+                        )}
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="flex flex-col h-[90vh]">
+                     <TransactionPanel {...transactionPanelProps} />
+                </SheetContent>
+            </Sheet>
+       </div>
+    </>
   );
 }
+
+    
