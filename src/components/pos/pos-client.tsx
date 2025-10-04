@@ -315,7 +315,7 @@ export function PosClient({
         </ScrollArea>
       </div>
 
-       <Card className="rounded-lg border bg-card text-card-foreground shadow-sm md:col-span-1 h-full flex-col sticky top-0 hidden md:flex">
+       <Card className="border bg-card text-card-foreground shadow-sm md:col-span-1 h-screen flex-col fixed top-0 right-0 hidden md:flex">
         <TransactionPanel {...transactionPanelProps} />
       </Card>
     </div>
