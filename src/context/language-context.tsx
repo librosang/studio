@@ -48,7 +48,7 @@ const translations = {
 
     // Dashboard Page
     'dashboard.title': 'Dashboard',
-    'dashboard.description': "Here's a summary of your activity for today, {date}.",
+    'dashboard.description': "Today's Summary: {date}",
     'dashboard.total_revenue': 'Total Revenue',
     'dashboard.items_sold': '{count} items sold',
     'dashboard.total_returns': 'Total Returns',
@@ -57,14 +57,14 @@ const translations = {
     'dashboard.restocked_items': '{count} items restocked',
     'dashboard.net_items_change': 'Net Items Change',
     'dashboard.net_inventory_movement': 'Net inventory movement',
-    'dashboard.top_selling_today': 'Top Selling Products Today',
-    'dashboard.top_selling_description': "Your most popular products based on today's sales.",
+    'dashboard.top_selling_today': 'Top Selling Today',
+    'dashboard.top_selling_description': "Your most popular products from today's sales.",
     'dashboard.no_sales_yet': 'No sales recorded yet today.',
-    'dashboard.come_back_later': "Come back after you've made some sales!",
+    'dashboard.come_back_later': "Check back after you've made some sales!",
     
     // Stock Page
-    'stock.title': 'Stock',
-    'stock.description': 'Manage your products here. Add, edit, or delete items.',
+    'stock.title': 'Stock Management',
+    'stock.description': 'Manage your products. Add, edit, or delete items.',
     'stock.filter_products': 'Filter products...',
     'stock.add_product': 'Add Product',
     'stock.no_products_found': 'No products found.',
@@ -76,10 +76,10 @@ const translations = {
     'product_form.add_title': 'Add New Product',
     'product_form.edit_title': 'Edit Product',
     'product_form.product_name': 'Product Name',
-    'product_form.name_placeholder': 'e.g. Organic Cotton T-Shirt',
+    'product_form.name_placeholder': 'e.g. Organic T-Shirt',
     'product_form.category': 'Category',
     'product_form.category_placeholder': 'e.g. Apparel',
-    'product_form.suggest_category_error': 'Please enter a product name first.',
+    'product_form.suggest_category_error': 'Enter a product name first.',
     'product_form.suggestion_applied': 'Suggestion applied!',
     'product_form.category_set_to': 'Category set to "{category}".',
     'product_form.brand': 'Brand',
@@ -89,8 +89,8 @@ const translations = {
     'product_form.barcode': 'Barcode (EAN, UPC)',
     'product_form.barcode_placeholder': 'e.g. 9780201379624',
     'product_form.scan_barcode': 'Scan Barcode',
-    'product_form.stock_quantity': 'Stock Quantity',
-    'product_form.shop_quantity': 'Shop Quantity',
+    'product_form.stock_quantity': 'Stock Qty',
+    'product_form.shop_quantity': 'Shop Qty',
     'product_form.price': 'Price',
     'product_form.add_button': 'Add Product',
     'product_form.save_button': 'Save Changes',
@@ -98,12 +98,12 @@ const translations = {
     'product_form.success_updated': 'Product has been updated.',
 
     // Transfer Form
-    'transfer_form.title': 'Transfer Stock to Shop',
-    'transfer_form.available_stock': 'Available in Stock:',
-    'transfer_form.available_shop': 'Available in Shop:',
+    'transfer_form.title': 'Transfer to Shop',
+    'transfer_form.available_stock': 'In Stock:',
+    'transfer_form.available_shop': 'In Shop:',
     'transfer_form.quantity_to_transfer': 'Quantity to Transfer',
-    'transfer_form.error_not_enough_stock': 'Cannot transfer more than available stock ({count}).',
-    'transfer_form.success': '{quantity} unit(s) of {name} transferred to shop.',
+    'transfer_form.error_not_enough_stock': 'Not enough stock ({count}).',
+    'transfer_form.success': '{quantity} x {name} transferred to shop.',
     'transfer_form.button': 'Transfer to Shop',
 
     // Data Table Row Actions (Stock)
@@ -111,29 +111,29 @@ const translations = {
     'data_table.transfer_to_shop': 'Transfer to Shop',
     'data_table.edit': 'Edit',
     'data_table.delete': 'Delete',
-    'data_table.are_you_sure': 'Are you absolutely sure?',
-    'data_table.delete_product_confirm': 'This action cannot be undone. This will permanently delete the product and its data from our servers.',
+    'data_table.are_you_sure': 'Are you sure?',
+    'data_table.delete_product_confirm': 'This will permanently delete the product.',
     'data_table.cancel': 'Cancel',
     'data_table.continue': 'Continue',
-    'data_table.product_deleted': 'Product deleted successfully.',
+    'data_table.product_deleted': 'Product deleted.',
 
     // Shop Page
     'shop.title': 'Shop',
-    'shop.description': 'Select products to sell or process returns. Use negative quantities for returns.',
+    'shop.description': 'Select products to sell or process returns.',
     'shop.filter_category': 'Filter by category',
     'shop.all_categories': 'All Categories',
     'shop.filter_brand': 'Filter by brand',
     'shop.all_brands': 'All Brands',
-    'shop.no_products_match': 'No products match the current filters.',
+    'shop.no_products_match': 'No products match filters.',
 
     // POS Page
     'pos.title': 'POS Mode',
-    'pos.description': 'Quickly process sales and returns in a cashier-friendly interface.',
-    'pos.search_placeholder': 'Search products by name, brand, or barcode...',
+    'pos.description': 'A cashier-friendly interface for quick sales.',
+    'pos.search_placeholder': 'Search or scan barcode...',
     'pos.product_added': 'Product Added',
-    'pos.product_added_desc': '{name} has been added to the cart.',
+    'pos.product_added_desc': '{name} added to cart.',
     'pos.product_not_found': 'Product not found',
-    'pos.product_not_found_desc': 'No product with barcode "{barcode}" was found.',
+    'pos.product_not_found_desc': 'Barcode "{barcode}" not found.',
     'pos.no_products_found': 'No products found.',
 
     // Transaction Panel (Shop & POS)
@@ -147,30 +147,30 @@ const translations = {
     'transaction.total': 'Total:',
     'transaction.validate': 'Validate Transaction',
     'transaction.cart_is_empty': 'Cart is empty',
-    'transaction.add_items_to_proceed': 'Add items to the cart to proceed.',
+    'transaction.add_items_to_proceed': 'Add items to the cart.',
     'transaction.failed': 'Transaction Failed',
-    'transaction.success': 'Transaction completed successfully.',
+    'transaction.success': 'Transaction completed.',
 
     // Receipt
     'receipt.title': 'Transaction Successful',
     'receipt.cashier': 'Cashier:',
-    'receipt.thank_you': 'Thank you for your purchase!',
+    'receipt.thank_you': 'Thank you!',
     'receipt.close': 'Close',
     'receipt.print': 'Print Receipt',
     
     // Log Page
     'log.title': 'Activity Log',
-    'log.description': 'A comprehensive history of all inventory changes and transactions.',
+    'log.description': 'A history of all inventory changes and transactions.',
     'log.export_excel': 'Export to Excel',
     'log.pick_date': 'Pick a date',
     'log.no_entries': 'No log entries yet.',
 
     // Accounts Page
     'accounts.title': 'Account Management',
-    'accounts.description': 'View and manage user accounts and their roles.',
+    'accounts.description': 'View and manage user accounts and roles.',
     'accounts.add_account': 'Add Account',
     'accounts.create_new_account': 'Create New Account',
-    'accounts.create_cashier_desc': 'Create a new cashier account. They will receive an invitation to set their password.',
+    'accounts.create_cashier_desc': 'Create a new cashier account.',
     'accounts.full_name': 'Full Name',
     'accounts.name_placeholder': 'John Doe',
     'accounts.email_placeholder': 'j.doe@example.com',
@@ -182,13 +182,13 @@ const translations = {
     'accounts.action_created': 'created',
     'accounts.action_updated': 'updated',
     'accounts.edit_account': 'Edit Account',
-    'accounts.delete_account_confirm': 'This action cannot be undone. This will permanently delete the account for {name}.',
-    'accounts.account_deleted': 'Account deleted successfully.',
-    'accounts.delete_primary_manager_error': "Cannot delete the primary manager account.",
+    'accounts.delete_account_confirm': 'This will permanently delete the account for {name}.',
+    'accounts.account_deleted': 'Account deleted.',
+    'accounts.delete_primary_manager_error': "Can't delete the primary manager.",
 
     // Settings Page
     'settings.title': 'Settings',
-    'settings.description': 'Manage your application settings.',
+    'settings.description': 'Manage application settings.',
 
   },
   ar: {
@@ -211,7 +211,7 @@ const translations = {
     'general.actions': 'الإجراءات',
     'general.language': 'اللغة',
     'general.english': 'English',
-    'general.arabic': 'العربية (Arabic)',
+    'general.arabic': 'العربية',
     'general.select_language': 'اختر اللغة',
     'general.not_authenticated': 'غير مصادق عليه',
     'general.must_be_logged_in': 'يجب عليك تسجيل الدخول.',
@@ -219,7 +219,7 @@ const translations = {
 
     // Login Page
     'login.title': 'ستوك فلو',
-    'login.description': 'أدخل بريدك الإلكتروني لتسجيل الدخول. (مثال: manager@test.com أو john@test.com)',
+    'login.description': 'أدخل بريدك الإلكتروني للدخول (مثال: manager@test.com)',
     'login.email_label': 'البريد الإلكتروني',
     'login.email_placeholder': 'm@example.com',
     'login.signin_button': 'تسجيل الدخول',
@@ -234,23 +234,23 @@ const translations = {
 
     // Dashboard Page
     'dashboard.title': 'لوحة التحكم',
-    'dashboard.description': 'إليك ملخص لنشاطك اليوم، {date}.',
+    'dashboard.description': "ملخص اليوم: {date}",
     'dashboard.total_revenue': 'إجمالي الإيرادات',
-    'dashboard.items_sold': 'تم بيع {count} منتج',
+    'dashboard.items_sold': 'بيع {count} منتجات',
     'dashboard.total_returns': 'إجمالي المرتجعات',
-    'dashboard.items_returned': 'تم إرجاع {count} منتج',
+    'dashboard.items_returned': 'إرجاع {count} منتجات',
     'dashboard.new_stock': 'مخزون جديد',
-    'dashboard.restocked_items': 'تم إعادة تخزين {count} منتج',
-    'dashboard.net_items_change': 'صافي تغيير المنتجات',
+    'dashboard.restocked_items': 'إعادة تخزين {count} منتجات',
+    'dashboard.net_items_change': 'صافي التغيير',
     'dashboard.net_inventory_movement': 'صافي حركة المخزون',
-    'dashboard.top_selling_today': 'المنتجات الأكثر مبيعًا اليوم',
-    'dashboard.top_selling_description': 'منتجاتك الأكثر شيوعًا بناءً على مبيعات اليوم.',
-    'dashboard.no_sales_yet': 'لم يتم تسجيل أي مبيعات حتى الآن اليوم.',
-    'dashboard.come_back_later': 'عد لاحقًا بعد إجراء بعض المبيعات!',
+    'dashboard.top_selling_today': 'الأكثر مبيعاً اليوم',
+    'dashboard.top_selling_description': 'المنتجات الأكثر شيوعًا من مبيعات اليوم.',
+    'dashboard.no_sales_yet': 'لا توجد مبيعات مسجلة اليوم.',
+    'dashboard.come_back_later': 'تحقق مرة أخرى بعد إجراء بعض المبيعات!',
 
     // Stock Page
-    'stock.title': 'المخزون',
-    'stock.description': 'إدارة منتجاتك هنا. أضف أو عدل أو احذف المنتجات.',
+    'stock.title': 'إدارة المخزون',
+    'stock.description': 'إدارة منتجاتك. إضافة أو تعديل أو حذف العناصر.',
     'stock.filter_products': 'تصفية المنتجات...',
     'stock.add_product': 'إضافة منتج',
     'stock.no_products_found': 'لم يتم العثور على منتجات.',
@@ -262,10 +262,10 @@ const translations = {
     'product_form.add_title': 'إضافة منتج جديد',
     'product_form.edit_title': 'تعديل المنتج',
     'product_form.product_name': 'اسم المنتج',
-    'product_form.name_placeholder': 'مثال: تيشيرت قطن عضوي',
+    'product_form.name_placeholder': 'مثال: تيشيرت قطني',
     'product_form.category': 'الفئة',
     'product_form.category_placeholder': 'مثال: ملابس',
-    'product_form.suggest_category_error': 'الرجاء إدخال اسم المنتج أولاً.',
+    'product_form.suggest_category_error': 'أدخل اسم المنتج أولاً.',
     'product_form.suggestion_applied': 'تم تطبيق الاقتراح!',
     'product_form.category_set_to': 'تم تعيين الفئة إلى "{category}".',
     'product_form.brand': 'العلامة التجارية',
@@ -280,16 +280,16 @@ const translations = {
     'product_form.price': 'السعر',
     'product_form.add_button': 'إضافة منتج',
     'product_form.save_button': 'حفظ التغييرات',
-    'product_form.success_added': 'تمت إضافة المنتج بنجاح.',
-    'product_form.success_updated': 'تم تحديث المنتج بنجاح.',
+    'product_form.success_added': 'تمت إضافة المنتج.',
+    'product_form.success_updated': 'تم تحديث المنتج.',
 
     // Transfer Form
-    'transfer_form.title': 'نقل المخزون إلى المتجر',
-    'transfer_form.available_stock': 'المتاح في المخزون:',
-    'transfer_form.available_shop': 'المتاح في المتجر:',
+    'transfer_form.title': 'نقل إلى المتجر',
+    'transfer_form.available_stock': 'في المخزن:',
+    'transfer_form.available_shop': 'في المتجر:',
     'transfer_form.quantity_to_transfer': 'الكمية المراد نقلها',
-    'transfer_form.error_not_enough_stock': 'لا يمكن نقل أكثر من المخزون المتاح ({count}).',
-    'transfer_form.success': 'تم نقل {quantity} وحدة من {name} إلى المتجر.',
+    'transfer_form.error_not_enough_stock': 'لا يوجد مخزون كافٍ ({count}).',
+    'transfer_form.success': 'تم نقل {quantity} x {name} إلى المتجر.',
     'transfer_form.button': 'نقل إلى المتجر',
 
     // Data Table Row Actions (Stock)
@@ -297,34 +297,34 @@ const translations = {
     'data_table.transfer_to_shop': 'نقل إلى المتجر',
     'data_table.edit': 'تعديل',
     'data_table.delete': 'حذف',
-    'data_table.are_you_sure': 'هل أنت متأكد تمامًا؟',
-    'data_table.delete_product_confirm': 'لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف المنتج وبياناته بشكل دائم من خوادمنا.',
+    'data_table.are_you_sure': 'هل أنت واثق؟',
+    'data_table.delete_product_confirm': 'سيؤدي هذا إلى حذف المنتج نهائيًا.',
     'data_table.cancel': 'إلغاء',
     'data_table.continue': 'متابعة',
-    'data_table.product_deleted': 'تم حذف المنتج بنجاح.',
+    'data_table.product_deleted': 'تم حذف المنتج.',
 
     // Shop Page
     'shop.title': 'المتجر',
-    'shop.description': 'اختر المنتجات للبيع أو معالجة المرتجعات. استخدم كميات سالبة للمرتجعات.',
+    'shop.description': 'اختر المنتجات للبيع أو لمعالجة المرتجعات.',
     'shop.filter_category': 'تصفية حسب الفئة',
     'shop.all_categories': 'جميع الفئات',
     'shop.filter_brand': 'تصفية حسب العلامة التجارية',
-    'shop.all_brands': 'جميع العلامات التجارية',
-    'shop.no_products_match': 'لا توجد منتجات تطابق المرشحات الحالية.',
+    'shop.all_brands': 'جميع الماركات',
+    'shop.no_products_match': 'لا توجد منتجات تطابق المرشحات.',
 
     // POS Page
-    'pos.title': 'وضع نقطة البيع',
-    'pos.description': 'معالجة المبيعات والمرتجعات بسرعة في واجهة سهلة للكاشير.',
-    'pos.search_placeholder': 'ابحث عن المنتجات بالاسم أو العلامة التجارية أو الباركود...',
+    'pos.title': 'نقطة البيع',
+    'pos.description': 'واجهة صديقة للكاشير للمبيعات السريعة.',
+    'pos.search_placeholder': 'ابحث أو امسح الباركود...',
     'pos.product_added': 'تمت إضافة المنتج',
     'pos.product_added_desc': 'تمت إضافة {name} إلى السلة.',
     'pos.product_not_found': 'المنتج غير موجود',
-    'pos.product_not_found_desc': 'لم يتم العثور على منتج بالباركود "{barcode}".',
+    'pos.product_not_found_desc': 'الباركود "{barcode}" غير موجود.',
     'pos.no_products_found': 'لم يتم العثور على منتجات.',
-    
+
     // Transaction Panel (Shop & POS)
     'transaction.title': 'المعاملة الحالية',
-    'transaction.cart_empty': 'عربة التسوق فارغة.',
+    'transaction.cart_empty': 'عربتك فارغة.',
     'transaction.add_products_prompt': 'أضف منتجات من القائمة.',
     'transaction.pos_start_prompt': 'انقر على منتج للبدء.',
     'transaction.sales': 'المبيعات',
@@ -333,30 +333,30 @@ const translations = {
     'transaction.total': 'الإجمالي:',
     'transaction.validate': 'تأكيد المعاملة',
     'transaction.cart_is_empty': 'العربة فارغة',
-    'transaction.add_items_to_proceed': 'أضف منتجات إلى العربة للمتابعة.',
+    'transaction.add_items_to_proceed': 'أضف منتجات إلى العربة.',
     'transaction.failed': 'فشلت المعاملة',
-    'transaction.success': 'اكتملت المعاملة بنجاح.',
+    'transaction.success': 'اكتملت المعاملة.',
 
     // Receipt
     'receipt.title': 'نجاح العملية',
     'receipt.cashier': 'الكاشير:',
-    'receipt.thank_you': 'شكرا لك على شرائك!',
+    'receipt.thank_you': 'شكرا لك!',
     'receipt.close': 'إغلاق',
-    'receipt.print': 'طباعة الإيصال',
+    'receipt.print': 'اطبع الإيصال',
     
     // Log Page
-    'log.title': 'سجل النشاط',
-    'log.description': 'سجل شامل لجميع تغييرات المخزون والمعاملات.',
+    'log.title': 'سجل النشاطات',
+    'log.description': 'سجل لجميع تغييرات المخزون والمعاملات.',
     'log.export_excel': 'تصدير إلى Excel',
-    'log.pick_date': 'اختر تاريخًا',
-    'log.no_entries': 'لا توجد إدخالات في السجل حتى الآن.',
+    'log.pick_date': 'اختر تاريخا',
+    'log.no_entries': 'لا توجد إدخالات سجل حتى الآن.',
 
     // Accounts Page
-    'accounts.title': 'إدارة الحسابات',
+    'accounts.title': 'إدارة الحساب',
     'accounts.description': 'عرض وإدارة حسابات المستخدمين وأدوارهم.',
     'accounts.add_account': 'إضافة حساب',
     'accounts.create_new_account': 'إنشاء حساب جديد',
-    'accounts.create_cashier_desc': 'أنشئ حساب كاشير جديد. سيتلقون دعوة لتعيين كلمة المرور الخاصة بهم.',
+    'accounts.create_cashier_desc': 'إنشاء حساب كاشير جديد.',
     'accounts.full_name': 'الاسم الكامل',
     'accounts.name_placeholder': 'جون دو',
     'accounts.email_placeholder': 'j.doe@example.com',
@@ -364,17 +364,17 @@ const translations = {
     'accounts.cashier_role': 'كاشير',
     'accounts.manager_role': 'مدير',
     'accounts.create_account_button': 'إنشاء حساب',
-    'accounts.account_saved_success': 'تم {action} حساب {name} بنجاح.',
+    'accounts.account_saved_success': 'تم {action} حساب {name}.',
     'accounts.action_created': 'إنشاء',
     'accounts.action_updated': 'تحديث',
-    'accounts.edit_account': 'تعديل الحساب',
-    'accounts.delete_account_confirm': 'لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف حساب {name} بشكل دائم.',
-    'accounts.account_deleted': 'تم حذف الحساب بنجاح.',
-    'accounts.delete_primary_manager_error': "لا يمكن حذف حساب المدير الأساسي.",
+    'accounts.edit_account': 'تعديل حساب',
+    'accounts.delete_account_confirm': 'سيؤدي هذا إلى حذف حساب {name} نهائيًا.',
+    'accounts.account_deleted': 'تم حذف الحساب.',
+    'accounts.delete_primary_manager_error': "لا يمكن حذف المدير الأساسي.",
 
     // Settings Page
     'settings.title': 'الإعدادات',
-    'settings.description': 'إدارة إعدادات التطبيق الخاص بك.',
+    'settings.description': 'إدارة إعدادات التطبيق.',
   },
 };
 
@@ -412,8 +412,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('language', lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    // Force a re-render to apply direction changes
-    window.location.reload();
   };
 
   const t = (key: TranslationKey, replacements: Record<string, string | number> = {}) => {
