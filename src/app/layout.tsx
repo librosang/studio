@@ -28,13 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Providers>
-        <html lang="en">
-            <body className={cn('font-body antialiased', fontBody.variable, fontHeadline.variable)}>
-                    {children}
+    <html lang="en" suppressHydrationWarning>
+        <body className={cn('font-body antialiased', fontBody.variable, fontHeadline.variable)}>
+            <Providers>
+                {children}
                 <Toaster />
-            </body>
-        </html>
-    </Providers>
+            </Providers>
+        </body>
+    </html>
   );
 }
