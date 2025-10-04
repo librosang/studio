@@ -4,6 +4,7 @@ import './globals.css';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { UserProvider } from '@/context/user-context';
+import { I18nProvider } from '@/locales/client';
 
 
 const fontBody = Inter({
@@ -24,15 +25,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: string }
 }>) {
   return (
-    <html lang="en">
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body className={cn('font-body antialiased', fontBody.variable, fontHeadline.variable)}>
-        <UserProvider>
-          {children}
-        </UserProvider>
+        <I18nProvider locale={locale}>
+          <UserProvider>
+            {children}
+          </UserProvider>
+        </I18nProvider>
         <Toaster />
       </body>
     </html>

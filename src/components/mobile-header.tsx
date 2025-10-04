@@ -14,21 +14,24 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useUser } from '@/context/user-context';
 import { UserRole } from '@/lib/types';
+import { useI18n } from '@/locales/client';
 
 
 const allNavItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
-  { href: '/stock', label: 'Stockage', icon: Icons.stock, roles: ['manager'] as UserRole[] },
-  { href: '/shop', label: 'Shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/pos', label: 'POS', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/log', label: 'Log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/accounts', label: 'Accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
+  { href: '/dashboard', label: 'nav.dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
+  { href: '/stock', label: 'nav.stock', icon: Icons.stock, roles: ['manager'] as UserRole[] },
+  { href: '/shop', label: 'nav.shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/pos', label: 'nav.pos', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/log', label: 'nav.log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/accounts', label: 'nav.accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
+  { href: '/settings', label: 'nav.settings', icon: Icons.settings, roles: ['manager', 'cashier'] as UserRole[] },
 ];
 
 export default function MobileHeader() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const { user } = useUser();
+    const t = useI18n();
     
     const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
 
@@ -65,6 +68,7 @@ export default function MobileHeader() {
             </Link>
               {navItems.map(item => {
                 const isActive = pathname === item.href;
+                const label = t(item.label as any);
                 return (
                     <Link
                         key={item.href}
@@ -76,7 +80,7 @@ export default function MobileHeader() {
                         )}
                     >
                          <item.icon className="h-5 w-5" />
-                        {item.label}
+                        {label}
                     </Link>
                 )
               })}

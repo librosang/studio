@@ -32,6 +32,7 @@ import {
   ScanBarcode,
   Fullscreen,
   Users,
+  Settings,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -61,6 +62,7 @@ export const Icons = {
   pos: MonitorSmartphone,
   log: BookText,
   accounts: Users,
+  settings: Settings,
   shoppingCart: ShoppingCart,
   add: PlusCircle,
   more: MoreHorizontal,
