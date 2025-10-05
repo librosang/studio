@@ -9,15 +9,8 @@ import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { Icons } from '@/components/icons';
 import { useTranslation } from '@/context/language-context';
+import { FullscreenContext, useFullscreen } from '@/hooks/use-fullscreen';
 
-
-// --- Fullscreen Context Logic ---
-type FullscreenContextType = {
-  isFullscreen: boolean;
-  toggleFullscreen: () => void;
-};
-
-const FullscreenContext = createContext<FullscreenContextType | undefined>(undefined);
 
 function FullscreenProvider({ children }: { children: ReactNode }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -53,16 +46,6 @@ function FullscreenProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useFullscreen() {
-  const context = useContext(FullscreenContext);
-  if (context === undefined) {
-    throw new Error('useFullscreen must be used within a FullscreenProvider');
-  }
-  return context;
-}
-// --- End Fullscreen Context Logic ---
-
-
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isFullscreen } = useFullscreen();
   const pathname = usePathname();
@@ -86,7 +69,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
 
   return (
-    <div className="flex min-h-screen flex-col bg-background sm:flex-row">
+    <div className="flex min-h-screen flex-col bg-background sm:flex-row" dir="ltr">
       {!(isPosPage && isFullscreen) && <MainSidebar />}
       <div className="flex flex-1 flex-col">
         <MobileHeader />
