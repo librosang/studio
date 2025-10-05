@@ -18,7 +18,7 @@ import { BarcodeScanner } from './barcode-scanner';
 import { ScanBarcode } from 'lucide-react';
 import { Receipt, type CartItem as ReceiptCartItem } from './receipt';
 import { ReceiptDialog } from './receipt-dialog';
-import { useFullscreen } from '@/app/(app)/layout';
+import { useFullscreen } from '@/hooks/use-fullscreen';
 import { useUser } from '@/context/user-context';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { useTranslation } from '@/context/language-context';

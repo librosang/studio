@@ -6,7 +6,7 @@ import { PosClient } from '@/components/pos/pos-client';
 import { useEffect, useState } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '@/components/icons';
-import { useFullscreen } from '@/app/(app)/layout';
+import { useFullscreen } from '@/hooks/use-fullscreen';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/context/language-context';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
