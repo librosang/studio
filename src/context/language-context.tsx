@@ -96,6 +96,9 @@ const translations = {
     'product_form.save_button': 'Save Changes',
     'product_form.success_added': 'Product has been added.',
     'product_form.success_updated': 'Product has been updated.',
+    'product_form.enter_barcode_error': 'Please enter or scan a barcode to look up.',
+    'product_form.product_found_title': 'Product Found!',
+    'product_form.populated_data_desc': 'Populated data for {name}.',
 
     // Transfer Form
     'transfer_form.title': 'Transfer to Shop',
@@ -282,6 +285,9 @@ const translations = {
     'product_form.save_button': 'حفظ التغييرات',
     'product_form.success_added': 'تمت إضافة المنتج.',
     'product_form.success_updated': 'تم تحديث المنتج.',
+    'product_form.enter_barcode_error': 'الرجاء إدخال أو مسح الباركود للبحث عنه.',
+    'product_form.product_found_title': 'تم العثور على المنتج!',
+    'product_form.populated_data_desc': 'تم ملء البيانات لـ {name}.',
 
     // Transfer Form
     'transfer_form.title': 'نقل إلى المتجر',

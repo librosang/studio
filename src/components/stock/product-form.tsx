@@ -14,14 +14,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { addProduct, updateProduct, getCategorySuggestion } from '@/lib/actions';
+import { addProduct, updateProduct, getCategorySuggestion, getProductDataFromBarcode } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { SerializableProduct } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { BarcodeScanner } from '../pos/barcode-scanner';
-import { ScanBarcode } from 'lucide-react';
+import { ScanBarcode, Search } from 'lucide-react';
 import { useUser } from '@/context/user-context';
 import { useTranslation } from '@/context/language-context';
 
@@ -45,6 +45,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const { toast } = useToast();
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isFetchingBarcode, setIsFetchingBarcode] = useState(false);
   const { user } = useUser();
   const { t } = useTranslation();
 
@@ -78,14 +79,11 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         return;
     }
     
-    // Disable submission while processing
-    form.handleSubmit(async (formData) => {
-        const result = product
-        ? await updateProduct(product.id, formData, user)
-        : await addProduct(formData, user);
+    const promise = product
+      ? updateProduct(product.id, data, user)
+      : addProduct(data, user);
 
-        // We handle this optimistically. The UI will update due to Firestore's listener.
-        // The `result` from the action is now also optimistic.
+      promise.then(result => {
         if (result.error) {
             toast({
                 title: t('general.error'),
@@ -103,7 +101,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
             }
             setOpen(false);
         }
-    })(data);
+    });
   };
 
   const handleSuggestCategory = async () => {
@@ -122,10 +120,29 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
     }
     setIsSuggesting(false);
   }
+  
+  const handleBarcodeLookup = async (barcodeValue?: string) => {
+    const barcode = barcodeValue || form.getValues('barcode');
+    if (!barcode) {
+        toast({ title: t('general.error'), description: t('product_form.enter_barcode_error'), variant: 'destructive' });
+        return;
+    }
+    setIsFetchingBarcode(true);
+    const result = await getProductDataFromBarcode(barcode);
+    if ('error' in result) {
+        toast({ title: t('general.error'), description: result.error, variant: 'destructive' });
+    } else {
+        if (result.name) form.setValue('name', result.name, { shouldValidate: true });
+        if (result.imageUrl) form.setValue('imageUrl', result.imageUrl, { shouldValidate: true });
+        toast({ title: t('product_form.product_found_title'), description: t('product_form.populated_data_desc', {name: result.name}), className: 'bg-blue-500 text-white' });
+    }
+    setIsFetchingBarcode(false);
+};
 
   const onBarcodeScanned = (barcode: string) => {
     form.setValue('barcode', barcode, { shouldValidate: true });
     setIsScannerOpen(false);
+    handleBarcodeLookup(barcode);
   }
 
   return (
@@ -200,6 +217,9 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                 <FormControl>
                   <Input placeholder={t('product_form.barcode_placeholder')} {...field} />
                 </FormControl>
+                 <Button type="button" variant="outline" className="px-3" onClick={() => handleBarcodeLookup()} disabled={isFetchingBarcode}>
+                    {isFetchingBarcode ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Search className="h-4 w-4" />}
+                </Button>
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                   <DialogTrigger asChild>
                     <Button type="button" variant="outline" className='px-3'>

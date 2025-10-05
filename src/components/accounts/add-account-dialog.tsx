@@ -14,6 +14,7 @@ import {
 import { Icons } from '../icons';
 import { AddAccountForm } from './add-account-form';
 import { useTranslation } from '@/context/language-context';
+import { ScrollArea } from '../ui/scroll-area';
 
 export function AddAccountDialog() {
   const [open, setOpen] = useState(false);
@@ -34,7 +35,11 @@ export function AddAccountDialog() {
             {t('accounts.create_cashier_desc')}
           </DialogDescription>
         </DialogHeader>
-        <AddAccountForm setOpen={setOpen} />
+        <ScrollArea className="max-h-[80vh] p-0">
+            <div className="p-6">
+                <AddAccountForm setOpen={setOpen} />
+            </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

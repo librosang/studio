@@ -90,7 +90,6 @@ export async function addProduct(formData: unknown, user: UserProfile) {
   }
   const { name, brand, category, stockQuantity, price, imageUrl, barcode, shopQuantity } = result.data;
 
-  // Optimistically return success
   const newProductData = {
       name,
       brand,
@@ -114,12 +113,11 @@ export async function addProduct(formData: unknown, user: UserProfile) {
       );
   }).catch(error => {
       console.error("Error adding product: ", error);
-      // In an offline-first app, we might want a centralized error reporting system
   });
 
   revalidatePath('/stock');
   revalidatePath('/dashboard');
-  return { data: { id: 'temp-id', ...result.data } }; // Return optimistic data
+  return { data: { id: 'temp-id', ...result.data } };
 }
 
 
@@ -169,7 +167,7 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
     revalidatePath('/shop');
     revalidatePath('/pos');
     revalidatePath('/dashboard');
-    return { data: { id, ...result.data } }; // Optimistic response
+    return { data: { id, ...result.data } };
 }
 
 export async function deleteProduct(id: string, user: UserProfile) {
@@ -200,7 +198,7 @@ export async function deleteProduct(id: string, user: UserProfile) {
     revalidatePath('/shop');
     revalidatePath('/pos');
     revalidatePath('/dashboard');
-    return { data: 'Product deletion initiated.' }; // Optimistic response
+    return { data: 'Product deletion initiated.' };
 }
 
 
@@ -231,7 +229,7 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
     }).then(() => {
       addLog(
         'TRANSFER',
-        `Stock -> Shop`,
+        'Stock -> Shop',
         [{ productName: product.name, quantityChange: quantityToTransfer, price: product.price }],
         user
       );
@@ -239,15 +237,13 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
 
   }).catch(error => {
       console.error("Error transferring stock: ", error);
-      // Here you might want to show a toast, but the promise is detached from the UI.
-      // A global error handler/emitter would be better. For now, we log it.
   });
   
   revalidatePath('/stock');
   revalidatePath('/shop');
   revalidatePath('/pos');
   revalidatePath('/log');
-  return { success: true }; // Optimistic response
+  return { success: true };
 }
 
 // --- Shop Actions ---
@@ -277,8 +273,6 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
               const newShopQuantity = product.shopQuantity - quantityChangeInCart;
 
               if (quantityChangeInCart > 0 && newShopQuantity < 0) {
-                  // This error will be in the promise chain but not easily bubbled to UI
-                  // without significant refactoring. It will log to console.
                   throw new Error(`Not enough stock for ${product.name} in the shop.`);
               }
               
@@ -307,7 +301,7 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
   revalidatePath('/log');
   revalidatePath('/dashboard');
   
-  return { data: 'Transaction processing initiated.' }; // Optimistic response
+  return { data: 'Transaction processing initiated.' };
 }
 
 
@@ -438,6 +432,35 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   };
 }
 
+
+// --- Open Food Facts API ---
+export async function getProductDataFromBarcode(barcode: string): Promise<{ name: string; imageUrl: string } | { error: string }> {
+  if (!barcode) {
+    return { error: 'Barcode is required.' };
+  }
+  try {
+    const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+    if (!response.ok) {
+      return { error: 'Failed to fetch product data from Open Food Facts.' };
+    }
+    const data = await response.json();
+    if (data.status === 0 || !data.product) {
+      return { error: `Product with barcode ${barcode} not found.` };
+    }
+
+    const name = data.product.product_name || data.product.product_name_en || '';
+    const imageUrl = data.product.image_front_url || data.product.image_url || '';
+
+    if (!name) {
+      return { error: 'Product name not found in API response.' };
+    }
+
+    return { name, imageUrl };
+  } catch (error) {
+    console.error('Open Food Facts API error:', error);
+    return { error: 'An unexpected error occurred while fetching product data.' };
+  }
+}
 
 // --- Account Management Actions ---
 export async function getAccounts(user: UserProfile): Promise<UserProfile[]> {

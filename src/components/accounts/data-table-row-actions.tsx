@@ -34,6 +34,7 @@ import { deleteAccount } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/context/user-context';
 import { useTranslation } from '@/context/language-context';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface DataTableRowActionsProps {
   row: {
@@ -122,10 +123,14 @@ export function DataTableRowActions({
           <DialogHeader>
             <DialogTitle>{t('accounts.edit_account')}</DialogTitle>
           </DialogHeader>
-          <AddAccountForm
-            account={account}
-            setOpen={setIsEditDialogOpen}
-          />
+            <ScrollArea className="max-h-[80vh] p-0">
+                <div className="p-6">
+                    <AddAccountForm
+                        account={account}
+                        setOpen={setIsEditDialogOpen}
+                    />
+                </div>
+            </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
