@@ -66,8 +66,7 @@ function TransactionPanel({
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow p-0 flex flex-col">
-                <div className="h-full p-6">
-                    <ScrollArea className="h-full pr-3 -mr-3">
+                <ScrollArea className="flex-1 p-6">
                         {cartItems.length > 0 ? (
                             <ul className="space-y-4">
                                 {cartItems.map(item => {
@@ -99,8 +98,7 @@ function TransactionPanel({
                                 <p>{t('transaction.pos_start_prompt')}</p>
                             </div>
                         )}
-                    </ScrollArea>
-                </div>
+                </ScrollArea>
             </CardContent>
             <Separator />
             <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
@@ -339,7 +337,7 @@ export function PosClient({
     </div>
     
     {/* Mobile Floating Cart Button & Sheet */}
-    <div className="md:hidden fixed bottom-4 right-4 z-50">
+    <div className="lg:hidden fixed bottom-4 right-4 z-50">
         <Sheet>
             <SheetTrigger asChild>
                 <Button size="icon" className="relative h-16 w-16 rounded-full shadow-lg">

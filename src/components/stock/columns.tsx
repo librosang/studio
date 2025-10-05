@@ -37,12 +37,18 @@ export const columns: ColumnDef<SerializableProduct>[] = [
   {
     accessorKey: 'brand',
     header: 'Brand',
+    meta: {
+      className: "hidden sm:table-cell"
+    }
   },
   {
     accessorKey: 'category',
     header: 'Category',
     cell: ({ row }) => {
       return <Badge variant="secondary">{row.original.category}</Badge>;
+    },
+    meta: {
+        className: "hidden lg:table-cell"
     }
   },
   {
@@ -87,6 +93,9 @@ export const columns: ColumnDef<SerializableProduct>[] = [
       const color = quantity < 10 ? 'text-destructive' : 'text-foreground';
       return <div className={`text-right font-medium ${color}`}>{quantity}</div>;
     },
+    meta: {
+        className: "hidden md:table-cell"
+    }
   },
   {
     accessorKey: 'shopQuantity',
@@ -109,6 +118,9 @@ export const columns: ColumnDef<SerializableProduct>[] = [
       const color = quantity < 10 ? 'text-destructive' : 'text-foreground';
       return <div className={`text-right font-medium ${color}`}>{quantity}</div>;
     },
+    meta: {
+        className: "hidden md:table-cell"
+    }
   },
     {
     accessorKey: 'updatedAt',
@@ -118,7 +130,7 @@ export const columns: ColumnDef<SerializableProduct>[] = [
       return <span className="whitespace-nowrap">{format(date, 'PPP p')}</span>
     },
     meta: {
-      className: "hidden md:table-cell"
+      className: "hidden lg:table-cell"
     }
   },
   {
