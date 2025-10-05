@@ -25,7 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProductForm } from './product-form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Icons } from '../icons';
 import { seedDatabase } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -98,6 +98,9 @@ export function ProductsDataTable<TData, TValue>({
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>{t('product_form.add_title')}</DialogTitle>
+               <DialogDescription>
+                Fill in the details below to add a new product to your inventory.
+              </DialogDescription>
             </DialogHeader>
              <ScrollArea className="max-h-[80vh] p-0">
                 <div className="p-6">

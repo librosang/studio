@@ -39,7 +39,7 @@ export function OnlineStatusIndicator() {
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isOnline ? 'Online' : 'Offline'}</p>
+          <p>{isOnline ? 'Online: Data is syncing.' : 'Offline: Changes are saved locally.'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

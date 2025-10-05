@@ -14,6 +14,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -124,6 +125,9 @@ export function DataTableRowActions<TData>({
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>{t('product_form.edit_title')}</DialogTitle>
+              <DialogDescription>
+                Make changes to your product here. Click save when you're done.
+              </DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[80vh] p-0">
               <div className="p-6">
@@ -136,6 +140,9 @@ export function DataTableRowActions<TData>({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{t('transfer_form.title')}</DialogTitle>
+             <DialogDescription>
+                Move items from your main stock to the shop floor.
+              </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[80vh] p-0">
             <div className="p-6">

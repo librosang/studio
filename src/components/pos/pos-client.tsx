@@ -216,14 +216,6 @@ export function PosClient({
                 cashierName: user.name,
             });
 
-            // This is now handled by the realtime listener
-            // const updatedProducts = products.map(p => {
-            //     if(cart.has(p.id)){
-            //     return {...p, shopQuantity: p.shopQuantity - (cart.get(p.id) || 0)}
-            //     }
-            //     return p;
-            // })
-            // setProducts(updatedProducts);
             setCart(new Map());
         }
     }).finally(() => {
@@ -370,5 +362,3 @@ export function PosClient({
     </>
   );
 }
-
-    

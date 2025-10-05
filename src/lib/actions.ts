@@ -18,30 +18,12 @@ import {
   getCountFromServer,
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 import { db } from './firebase';
-import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile } from './types';
+import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile, ProductFormData } from './types';
+import { ProductSchema, UserSchema } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
 import { startOfDay, endOfDay } from 'date-fns';
-
-const ProductSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  brand: z.string().min(1, 'Brand is required'),
-  category: z.string().min(1, 'Category is required'),
-  stockQuantity: z.coerce.number().int('Stock Quantity must be an integer'),
-  shopQuantity: z.coerce.number().int('Shop Quantity must be an integer'),
-  price: z.coerce.number().positive('Price must be a positive number'),
-  imageUrl: z.string().url('Image URL must be a valid URL.').optional().or(z.literal('')),
-  barcode: z.string().optional().or(z.literal('')),
-});
-
-const UserSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    role: z.enum(['manager', 'cashier']),
-});
 
 // --- Log Helper ---
 async function addLog(
@@ -71,10 +53,10 @@ export async function getProducts(): Promise<SerializableProduct[]> {
   const q = query(productsCol, orderBy('updatedAt', 'desc'));
   const productSnapshot = await getDocs(q);
   const productList = productSnapshot.docs.map(doc => {
-    const data = doc.data() as Product;
+    const data = doc.data();
     return {
-      ...data,
       id: doc.id,
+      ...data,
       createdAt: data.createdAt.toDate().toISOString(),
       updatedAt: data.updatedAt.toDate().toISOString(),
     }
@@ -82,7 +64,7 @@ export async function getProducts(): Promise<SerializableProduct[]> {
   return productList;
 }
 
-export async function addProduct(formData: unknown, user: UserProfile) {
+export async function addProduct(formData: ProductFormData, user: UserProfile) {
   if (user.role !== 'manager') return { error: 'Permission denied.' };
   const result = ProductSchema.safeParse(formData);
   if (!result.success) {
@@ -121,7 +103,7 @@ export async function addProduct(formData: unknown, user: UserProfile) {
 }
 
 
-export async function updateProduct(id: string, formData: unknown, user: UserProfile) {
+export async function updateProduct(id: string, formData: ProductFormData, user: UserProfile) {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     const result = ProductSchema.safeParse(formData);
     if (!result.success) {
@@ -149,14 +131,12 @@ export async function updateProduct(id: string, formData: unknown, user: UserPro
 
             updateDoc(productRef, updatedData).then(() => {
                 console.log("Product updated");
-                if (quantityChange !== 0) {
-                    addLog(
-                        'UPDATE',
-                        `Updated: ${name}`,
-                        [{ productName: name, quantityChange: quantityChange, price }],
-                        user
-                    );
-                }
+                 addLog(
+                    'UPDATE',
+                    `Updated: ${name}`,
+                    [{ productName: name, quantityChange: quantityChange, price }],
+                    user
+                );
             });
         }
     }).catch(error => {
@@ -249,7 +229,9 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
 // --- Shop Actions ---
 
 export async function getUniqueCategoriesAndBrands() {
-  const products = await getProducts();
+  const productsCol = collection(db, 'products');
+  const productSnapshot = await getDocs(productsCol);
+  const products = productSnapshot.docs.map(doc => doc.data());
   const categories = [...new Set(products.map(p => p.category))];
   const brands = [...new Set(products.map(p => p.brand))];
   return { categories, brands };
@@ -465,21 +447,25 @@ export async function getProductDataFromBarcode(barcode: string): Promise<{ name
 // --- Account Management Actions ---
 export async function getAccounts(user: UserProfile): Promise<UserProfile[]> {
     if (user.role !== 'manager') return [];
-    // This is a mock implementation. In a real app, you would fetch from Firestore.
-    return [
+    // This is a mock implementation. In a real app, you would fetch from Firestore users collection.
+    // For now, we return a static list of mock users.
+    const mockUsers: UserProfile[] = [
         { id: '1', name: 'Admin Manager', email: 'manager@test.com', role: 'manager' },
         { id: '2', name: 'John Cashier', email: 'john@test.com', role: 'cashier' },
         { id: '3', name: 'Jane Cashier', email: 'jane@test.com', role: 'cashier' },
     ];
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockUsers;
 }
 
 export async function addAccount(formData: unknown, user: UserProfile) {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
-
-    const NewAccountSchema = z.object({
-        name: z.string().min(2, 'Name is required'),
-        email: z.string().email('Invalid email address'),
-        role: z.enum(['cashier']), // Managers can only create cashiers
+    
+    // In a real app, you would not define this schema here. This is just for validation.
+    // The role should only be 'cashier' as only managers can create accounts.
+    const NewAccountSchema = UserSchema.pick({ name: true, email: true }).extend({
+        role: z.literal('cashier'),
     });
     
     const result = NewAccountSchema.safeParse(formData);
@@ -487,8 +473,10 @@ export async function addAccount(formData: unknown, user: UserProfile) {
         return { error: result.error.flatten().fieldErrors };
     }
 
-    // This is a mock implementation. In a real app, you would use Firebase Admin SDK to create a user.
-    console.log("Creating new user:", result.data);
+    // TODO: Implement actual user creation with Firebase Admin SDK on a secure backend.
+    // e.g., call a Cloud Function that uses admin.auth().createUser(...)
+    // and then creates a corresponding user profile document in Firestore.
+    console.log("MOCK: Creating new user:", result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} created.` };
 }
@@ -496,19 +484,17 @@ export async function addAccount(formData: unknown, user: UserProfile) {
 export async function updateAccount(id: string, formData: unknown, user: UserProfile) {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
 
-    const UpdateAccountSchema = z.object({
-        name: z.string().min(2, 'Name is required'),
-        email: z.string().email('Invalid email address'),
-        role: z.enum(['cashier', 'manager']),
-    });
+    const UpdateAccountSchema = UserSchema.pick({ name: true, email: true, role: true });
 
     const result = UpdateAccountSchema.safeParse(formData);
     if (!result.success) {
         return { error: result.error.flatten().fieldErrors };
     }
     
-    // This is a mock implementation.
-    console.log(`Updating user ${id}:`, result.data);
+    // TODO: Implement actual user update with Firebase Admin SDK on a secure backend.
+    // e.g., call a Cloud Function that uses admin.auth().updateUser(...)
+    // and then updates the corresponding user profile document in Firestore.
+    console.log(`MOCK: Updating user ${id}:`, result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} updated.` };
 }
@@ -516,15 +502,15 @@ export async function updateAccount(id: string, formData: unknown, user: UserPro
 export async function deleteAccount(id: string, user: UserProfile) {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     
-    // You cannot delete the main manager account
+    // You cannot delete the main manager account in this mock setup
     if (id === '1') {
         return { error: "accounts.delete_primary_manager_error" };
     }
     
-    // This is a mock implementation.
-    console.log(`Deleting user ${id}`);
+    // TODO: Implement actual user deletion with Firebase Admin SDK on a secure backend.
+    // e.g., call a Cloud Function that uses admin.auth().deleteUser(...)
+    // and then deletes the corresponding user profile document from Firestore.
+    console.log(`MOCK: Deleting user ${id}`);
     revalidatePath('/accounts');
     return { data: 'User deleted successfully.' };
 }
-
-    

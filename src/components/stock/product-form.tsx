@@ -3,7 +3,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -16,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { addProduct, updateProduct, getCategorySuggestion, getProductDataFromBarcode } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { SerializableProduct } from '@/lib/types';
+import { SerializableProduct, ProductFormData, ProductSchema } from '@/lib/types';
 import { Icons } from '../icons';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -24,17 +23,6 @@ import { BarcodeScanner } from '../pos/barcode-scanner';
 import { ScanBarcode, Search } from 'lucide-react';
 import { useUser } from '@/context/user-context';
 import { useTranslation } from '@/context/language-context';
-
-const FormSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  brand: z.string().min(2, 'Brand must be at least 2 characters.'),
-  category: z.string().min(2, 'Category must be at least 2 characters.'),
-  stockQuantity: z.coerce.number().int(),
-  shopQuantity: z.coerce.number().int(),
-  price: z.coerce.number().positive('Price must be a positive number.'),
-  imageUrl: z.string().url('Must be a valid URL.').optional().or(z.literal('')),
-  barcode: z.string().optional().or(z.literal('')),
-});
 
 type ProductFormProps = {
   product?: SerializableProduct;
@@ -50,8 +38,8 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const { t } = useTranslation();
 
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(ProductSchema),
     defaultValues: product ? {
       name: product.name,
       brand: product.brand,
@@ -73,7 +61,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+  const onSubmit = (data: ProductFormData) => {
     if (!user) {
         toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: 'destructive' });
         return;

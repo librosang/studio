@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -122,6 +123,9 @@ export function DataTableRowActions({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{t('accounts.edit_account')}</DialogTitle>
+             <DialogDescription>
+                {t('accounts.create_cashier_desc')}
+              </DialogDescription>
           </DialogHeader>
             <ScrollArea className="max-h-[80vh] p-0">
                 <div className="p-6">
