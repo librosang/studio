@@ -26,7 +26,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Icons } from '../icons';
 import { UserProfile } from '@/lib/types';
@@ -36,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/context/user-context';
 import { useTranslation } from '@/context/language-context';
 import { ScrollArea } from '../ui/scroll-area';
+import { AlertDialogTrigger } from '@radix-ui/react-alert-dialog';
 
 interface DataTableRowActionsProps {
   row: {
