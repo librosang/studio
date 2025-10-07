@@ -30,18 +30,19 @@ export function TenderCalculator({
     totalAmount,
     onConfirm
 }: TenderCalculatorProps) {
-    const [tenderedAmount, setTenderedAmount] = useState('0.00');
+    const [tenderedAmount, setTenderedAmount] = useState('0');
     const { formatCurrency } = useCurrency();
 
+    const tenderedValue = parseFloat(tenderedAmount) || 0;
+
     const changeDue = useMemo(() => {
-        const tendered = parseFloat(tenderedAmount);
-        if (isNaN(tendered) || tendered < totalAmount) {
+        if (tenderedValue < totalAmount) {
             return 0;
         }
-        return tendered - totalAmount;
-    }, [tenderedAmount, totalAmount]);
+        return tenderedValue - totalAmount;
+    }, [tenderedValue, totalAmount]);
     
-    const canConfirm = parseFloat(tenderedAmount) >= totalAmount;
+    const canConfirm = tenderedValue >= totalAmount;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -59,7 +60,7 @@ export function TenderCalculator({
                         <div className="space-y-1">
                             <p className="text-muted-foreground">Amount Tendered</p>
                             <p className="text-5xl font-bold font-mono tracking-tighter h-14">
-                                {formatCurrency(parseFloat(tenderedAmount))}
+                                {formatCurrency(tenderedValue)}
                             </p>
                         </div>
                         <div className="space-y-1">
@@ -74,7 +75,7 @@ export function TenderCalculator({
                 </div>
                 
                 {/* Right Side: Receipt Preview and Actions */}
-                <div className="bg-muted/30 p-6 flex flex-col justify-between rounded-r-lg">
+                <div className="bg-muted/30 p-6 flex flex-col justify-between md:rounded-r-lg">
                     <div className="flex-1">
                        <h3 className="text-xl font-semibold mb-4">Cart Summary</h3>
                        <ReceiptPreview cartItems={cartItems} total={totalAmount} />

@@ -458,10 +458,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language, {
+    const formatted = new Intl.NumberFormat(language, {
         style: 'currency',
         currency: currency,
     }).format(value);
+
+    if (currency === 'MAD') {
+        return formatted.replace('MAD', 'DH');
+    }
+
+    return formatted;
   }
 
   const t = (key: TranslationKey, replacements: Record<string, string | number> = {}) => {

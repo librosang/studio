@@ -11,37 +11,47 @@ type NumpadProps = {
 export function Numpad({ value, onChange }: NumpadProps) {
   
   const handleNumberClick = (num: string) => {
-    if (value.replace('.', '').length >= 8) return; // Limit number of digits
+    // Treat as string concatenation, limited to 2 decimal places
+    const [integer, fraction] = value.split('.');
     
-    if (value === '0.00' && num !== '.') {
-      onChange(parseFloat(num).toFixed(2).slice(0,-2) + "." + num);
-      return;
+    if (num === '.' && value.includes('.')) {
+        return;
     }
     
-    // Treat as string concatenation
-    const currentStringValue = value.replace('.', '');
-    const newStringValue = currentStringValue + num;
-    const newFloat = parseFloat(newStringValue) / 100;
-    onChange(newFloat.toFixed(2));
+    if (num === '.') {
+        onChange(value + '.');
+        return;
+    }
+
+    if (fraction && fraction.length >= 2) {
+        return; // Don't allow more than 2 decimal places
+    }
+
+    if (value === '0') {
+      if (num === '.') {
+        onChange('0.');
+      } else {
+        onChange(num);
+      }
+    } else {
+      onChange(value + num);
+    }
   };
 
   const handleBackspace = () => {
-    const currentStringValue = value.replace('.', '');
-    if (currentStringValue.length === 1) {
-      onChange('0.00');
-      return;
+    if (value.length > 1) {
+      onChange(value.slice(0, -1));
+    } else {
+      onChange('0');
     }
-    const newStringValue = currentStringValue.slice(0, -1);
-    const newFloat = parseFloat(newStringValue) / 100;
-    onChange(newFloat.toFixed(2));
   };
 
   const handleClear = () => {
-    onChange('0.00');
+    onChange('0');
   };
 
   const handleQuickTender = (amount: number) => {
-      const currentAmount = parseFloat(value);
+      const currentAmount = parseFloat(value) || 0;
       const newAmount = currentAmount + amount;
       onChange(newAmount.toFixed(2));
   }
@@ -50,7 +60,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
     '7', '8', '9',
     '4', '5', '6',
     '1', '2', '3',
-    '00', '0', 
+    '00', '0', '.'
   ];
   
   const quickTenderValues = [5, 10, 20, 50, 100];
@@ -70,14 +80,6 @@ export function Numpad({ value, onChange }: NumpadProps) {
         ))}
          <Button
             variant="outline"
-            className="h-16 text-2xl font-bold"
-            onClick={() => handleNumberClick('.')}
-            disabled={value.includes('.')}
-          >
-            .
-        </Button>
-         <Button
-            variant="outline"
             className="h-16"
             onClick={handleBackspace}
         >
@@ -85,7 +87,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
         </Button>
          <Button
           variant="destructive"
-          className="h-16 text-lg font-bold"
+          className="h-16 text-lg font-bold col-span-2"
           onClick={handleClear}
         >
           C
