@@ -11,6 +11,7 @@ const translations = {
     'nav.stock': 'Stock',
     'nav.shop': 'Shop',
     'nav.pos': 'POS',
+    'nav.expenses': 'Expenses',
     'nav.log': 'Log',
     'nav.accounts': 'Accounts',
     'nav.settings': 'Settings',
@@ -125,6 +126,28 @@ const translations = {
     'data_table.cancel': 'Cancel',
     'data_table.continue': 'Continue',
     'data_table.product_deleted': 'Product deleted.',
+    
+    // Expenses
+    'expenses.title': 'Expense Management',
+    'expenses.description': 'Track and manage all your business expenses.',
+    'expenses.add_expense': 'Add Expense',
+    'expenses.no_expenses': 'No expenses recorded yet.',
+    'expenses.add_first_expense': 'Add your first expense to get started.',
+    'expenses.date': 'Date',
+    'expenses.category': 'Category',
+    'expenses.description_label': 'Description (Optional)',
+    'expenses.amount': 'Amount',
+    'expenses.category_placeholder': 'e.g., Rent, Utilities',
+    'expenses.description_placeholder': 'e.g., Office rent for May',
+    'expenses.delete_expense_confirm': 'This will permanently delete the expense.',
+    'expenses.expense_deleted': 'Expense deleted.',
+    'expenses.add_new_title': 'Add New Expense',
+    'expenses.add_new_desc': 'Fill in the details to record a new expense.',
+    'expenses.edit_title': 'Edit Expense',
+    'expenses.edit_desc': 'Update the details of your expense.',
+    'expenses.expense_saved': 'Expense has been saved.',
+    'expenses.save_button': 'Save Expense',
+    
 
     // Shop Page
     'shop.title': 'Shop',
@@ -208,6 +231,7 @@ const translations = {
     'nav.stock': 'المخزون',
     'nav.shop': 'المتجر',
     'nav.pos': 'نقطة البيع',
+    'nav.expenses': 'المصاريف',
     'nav.log': 'السجل',
     'nav.accounts': 'الحسابات',
     'nav.settings': 'الإعدادات',
@@ -313,7 +337,7 @@ const translations = {
     'transfer_form.success': 'تم نقل {quantity} x {name} إلى المتجر.',
     'transfer_form.button': 'نقل إلى المتجر',
 
-    // Data Table Row Actions (Stock)
+    // Data Table Row Actions (Stock & Expenses)
     'data_table.open_menu': 'فتح القائمة',
     'data_table.transfer_to_shop': 'نقل إلى المتجر',
     'data_table.edit': 'تعديل',
@@ -323,6 +347,28 @@ const translations = {
     'data_table.cancel': 'إلغاء',
     'data_table.continue': 'متابعة',
     'data_table.product_deleted': 'تم حذف المنتج.',
+    
+     // Expenses
+    'expenses.title': 'إدارة المصاريف',
+    'expenses.description': 'تتبع وإدارة جميع نفقات عملك.',
+    'expenses.add_expense': 'إضافة مصروف',
+    'expenses.no_expenses': 'لم يتم تسجيل أي مصاريف حتى الآن.',
+    'expenses.add_first_expense': 'أضف أول مصروف لك للبدء.',
+    'expenses.date': 'التاريخ',
+    'expenses.category': 'الفئة',
+    'expenses.description_label': 'الوصف (اختياري)',
+    'expenses.amount': 'المبلغ',
+    'expenses.category_placeholder': 'مثال: الإيجار، الفواتير',
+    'expenses.description_placeholder': 'مثال: إيجار المكتب لشهر مايو',
+    'expenses.delete_expense_confirm': 'سيؤدي هذا إلى حذف المصروف نهائيًا.',
+    'expenses.expense_deleted': 'تم حذف المصروف.',
+    'expenses.add_new_title': 'إضافة مصروف جديد',
+    'expenses.add_new_desc': 'املأ التفاصيل لتسجيل مصروف جديد.',
+    'expenses.edit_title': 'تعديل المصروف',
+    'expenses.edit_desc': 'تحديث تفاصيل المصروف.',
+    'expenses.expense_saved': 'تم حفظ المصروف.',
+    'expenses.save_button': 'حفظ المصروف',
+
 
     // Shop Page
     'shop.title': 'المتجر',

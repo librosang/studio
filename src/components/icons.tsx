@@ -35,6 +35,7 @@ import {
   Settings,
   Wifi,
   WifiOff,
+  Receipt,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -89,4 +90,5 @@ export const Icons = {
   fullscreen: Fullscreen,
   online: Wifi,
   offline: WifiOff,
+  receipt: Receipt,
 };

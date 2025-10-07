@@ -34,7 +34,26 @@ export type Product = Omit<ProductFormData, 'expiryDate'> & {
   expiryDate?: Timestamp | null;
 };
 
-export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION' | 'TRANSFER';
+export const ExpenseSchema = z.object({
+  date: z.string(),
+  category: z.string().min(2, 'Category is required.'),
+  description: z.string().optional(),
+  amount: z.coerce.number().positive('Amount must be a positive number.'),
+});
+export type ExpenseFormData = z.infer<typeof ExpenseSchema>;
+
+export type Expense = {
+  id: string;
+  date: Timestamp;
+  category: string;
+  description?: string;
+  amount: number;
+  userId: string;
+};
+export type SerializableExpense = Omit<Expense, 'date'> & { date: string };
+
+
+export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION' | 'TRANSFER' | 'EXPENSE';
 
 export type LogEntry = {
   id: string;

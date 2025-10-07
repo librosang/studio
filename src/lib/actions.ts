@@ -19,8 +19,8 @@ import {
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { db } from './firebase';
-import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile, ProductFormData } from './types';
-import { ProductSchema, UserSchema } from './types';
+import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile, ProductFormData, ExpenseFormData } from './types';
+import { ProductSchema, UserSchema, ExpenseSchema } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
 import { startOfDay, endOfDay, differenceInDays } from 'date-fns';
@@ -538,4 +538,75 @@ export async function deleteAccount(id: string, user: UserProfile) {
     console.log(`MOCK: Deleting user ${id}`);
     revalidatePath('/accounts');
     return { data: 'User deleted successfully.' };
+}
+
+
+// --- Expense Actions ---
+
+export async function addExpense(formData: ExpenseFormData, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+    const result = ExpenseSchema.safeParse(formData);
+    if (!result.success) {
+        return { error: result.error.flatten().fieldErrors };
+    }
+
+    const { date, category, description, amount } = result.data;
+    const newExpense = {
+        date: Timestamp.fromDate(new Date(date)),
+        category,
+        description: description || '',
+        amount,
+        userId: user.id,
+    };
+
+    try {
+        const docRef = await addDoc(collection(db, 'expenses'), newExpense);
+        await addLog('EXPENSE', `Expense: ${category}`, [{ productName: description || category, quantityChange: 1, price: -amount }], user);
+        revalidatePath('/expenses');
+        revalidatePath('/dashboard');
+        return { data: { id: docRef.id, ...result.data } };
+    } catch (e) {
+        console.error("Error adding expense: ", e);
+        return { error: "Failed to add expense." };
+    }
+}
+
+export async function updateExpense(id: string, formData: ExpenseFormData, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+    const result = ExpenseSchema.safeParse(formData);
+    if (!result.success) {
+        return { error: result.error.flatten().fieldErrors };
+    }
+
+    const { date, category, description, amount } = result.data;
+    const expenseRef = doc(db, 'expenses', id);
+    const updatedData = {
+        date: Timestamp.fromDate(new Date(date)),
+        category,
+        description: description || '',
+        amount,
+    };
+
+    try {
+        await updateDoc(expenseRef, updatedData);
+        revalidatePath('/expenses');
+        return { data: { id, ...result.data } };
+    } catch (e) {
+        console.error("Error updating expense: ", e);
+        return { error: "Failed to update expense." };
+    }
+}
+
+
+export async function deleteExpense(id: string, user: UserProfile) {
+    if (user.role !== 'manager') return { error: 'Permission denied.' };
+    const expenseRef = doc(db, 'expenses', id);
+    try {
+        await deleteDoc(expenseRef);
+        revalidatePath('/expenses');
+        return { data: 'Expense deleted successfully.' };
+    } catch (e) {
+        console.error("Error deleting expense: ", e);
+        return { error: "Failed to delete expense." };
+    }
 }

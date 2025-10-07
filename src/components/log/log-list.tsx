@@ -18,6 +18,7 @@ const logIconMap: Record<LogType, Icon> = {
   DELETE: Icons.delete,
   TRANSACTION: Icons.transaction,
   TRANSFER: ArrowRightLeft,
+  EXPENSE: Icons.receipt,
 };
 
 const logColorMap: Record<LogType, string> = {
@@ -26,6 +27,7 @@ const logColorMap: Record<LogType, string> = {
   DELETE: 'bg-red-500',
   TRANSACTION: 'bg-green-500',
   TRANSFER: 'bg-purple-500',
+  EXPENSE: 'bg-orange-500',
 }
 
 function LogItem({ log }: { log: SerializableLogEntry }) {
@@ -65,7 +67,7 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
                 <div key={index} className="flex justify-between items-center border-b border-dashed pb-1">
                     <span>{item.productName}</span>
                     <span className={`font-medium ${item.quantityChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.quantityChange > 0 ? '+' : ''}{item.quantityChange}
+                        {item.price < 0 ? '-' : ''}{Math.abs(item.price)}
                     </span>
                 </div>
             ))}
