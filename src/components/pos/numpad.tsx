@@ -1,7 +1,7 @@
 
 'use client';
 import { Button } from '@/components/ui/button';
-import { Backspace } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 type NumpadProps = {
   value: string;
@@ -67,7 +67,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
             className="h-16 col-span-2"
             onClick={handleBackspace}
         >
-            <Backspace className="h-8 w-8" />
+            <ArrowLeft className="h-8 w-8" />
         </Button>
       </div>
       <div className="col-span-1 grid grid-rows-7 gap-2">
