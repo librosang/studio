@@ -51,6 +51,7 @@ export default function SettingsPage() {
                         <SelectItem value="JPY">JPY (¥)</SelectItem>
                         <SelectItem value="GBP">GBP (£)</SelectItem>
                         <SelectItem value="CAD">CAD (C$)</SelectItem>
+                        <SelectItem value="MAD">MAD (DH)</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
