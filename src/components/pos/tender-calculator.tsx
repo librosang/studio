@@ -31,7 +31,7 @@ export function TenderCalculator({
     onConfirm
 }: TenderCalculatorProps) {
     const [tenderedAmount, setTenderedAmount] = useState('0.00');
-    const { currency, formatCurrency } = useCurrency();
+    const { formatCurrency } = useCurrency();
 
     const changeDue = useMemo(() => {
         const tendered = parseFloat(tenderedAmount);
@@ -45,7 +45,7 @@ export function TenderCalculator({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl grid-cols-2 p-0 gap-0">
+            <DialogContent className="max-w-4xl grid-cols-1 md:grid-cols-2 p-0 gap-0">
                 {/* Left Side: Numpad and Calculation */}
                 <div className="p-6 flex flex-col justify-between">
                     <DialogHeader>

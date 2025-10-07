@@ -9,22 +9,30 @@ type NumpadProps = {
 };
 
 export function Numpad({ value, onChange }: NumpadProps) {
+  
   const handleNumberClick = (num: string) => {
-    // Treat value as cents
-    const currentCentsString = value.replace('.', '');
-    const newCentsString = currentCentsString + num;
-    const newFloat = parseFloat(newCentsString) / 100;
+    if (value.replace('.', '').length >= 8) return; // Limit number of digits
+    
+    if (value === '0.00' && num !== '.') {
+      onChange(parseFloat(num).toFixed(2).slice(0,-2) + "." + num);
+      return;
+    }
+    
+    // Treat as string concatenation
+    const currentStringValue = value.replace('.', '');
+    const newStringValue = currentStringValue + num;
+    const newFloat = parseFloat(newStringValue) / 100;
     onChange(newFloat.toFixed(2));
   };
 
   const handleBackspace = () => {
-    const currentCentsString = value.replace('.', '');
-    if (currentCentsString.length <= 1) {
-        onChange('0.00');
-        return;
+    const currentStringValue = value.replace('.', '');
+    if (currentStringValue.length === 1) {
+      onChange('0.00');
+      return;
     }
-    const newCentsString = currentCentsString.slice(0, -1);
-    const newFloat = parseFloat(newCentsString) / 100;
+    const newStringValue = currentStringValue.slice(0, -1);
+    const newFloat = parseFloat(newStringValue) / 100;
     onChange(newFloat.toFixed(2));
   };
 
@@ -32,14 +40,20 @@ export function Numpad({ value, onChange }: NumpadProps) {
     onChange('0.00');
   };
 
+  const handleQuickTender = (amount: number) => {
+      const currentAmount = parseFloat(value);
+      const newAmount = currentAmount + amount;
+      onChange(newAmount.toFixed(2));
+  }
+
   const buttons = [
     '7', '8', '9',
     '4', '5', '6',
     '1', '2', '3',
-    '00', '0', '.'
+    '00', '0', 
   ];
-
-  const quickTenderValues = [1, 2, 5, 10, 20, 50, 100];
+  
+  const quickTenderValues = [5, 10, 20, 50, 100];
 
   return (
     <div className="grid grid-cols-4 gap-2">
@@ -49,12 +63,26 @@ export function Numpad({ value, onChange }: NumpadProps) {
             key={btn}
             variant="outline"
             className="h-16 text-2xl font-bold"
-            onClick={() => handleNumberClick(btn.replace('.', ''))}
-            disabled={btn === '.'} // The logic handles decimals automatically
+            onClick={() => handleNumberClick(btn)}
           >
             {btn}
           </Button>
         ))}
+         <Button
+            variant="outline"
+            className="h-16 text-2xl font-bold"
+            onClick={() => handleNumberClick('.')}
+            disabled={value.includes('.')}
+          >
+            .
+        </Button>
+         <Button
+            variant="outline"
+            className="h-16"
+            onClick={handleBackspace}
+        >
+            <ArrowLeft className="h-8 w-8" />
+        </Button>
          <Button
           variant="destructive"
           className="h-16 text-lg font-bold"
@@ -62,23 +90,16 @@ export function Numpad({ value, onChange }: NumpadProps) {
         >
           C
         </Button>
-         <Button
-            variant="outline"
-            className="h-16 col-span-2"
-            onClick={handleBackspace}
-        >
-            <ArrowLeft className="h-8 w-8" />
-        </Button>
       </div>
-      <div className="col-span-1 grid grid-rows-7 gap-2">
+      <div className="col-span-1 grid grid-rows-5 gap-2">
          {quickTenderValues.map(val => (
              <Button
                 key={val}
                 variant="secondary"
                 className="h-full text-lg"
-                onClick={() => onChange(val.toFixed(2))}
+                onClick={() => handleQuickTender(val)}
              >
-                 {val}
+                 +{val}
              </Button>
          ))}
       </div>
