@@ -27,7 +27,7 @@ export const ProductSchema = z.object({
 
 export type ProductFormData = z.infer<typeof ProductSchema>;
 
-export type Product = ProductFormData & {
+export type Product = Omit<ProductFormData, 'expiryDate'> & {
   id: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;

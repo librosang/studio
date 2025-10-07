@@ -43,13 +43,16 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
           </tr>
         </thead>
         <tbody>
-          {cartItems.map(item => (
-            <tr key={item.id}>
-              <td className="text-left">{item.name}</td>
-              <td className="text-center">{item.quantity}</td>
-              <td className="text-right">{formatCurrency(item.price * item.quantity)}</td>
-            </tr>
-          ))}
+          {cartItems.map(item => {
+            const isReturn = item.quantity < 0;
+            return (
+                 <tr key={item.id}>
+                    <td className="text-left">{item.name}{isReturn ? ' (R)' : ''}</td>
+                    <td className="text-center">{Math.abs(item.quantity)}</td>
+                    <td className="text-right">{formatCurrency(item.price * item.quantity)}</td>
+                </tr>
+            )
+          })}
         </tbody>
       </table>
 

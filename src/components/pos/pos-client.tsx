@@ -23,6 +23,8 @@ import { useUser } from '@/context/user-context';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { useCurrency, useTranslation } from '@/context/language-context';
 import { TenderCalculator } from './tender-calculator';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 
 function TransactionPanel({
     cartItems,
@@ -31,7 +33,9 @@ function TransactionPanel({
     isProcessing,
     cart,
     handleQuantityChange,
-    handleClearCart
+    handleClearCart,
+    isReturnMode,
+    setIsReturnMode,
 }: {
     cartItems: SerializableProduct[];
     totalAmount: number;
@@ -40,9 +44,12 @@ function TransactionPanel({
     cart: Map<string, number>;
     handleQuantityChange: (productId: string, change: number) => void;
     handleClearCart: () => void;
+    isReturnMode: boolean;
+    setIsReturnMode: (isReturn: boolean) => void;
 }) {
     const { t } = useTranslation();
     const { formatCurrency } = useCurrency();
+
     return (
         <>
             <CardHeader>
@@ -51,9 +58,10 @@ function TransactionPanel({
                         <Icons.shoppingCart className="h-7 w-7" />
                         <span className="text-2xl">{t('transaction.title')}</span>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleClearCart} disabled={cart.size === 0}>
-                        <Icons.trash className='h-5 w-5 text-destructive' />
-                    </Button>
+                     <div className="flex items-center space-x-2">
+                        <Label htmlFor="return-mode" className={`text-sm font-medium ${isReturnMode ? 'text-destructive' : 'text-muted-foreground'}`}>{t('transaction.returns')}</Label>
+                        <Switch id="return-mode" checked={isReturnMode} onCheckedChange={setIsReturnMode} />
+                    </div>
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow p-0 flex flex-col">
@@ -62,18 +70,22 @@ function TransactionPanel({
                             <ul className="space-y-4">
                                 {cartItems.map(item => {
                                     const quantity = cart.get(item.id) || 0;
+                                    const isReturn = quantity < 0;
                                     return (
                                         <li key={item.id} className="flex justify-between items-center text-sm">
                                             <div>
                                                 <p className="font-semibold">{item.name}</p>
-                                                <p className="text-muted-foreground">{formatCurrency(item.price)}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-muted-foreground">{formatCurrency(item.price)}</p>
+                                                    {isReturn && <Badge variant="destructive" className="h-5">{t('transaction.returns')}</Badge>}
+                                                </div>
                                             </div>
                                             <div className='flex items-center gap-2'>
                                                 <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
                                                     <Icons.minus className="h-3 w-3" />
                                                 </Button>
                                                 <Badge variant={quantity > 0 ? "secondary" : "destructive"} className="w-10 justify-center text-base">
-                                                    {quantity}
+                                                    {Math.abs(quantity)}
                                                 </Badge>
                                                 <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, 1)}>
                                                     <Icons.plus className="h-3 w-3" />
@@ -97,7 +109,11 @@ function TransactionPanel({
                     <span>{t('transaction.total')}</span>
                     <span>{formatCurrency(totalAmount)}</span>
                 </div>
-                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
+                 <Button variant="ghost" size="sm" onClick={handleClearCart} disabled={cart.size === 0} className="w-full text-destructive hover:text-destructive">
+                    <Icons.trash className='h-4 w-4 mr-2' />
+                    Clear Cart
+                </Button>
+                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
                     {t('transaction.validate')}
                 </Button>
@@ -125,6 +141,8 @@ export function PosClient({
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { user } = useUser();
   const { t } = useTranslation();
+  const [isReturnMode, setIsReturnMode] = useState(false);
+
 
   const [lastTransaction, setLastTransaction] = useState<{
     cartItems: ReceiptCartItem[];
@@ -146,17 +164,22 @@ export function PosClient({
     );
   }, [products, searchTerm]);
 
+  const handleAddToCart = (productId: string) => {
+    const change = isReturnMode ? -1 : 1;
+    handleQuantityChange(productId, change);
+  };
+
   const handleQuantityChange = (productId: string, change: number) => {
     setCart((prevCart) => {
       const newCart = new Map(prevCart);
       const currentQty = newCart.get(productId) || 0;
-      const newQuantity = currentQty + change;
+      let newQuantity = currentQty + change;
       
       const product = initialProducts.find(p => p.id === productId);
       if (!product) return newCart;
 
-      // Prevent selling more than available in shop
-      if (change > 0 && newQuantity > product.shopQuantity) {
+      // When not in return mode, prevent selling more than available in shop
+      if (change > 0 && !isReturnMode && newQuantity > product.shopQuantity) {
         toast({
           title: "Not enough stock",
           description: `Only ${product.shopQuantity} units of ${product.name} available in shop.`,
@@ -219,6 +242,7 @@ export function PosClient({
             });
 
             setCart(new Map());
+            setIsReturnMode(false);
         }
     }).finally(() => {
         setIsProcessing(false);
@@ -242,7 +266,7 @@ export function PosClient({
   const onBarcodeScanned = (barcode: string) => {
     const product = initialProducts.find(p => p.barcode === barcode);
     if (product) {
-      handleQuantityChange(product.id, 1);
+      handleAddToCart(product.id);
       toast({
         title: t('pos.product_added'),
         description: t('pos.product_added_desc', {name: product.name}),
@@ -268,7 +292,9 @@ export function PosClient({
     isProcessing,
     cart,
     handleQuantityChange,
-    handleClearCart
+    handleClearCart,
+    isReturnMode,
+    setIsReturnMode
   };
 
   return (
@@ -312,7 +338,7 @@ export function PosClient({
               <ProductGridItem
                 key={product.id}
                 product={product}
-                onAddToCart={() => handleQuantityChange(product.id, 1)}
+                onAddToCart={() => handleAddToCart(product.id)}
               />
             ))}
              {filteredProducts.length === 0 && (
