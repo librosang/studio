@@ -8,12 +8,7 @@ import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import { format } from 'date-fns';
-import { useTranslation } from '@/context/language-context';
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
+import { useCurrency, useTranslation } from '@/context/language-context';
 
 export const columns: ColumnDef<SerializableProduct>[] = [
   {
@@ -69,7 +64,8 @@ export const columns: ColumnDef<SerializableProduct>[] = [
     },
     cell: ({ row }) => {
       const price = row.original.price;
-      return <div className="text-right font-medium">{currencyFormatter.format(price)}</div>;
+      const { formatCurrency } = useCurrency();
+      return <div className="text-right font-medium">{formatCurrency(price)}</div>;
     },
   },
   {

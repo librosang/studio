@@ -20,9 +20,13 @@ import { Icons } from '../icons';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { BarcodeScanner } from '../pos/barcode-scanner';
-import { ScanBarcode, Search } from 'lucide-react';
+import { ScanBarcode, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { useUser } from '@/context/user-context';
 import { useTranslation } from '@/context/language-context';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Calendar } from '../ui/calendar';
 
 type ProductFormProps = {
   product?: SerializableProduct;
@@ -41,14 +45,8 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(ProductSchema),
     defaultValues: product ? {
-      name: product.name,
-      brand: product.brand,
-      category: product.category,
-      stockQuantity: product.stockQuantity,
-      shopQuantity: product.shopQuantity,
-      price: product.price,
-      imageUrl: product.imageUrl,
-      barcode: product.barcode,
+      ...product,
+      expiryDate: product.expiryDate ? format(new Date(product.expiryDate), 'yyyy-MM-dd') : undefined,
     } : {
       name: '',
       brand: '',
@@ -58,6 +56,7 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
       price: 0,
       imageUrl: '',
       barcode: '',
+      expiryDate: undefined,
     },
   });
 
@@ -225,6 +224,45 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                   </DialogContent>
                 </Dialog>
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="expiryDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>{t('product_form.expiry_date')}</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(new Date(field.value), "PPP")
+                      ) : (
+                        <span>{t('product_form.pick_expiry_date')}</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : null)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

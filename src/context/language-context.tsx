@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Language } from '@/lib/types';
+import { Language, Currency } from '@/lib/types';
 
 const translations = {
   en: {
@@ -61,6 +61,10 @@ const translations = {
     'dashboard.top_selling_description': "Your most popular products from today's sales.",
     'dashboard.no_sales_yet': 'No sales recorded yet today.',
     'dashboard.come_back_later': "Check back after you've made some sales!",
+    'dashboard.expiring_soon': 'Expiring Soon',
+    'dashboard.expiring_soon_desc': 'Products expiring in the next 30 days.',
+    'dashboard.days_left': 'days',
+    'dashboard.no_expiring_products': 'No products expiring soon.',
     
     // Stock Page
     'stock.title': 'Stock Management',
@@ -92,6 +96,8 @@ const translations = {
     'product_form.stock_quantity': 'Stock Qty',
     'product_form.shop_quantity': 'Shop Qty',
     'product_form.price': 'Price',
+    'product_form.expiry_date': 'Expiry Date',
+    'product_form.pick_expiry_date': 'Pick an expiry date',
     'product_form.add_button': 'Add Product',
     'product_form.save_button': 'Save Changes',
     'product_form.success_added': 'Product has been added.',
@@ -192,6 +198,8 @@ const translations = {
     // Settings Page
     'settings.title': 'Settings',
     'settings.description': 'Manage application settings.',
+    'settings.currency': 'Currency',
+    'settings.select_currency': 'Select currency',
 
   },
   ar: {
@@ -250,7 +258,12 @@ const translations = {
     'dashboard.top_selling_description': 'المنتجات الأكثر شيوعًا من مبيعات اليوم.',
     'dashboard.no_sales_yet': 'لا توجد مبيعات مسجلة اليوم.',
     'dashboard.come_back_later': 'تحقق مرة أخرى بعد إجراء بعض المبيعات!',
+    'dashboard.expiring_soon': 'منتجات قاربت على الانتهاء',
+    'dashboard.expiring_soon_desc': 'المنتجات التي تنتهي صلاحيتها في غضون 30 يومًا.',
+    'dashboard.days_left': 'أيام',
+    'dashboard.no_expiring_products': 'لا توجد منتجات ستنتهي صلاحيتها قريبًا.',
 
+    
     // Stock Page
     'stock.title': 'إدارة المخزون',
     'stock.description': 'إدارة منتجاتك. إضافة أو تعديل أو حذف العناصر.',
@@ -281,6 +294,8 @@ const translations = {
     'product_form.stock_quantity': 'كمية المخزون',
     'product_form.shop_quantity': 'كمية المتجر',
     'product_form.price': 'السعر',
+    'product_form.expiry_date': 'تاريخ انتهاء الصلاحية',
+    'product_form.pick_expiry_date': 'اختر تاريخ انتهاء الصلاحية',
     'product_form.add_button': 'إضافة منتج',
     'product_form.save_button': 'حفظ التغييرات',
     'product_form.success_added': 'تمت إضافة المنتج.',
@@ -381,6 +396,8 @@ const translations = {
     // Settings Page
     'settings.title': 'الإعدادات',
     'settings.description': 'إدارة إعدادات التطبيق.',
+    'settings.currency': 'العملة',
+    'settings.select_currency': 'اختر العملة',
   },
 };
 
@@ -396,9 +413,19 @@ type LanguageContextType = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+type CurrencyContextType = {
+    currency: Currency;
+    setCurrency: (currency: Currency) => void;
+    formatCurrency: (value: number) => string;
+}
+
+const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
-   const [isMounted, setIsMounted] = useState(false);
+  const [currency, setCurrencyState] = useState<Currency>('USD');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -411,6 +438,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         document.documentElement.lang = 'en';
         document.documentElement.dir = 'ltr';
     }
+
+    const storedCurrency = localStorage.getItem('currency') as Currency | null;
+    if (storedCurrency) {
+        setCurrencyState(storedCurrency);
+    }
   }, []);
 
   const setLanguage = (lang: Language) => {
@@ -419,6 +451,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   };
+
+  const setCurrency = (curr: Currency) => {
+    setCurrencyState(curr);
+    localStorage.setItem('currency', curr);
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat(language, {
+        style: 'currency',
+        currency: currency,
+    }).format(value);
+  }
 
   const t = (key: TranslationKey, replacements: Record<string, string | number> = {}) => {
     let translation = translations[language][key] || key;
@@ -437,7 +481,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
-      {children}
+        <CurrencyContext.Provider value={{ currency, setCurrency, formatCurrency}}>
+            {children}
+        </CurrencyContext.Provider>
     </LanguageContext.Provider>
   );
 }
@@ -456,4 +502,12 @@ export function useTranslation() {
         throw new Error('useTranslation must be used within a LanguageProvider');
     }
     return { t: context.t, lang: context.language, dir: context.dir };
+}
+
+export function useCurrency() {
+    const context = useContext(CurrencyContext);
+    if (context === undefined) {
+        throw new Error('useCurrency must be used within a LanguageProvider');
+    }
+    return context;
 }

@@ -4,18 +4,16 @@
 import { SerializableProduct } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
+import { useCurrency } from '@/context/language-context';
 
 type ProductGridItemProps = {
   product: SerializableProduct;
   onAddToCart: () => void;
 };
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
 export function ProductGridItem({ product, onAddToCart }: ProductGridItemProps) {
+  const { formatCurrency } = useCurrency();
+
   return (
     <Card 
         onClick={onAddToCart}
@@ -35,7 +33,7 @@ export function ProductGridItem({ product, onAddToCart }: ProductGridItemProps) 
         <CardTitle className="text-sm font-medium leading-tight">{product.name}</CardTitle>
       </CardHeader>
       <CardContent className="p-2 pt-0 mt-auto">
-        <p className="text-sm font-semibold">{currencyFormatter.format(product.price)}</p>
+        <p className="text-sm font-semibold">{formatCurrency(product.price)}</p>
         <p className="text-xs text-muted-foreground">In Shop: {product.shopQuantity}</p>
       </CardContent>
     </Card>

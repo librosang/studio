@@ -21,18 +21,13 @@ import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
 import { useUser } from '@/context/user-context';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { useTranslation } from '@/context/language-context';
+import { useCurrency, useTranslation } from '@/context/language-context';
 
 type ShopClientProps = {
   initialProducts: SerializableProduct[];
   categories: string[];
   brands: string[];
 };
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
 
 function TransactionPanel({
     cartItems,
@@ -52,6 +47,7 @@ function TransactionPanel({
     cart: Map<string, number>;
 }) {
     const { t } = useTranslation();
+    const { formatCurrency } = useCurrency();
     return (
         <>
             <CardHeader>
@@ -68,7 +64,7 @@ function TransactionPanel({
                                 <li key={item.id} className="flex justify-between items-center">
                                     <div>
                                         <p className="font-semibold">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">{currencyFormatter.format(item.price)}</p>
+                                        <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                                     </div>
                                     <Badge variant={(cart.get(item.id) || 0) > 0 ? "secondary" : "destructive"}>
                                         Qty: {cart.get(item.id)}
@@ -98,7 +94,7 @@ function TransactionPanel({
                 <Separator />
                 <div className='w-full text-lg font-bold flex justify-between items-center mt-2'>
                     <span>{t('transaction.total')}</span>
-                    <span>{currencyFormatter.format(totalAmount)}</span>
+                    <span>{formatCurrency(totalAmount)}</span>
                 </div>
                 <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}

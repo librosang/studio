@@ -23,7 +23,7 @@ import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, Dash
 import { ProductSchema, UserSchema } from './types';
 import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, differenceInDays } from 'date-fns';
 
 // --- Log Helper ---
 async function addLog(
@@ -70,7 +70,7 @@ export async function addProduct(formData: ProductFormData, user: UserProfile) {
   if (!result.success) {
     return { error: result.error.flatten().fieldErrors };
   }
-  const { name, brand, category, stockQuantity, price, imageUrl, barcode, shopQuantity } = result.data;
+  const { name, brand, category, stockQuantity, price, imageUrl, barcode, shopQuantity, expiryDate } = result.data;
 
   const newProductData = {
       name,
@@ -81,6 +81,7 @@ export async function addProduct(formData: ProductFormData, user: UserProfile) {
       price,
       imageUrl,
       barcode,
+      expiryDate: expiryDate ? Timestamp.fromDate(new Date(expiryDate)) : null,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
   };
@@ -111,7 +112,7 @@ export async function updateProduct(id: string, formData: ProductFormData, user:
     }
 
     const productRef = doc(db, 'products', id);
-    const { name, brand, category, stockQuantity, shopQuantity, price, imageUrl, barcode } = result.data;
+    const { name, brand, category, stockQuantity, shopQuantity, price, imageUrl, barcode, expiryDate } = result.data;
     const updatedData = {
         name,
         brand,
@@ -121,6 +122,7 @@ export async function updateProduct(id: string, formData: ProductFormData, user:
         price,
         imageUrl,
         barcode,
+        expiryDate: expiryDate ? Timestamp.fromDate(new Date(expiryDate)) : null,
         updatedAt: Timestamp.now(),
     };
 
@@ -360,11 +362,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const todayStart = startOfDay(today);
   const todayEnd = endOfDay(today);
 
+  // Get logs for today
   const logsRef = collection(db, 'logs');
-  const q = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
-  
-  const querySnapshot = await getDocs(q);
-  const logs = querySnapshot.docs.map(doc => doc.data() as LogEntry);
+  const logsQuery = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
+  const logsSnapshot = await getDocs(logsQuery);
+  const logs = logsSnapshot.docs.map(doc => doc.data() as LogEntry);
 
   let itemsSold = 0;
   let totalRevenue = 0;
@@ -401,6 +403,27 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([productName, quantity]) => ({ productName, quantity }));
+    
+  // Get products expiring soon
+  const productsRef = collection(db, 'products');
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(today.getDate() + 30);
+  
+  const expiringQuery = query(productsRef, 
+    where('expiryDate', '!=', null),
+    where('expiryDate', '<=', Timestamp.fromDate(thirtyDaysFromNow))
+  );
+
+  const expiringSnapshot = await getDocs(expiringQuery);
+  const expiringSoon = expiringSnapshot.docs.map(doc => {
+      const product = doc.data() as Product;
+      const expiry = (product.expiryDate as Timestamp).toDate();
+      return {
+          name: product.name,
+          expiryDate: expiry.toLocaleDateString(),
+          daysLeft: differenceInDays(expiry, today)
+      };
+  }).filter(p => p.daysLeft >= 0).sort((a,b) => a.daysLeft - b.daysLeft);
 
 
   return {
@@ -410,7 +433,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalReturnValue,
     newStockCount,
     restockedItems,
-    topSellingProducts
+    topSellingProducts,
+    expiringSoon
   };
 }
 

@@ -22,6 +22,7 @@ export const ProductSchema = z.object({
   price: z.coerce.number().positive('Price must be a positive number.'),
   imageUrl: z.string().url('Must be a valid URL.').optional().or(z.literal('')),
   barcode: z.string().optional().or(z.literal('')),
+  expiryDate: z.string().optional().nullable(),
 });
 
 export type ProductFormData = z.infer<typeof ProductSchema>;
@@ -61,6 +62,9 @@ export type DashboardStats = {
   newStockCount: number;
   restockedItems: number;
   topSellingProducts: { productName: string; quantity: number }[];
+  expiringSoon: { name: string; expiryDate: string; daysLeft: number }[];
 };
 
 export type Language = 'en' | 'ar';
+export type Currency = 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CAD';
+

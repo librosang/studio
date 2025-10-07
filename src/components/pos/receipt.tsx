@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { format } from 'date-fns';
 import { Icons } from '../icons';
-import { useTranslation } from '@/context/language-context';
+import { useCurrency, useTranslation } from '@/context/language-context';
 
 export type CartItem = {
   id: string;
@@ -19,13 +19,9 @@ type ReceiptProps = {
   cashierName?: string;
 };
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
-
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, total, transactionDate, cashierName }, ref) => {
   const { t } = useTranslation();
+  const { formatCurrency } = useCurrency();
   return (
     <div id="receipt-print" ref={ref} className="bg-white text-black text-xs font-mono p-2" style={{ width: '300px' }}>
       <div className="text-center">
@@ -51,7 +47,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
             <tr key={item.id}>
               <td className="text-left">{item.name}</td>
               <td className="text-center">{item.quantity}</td>
-              <td className="text-right">{currencyFormatter.format(item.price * item.quantity)}</td>
+              <td className="text-right">{formatCurrency(item.price * item.quantity)}</td>
             </tr>
           ))}
         </tbody>
@@ -61,7 +57,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
 
       <div className="flex justify-between font-bold">
         <span>TOTAL</span>
-        <span>{currencyFormatter.format(total)}</span>
+        <span>{formatCurrency(total)}</span>
       </div>
 
        <hr className="my-2 border-dashed border-black" />

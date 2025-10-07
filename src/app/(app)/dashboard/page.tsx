@@ -11,21 +11,18 @@ import {
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import { SalesChart } from '@/components/dashboard/sales-chart';
-import { useTranslation } from '@/context/language-context';
+import { useCurrency, useTranslation } from '@/context/language-context';
 import { useEffect, useState } from 'react';
 import { DashboardStats } from '@/lib/types';
-import { onSnapshot, collection, query, where } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, differenceInDays } from 'date-fns';
+import { AlertCircle } from 'lucide-react';
 
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { formatCurrency } = useCurrency();
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
@@ -33,10 +30,11 @@ export default function DashboardPage() {
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
 
+    // Listener for logs
     const logsRef = collection(db, 'logs');
-    const q = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
+    const logsQuery = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribeLogs = onSnapshot(logsQuery, async (querySnapshot) => {
         const logs = querySnapshot.docs.map(doc => doc.data());
         
         let itemsSold = 0;
@@ -75,6 +73,27 @@ export default function DashboardPage() {
             .slice(0, 5)
             .map(([productName, quantity]) => ({ productName, quantity }));
         
+        // Fetch expiring products separately as it's not a real-time requirement for the dashboard summary
+        const productsRef = collection(db, 'products');
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+        
+        const expiringQuery = query(productsRef, 
+            where('expiryDate', '!=', null),
+            where('expiryDate', '<=', Timestamp.fromDate(thirtyDaysFromNow))
+        );
+
+        const expiringSnapshot = await getDocs(expiringQuery);
+        const expiringSoon = expiringSnapshot.docs.map(doc => {
+            const product = doc.data();
+            const expiry = (product.expiryDate as Timestamp).toDate();
+            return {
+                name: product.name,
+                expiryDate: expiry.toLocaleDateString(),
+                daysLeft: differenceInDays(expiry, today)
+            };
+        }).filter(p => p.daysLeft >= 0).sort((a,b) => a.daysLeft - b.daysLeft);
+        
         setStats({
             itemsSold,
             totalRevenue,
@@ -82,11 +101,12 @@ export default function DashboardPage() {
             totalReturnValue,
             newStockCount,
             restockedItems,
-            topSellingProducts
+            topSellingProducts,
+            expiringSoon
         });
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeLogs();
   }, [])
 
   if (!stats) {
@@ -102,13 +122,13 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('dashboard.total_revenue')}
-          value={currencyFormatter.format(stats.totalRevenue)}
+          value={formatCurrency(stats.totalRevenue)}
           icon={Icons.sale}
           description={t('dashboard.items_sold', {count: stats.itemsSold})}
         />
         <StatCard
           title={t('dashboard.total_returns')}
-          value={currencyFormatter.format(stats.totalReturnValue)}
+          value={formatCurrency(stats.totalReturnValue)}
           icon={Icons.return}
           description={t('dashboard.items_returned', {count: stats.itemsReturned})}
           isLoss
@@ -127,8 +147,8 @@ export default function DashboardPage() {
         />
       </div>
 
-       <div className="mt-8">
-          <Card>
+       <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>{t('dashboard.top_selling_today')}</CardTitle>
               <CardDescription>
@@ -137,6 +157,34 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <SalesChart data={stats.topSellingProducts} />
+            </CardContent>
+          </Card>
+
+           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+                {t('dashboard.expiring_soon')}
+              </CardTitle>
+              <CardDescription>
+                {t('dashboard.expiring_soon_desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {stats.expiringSoon.length > 0 ? (
+                    <ul className="space-y-3">
+                        {stats.expiringSoon.slice(0, 5).map(item => (
+                            <li key={item.name} className="flex justify-between items-center text-sm">
+                                <span>{item.name}</span>
+                                <span className={`font-bold ${item.daysLeft < 7 ? 'text-destructive' : 'text-amber-500'}`}>
+                                    {item.daysLeft} {t('dashboard.days_left')}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-muted-foreground">{t('dashboard.no_expiring_products')}</p>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -172,5 +220,3 @@ function StatCard({
     </Card>
   );
 }
-
-    

@@ -22,12 +22,7 @@ import { useFullscreen } from '@/hooks/use-fullscreen';
 import { useUser } from '@/context/user-context';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { useTranslation } from '@/context/language-context';
-
-type PosClientProps = {
-  initialProducts: SerializableProduct[];
-  categories: string[];
-  brands: string[];
-};
+import { TenderCalculator } from './tender-calculator';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -123,6 +118,7 @@ export function PosClient({
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isTenderOpen, setIsTenderOpen] = useState(false);
   const { toast } = useToast();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { user } = useUser();
@@ -189,10 +185,14 @@ export function PosClient({
         toast({ title: t('general.not_authenticated'), description: t('general.must_be_logged_in'), variant: "destructive"});
         return;
     }
-    
+    setIsTenderOpen(true);
+  };
+  
+  const handleProcessTransaction = () => {
     setIsProcessing(true);
+    setIsTenderOpen(false);
     const cartObject = Object.fromEntries(cart);
-    
+
     processTransaction(cartObject, user).then(result => {
         if (result.error) {
             toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
@@ -221,8 +221,8 @@ export function PosClient({
     }).finally(() => {
         setIsProcessing(false);
     });
-  };
-  
+  }
+
   const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as SerializableProduct[];
   
   const totalAmount = useMemo(() => {
@@ -352,6 +352,16 @@ export function PosClient({
         isOpen={!!lastTransaction}
         onClose={closeReceiptDialog}
         transaction={lastTransaction}
+      />
+    )}
+
+    {isTenderOpen && (
+      <TenderCalculator 
+        isOpen={isTenderOpen}
+        onClose={() => setIsTenderOpen(false)}
+        cartItems={cartItems}
+        totalAmount={totalAmount}
+        onConfirm={handleProcessTransaction}
       />
     )}
     

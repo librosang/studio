@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Product, SerializableProduct } from '@/lib/types';
@@ -6,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Icons } from '../icons';
 import { Badge } from '../ui/badge';
 import Image from 'next/image';
+import { useCurrency } from '@/context/language-context';
 
 type ProductCardProps = {
   product: SerializableProduct;
@@ -13,12 +15,8 @@ type ProductCardProps = {
   onQuantityChange: (productId: string, newQuantity: number) => void;
 };
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
-
 export function ProductCard({ product, cartQuantity, onQuantityChange }: ProductCardProps) {
+  const { formatCurrency } = useCurrency();
 
   const handleIncrement = () => {
     onQuantityChange(product.id, cartQuantity + 1);
@@ -46,7 +44,7 @@ export function ProductCard({ product, cartQuantity, onQuantityChange }: Product
             <CardTitle className="text-lg">{product.name}</CardTitle>
             <CardDescription>{product.brand}</CardDescription>
           </div>
-          <p className="text-lg font-semibold">{currencyFormatter.format(product.price)}</p>
+          <p className="text-lg font-semibold">{formatCurrency(product.price)}</p>
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-2">
