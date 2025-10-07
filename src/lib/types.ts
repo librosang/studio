@@ -31,6 +31,7 @@ export type Product = ProductFormData & {
   id: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  expiryDate?: Timestamp | null;
 };
 
 export type LogType = 'CREATE' | 'UPDATE' | 'DELETE' | 'TRANSACTION' | 'TRANSFER';
@@ -45,9 +46,10 @@ export type LogEntry = {
   items: { productName: string; quantityChange: number; price: number }[];
 };
 
-export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt'> & {
+export type SerializableProduct = Omit<Product, 'createdAt' | 'updatedAt' | 'expiryDate'> & {
   createdAt: string;
   updatedAt: string;
+  expiryDate?: string | null;
 };
 
 export type SerializableLogEntry = Omit<LogEntry, 'timestamp'> & {
@@ -67,4 +69,3 @@ export type DashboardStats = {
 
 export type Language = 'en' | 'ar';
 export type Currency = 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CAD';
-

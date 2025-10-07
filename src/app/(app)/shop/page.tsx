@@ -39,6 +39,7 @@ export default function ShopPage() {
           barcode: data.barcode,
           createdAt: data.createdAt.toDate().toISOString(),
           updatedAt: data.updatedAt.toDate().toISOString(),
+          expiryDate: data.expiryDate ? data.expiryDate.toDate().toISOString() : null
         };
       });
       setProducts(productsData);
@@ -73,5 +74,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
-    

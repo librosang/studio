@@ -59,6 +59,7 @@ export async function getProducts(): Promise<SerializableProduct[]> {
       ...data,
       createdAt: data.createdAt.toDate().toISOString(),
       updatedAt: data.updatedAt.toDate().toISOString(),
+      expiryDate: data.expiryDate ? data.expiryDate.toDate().toISOString() : null,
     }
   }) as SerializableProduct[];
   return productList;

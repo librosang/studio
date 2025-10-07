@@ -21,13 +21,8 @@ import { ReceiptDialog } from './receipt-dialog';
 import { useFullscreen } from '@/hooks/use-fullscreen';
 import { useUser } from '@/context/user-context';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { useTranslation } from '@/context/language-context';
+import { useCurrency, useTranslation } from '@/context/language-context';
 import { TenderCalculator } from './tender-calculator';
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
 
 function TransactionPanel({
     cartItems,
@@ -47,6 +42,7 @@ function TransactionPanel({
     handleClearCart: () => void;
 }) {
     const { t } = useTranslation();
+    const { formatCurrency } = useCurrency();
     return (
         <>
             <CardHeader>
@@ -70,7 +66,7 @@ function TransactionPanel({
                                         <li key={item.id} className="flex justify-between items-center text-sm">
                                             <div>
                                                 <p className="font-semibold">{item.name}</p>
-                                                <p className="text-muted-foreground">{currencyFormatter.format(item.price)}</p>
+                                                <p className="text-muted-foreground">{formatCurrency(item.price)}</p>
                                             </div>
                                             <div className='flex items-center gap-2'>
                                                 <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => handleQuantityChange(item.id, -1)}>
@@ -99,7 +95,7 @@ function TransactionPanel({
             <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
                 <div className='w-full text-2xl font-bold flex justify-between items-center'>
                     <span>{t('transaction.total')}</span>
-                    <span>{currencyFormatter.format(totalAmount)}</span>
+                    <span>{formatCurrency(totalAmount)}</span>
                 </div>
                 <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
@@ -108,6 +104,12 @@ function TransactionPanel({
             </CardFooter>
         </>
     );
+}
+
+type PosClientProps = {
+    initialProducts: SerializableProduct[];
+    categories: string[];
+    brands: string[];
 }
 
 export function PosClient({
@@ -193,7 +195,7 @@ export function PosClient({
     setIsTenderOpen(false);
     const cartObject = Object.fromEntries(cart);
 
-    processTransaction(cartObject, user).then(result => {
+    processTransaction(cartObject, user!).then(result => {
         if (result.error) {
             toast({ title: t('transaction.failed'), description: result.error, variant: 'destructive' });
         } else {

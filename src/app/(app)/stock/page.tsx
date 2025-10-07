@@ -34,6 +34,7 @@ export default function StockPage() {
           barcode: data.barcode,
           createdAt: data.createdAt.toDate().toISOString(),
           updatedAt: data.updatedAt.toDate().toISOString(),
+          expiryDate: data.expiryDate ? data.expiryDate.toDate().toISOString() : null,
         } as SerializableProduct;
       });
       setProducts(productsData);
@@ -60,5 +61,3 @@ export default function StockPage() {
     </div>
   );
 }
-
-    
