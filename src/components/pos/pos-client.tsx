@@ -153,7 +153,7 @@ function TransactionPanel({
                     <Icons.trash className='h-4 w-4 mr-2' />
                     Clear Cart
                 </Button>
-                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-lg bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-primary hover:bg-primary/90 text-primary-foreground">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
                     {t('transaction.validate')}
                 </Button>
@@ -507,11 +507,13 @@ export function PosClient({
     
     <div className="hidden">
         {/* This is kept for print styling purposes, the actual visible receipt is in the dialog */}
-        <Receipt ref={receiptRef} {...lastTransaction!} />
+        {lastTransaction && <Receipt ref={receiptRef} {...lastTransaction} />}
     </div>
     </>
   );
 }
+
+    
 
     
 
