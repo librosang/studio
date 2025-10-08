@@ -499,34 +499,31 @@ export async function getAccounts(user: UserProfile): Promise<UserProfile[]> {
     return mockUsers;
 }
 
-export async function addAccount(formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | z.ZodError }> {
+export async function addAccount(formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | any }> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     
-    // In a real app, you would not define this schema here. This is just for validation.
     const NewAccountSchema = UserSchema.pick({ name: true, email: true, role: true });
     
     const result = NewAccountSchema.safeParse(formData);
     if (!result.success) {
-        return { error: result.error };
+        return { error: result.error.flatten().fieldErrors };
     }
 
-    // TODO: Implement actual user creation with Firebase Admin SDK on a secure backend.
     console.log("MOCK: Creating new user:", result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} created.` };
 }
 
-export async function updateAccount(id: string, formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | z.ZodError }> {
+export async function updateAccount(id: string, formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | any }> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
 
     const UpdateAccountSchema = UserSchema.pick({ name: true, email: true, role: true });
 
     const result = UpdateAccountSchema.safeParse(formData);
     if (!result.success) {
-        return { error: result.error };
+        return { error: result.error.flatten().fieldErrors };
     }
     
-    // TODO: Implement actual user update with Firebase Admin SDK on a secure backend.
     console.log(`MOCK: Updating user ${id}:`, result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} updated.` };
@@ -535,17 +532,14 @@ export async function updateAccount(id: string, formData: Pick<UserProfile, 'nam
 export async function deleteAccount(id: string, user: UserProfile): Promise<{data?: string, error?: string}> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     
-    // You cannot delete the currently logged in user
     if (id === user.id) {
         return { error: "You cannot delete your own account." };
     }
 
-    // You cannot delete the main manager account in this mock setup
     if (id === '1') {
         return { error: "accounts.delete_primary_manager_error" };
     }
     
-    // TODO: Implement actual user deletion with Firebase Admin SDK on a secure backend.
     console.log(`MOCK: Deleting user ${id}`);
     revalidatePath('/accounts');
     return { data: 'User deleted successfully.' };
@@ -621,3 +615,5 @@ export async function deleteExpense(id: string, user: UserProfile) {
         return { error: "Failed to delete expense." };
     }
 }
+
+    

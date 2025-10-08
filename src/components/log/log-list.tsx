@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/context/user-context';
 import { ArrowRightLeft } from 'lucide-react';
-import { useTranslation } from '@/context/language-context';
+import { useTranslation, useCurrency } from '@/context/language-context';
 
 const logIconMap: Record<LogType, Icon> = {
   CREATE: Icons.create,
@@ -33,6 +33,7 @@ const logColorMap: Record<LogType, string> = {
 function LogItem({ log }: { log: SerializableLogEntry }) {
   const [formattedDate, setFormattedDate] = useState('');
   const [relativeDate, setRelativeDate] = useState('');
+  const { formatCurrency } = useCurrency();
 
   useEffect(() => {
     if (log.timestamp) {
@@ -53,7 +54,7 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
       </div>
       <div className="flex-1">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-           <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-semibold">{log.type}</p>
             <Badge variant="outline" className="text-xs">{log.details}</Badge>
             <Badge variant="secondary" className="text-xs">{log.userName}</Badge>
@@ -66,8 +67,8 @@ function LogItem({ log }: { log: SerializableLogEntry }) {
             {log.items.map((item, index) => (
                 <div key={index} className="flex justify-between items-center border-b border-dashed pb-1">
                     <span>{item.productName}</span>
-                    <span className={`font-medium ${item.quantityChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.price < 0 ? '-' : ''}{Math.abs(item.price)}
+                    <span className={`font-medium ${item.quantityChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {log.type === 'EXPENSE' ? formatCurrency(item.price) : `${item.quantityChange > 0 ? '+' : ''}${item.quantityChange}`}
                     </span>
                 </div>
             ))}
@@ -107,3 +108,5 @@ export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
     </Card>
   );
 }
+
+    
