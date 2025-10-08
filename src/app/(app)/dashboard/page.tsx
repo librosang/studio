@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const { formatCurrency } = useCurrency();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [financialData, setFinancialData] = useState<FinancialChartData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const today = new Date();
@@ -39,7 +40,7 @@ export default function DashboardPage() {
     const logsQuery = query(logsRef, where('timestamp', '>=', todayStart), where('timestamp', '<=', todayEnd));
     const expensesQuery = query(expensesRef, where('date', '>=', todayStart), where('date', '<=', todayEnd));
 
-    const unsubscribeLogs = onSnapshot(logsQuery, async (logsSnapshot) => {
+    const unsubscribeLogs = onSnapshot(logsQuery, (logsSnapshot) => {
         const unsubscribeExpenses = onSnapshot(expensesQuery, async (expensesSnapshot) => {
             const logs = logsSnapshot.docs.map(doc => doc.data());
             const expenses = expensesSnapshot.docs.map(doc => doc.data());
@@ -116,6 +117,7 @@ export default function DashboardPage() {
                 totalExpenses,
                 netProfit
             });
+            setLoading(false);
         });
         return () => unsubscribeExpenses();
     });
@@ -149,7 +151,9 @@ export default function DashboardPage() {
                 const expense = doc.data();
                 const date = (expense.date as Timestamp).toDate();
                 const dateString = date.toISOString().split('T')[0];
-                dailyData[dateString].expenses += expense.amount;
+                if(dailyData[dateString]) {
+                    dailyData[dateString].expenses += expense.amount;
+                }
             });
             
             const chartData = Object.keys(dailyData).map(dateString => {
@@ -175,7 +179,7 @@ export default function DashboardPage() {
     };
   }, [])
 
-  if (!stats) {
+  if (loading) {
     return <div className="h-screen w-screen flex items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin"/></div>;
   }
 
@@ -188,36 +192,36 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
           title={t('dashboard.total_revenue')}
-          value={formatCurrency(stats.totalRevenue)}
+          value={formatCurrency(stats?.totalRevenue ?? 0)}
           icon={Icons.sale}
-          description={t('dashboard.items_sold', {count: stats.itemsSold})}
+          description={t('dashboard.items_sold', {count: stats?.itemsSold ?? 0})}
         />
         <StatCard
           title={t('dashboard.total_expenses')}
-          value={formatCurrency(stats.totalExpenses)}
+          value={formatCurrency(stats?.totalExpenses ?? 0)}
           icon={Icons.receipt}
           description={t('dashboard.expenses_today_desc')}
            isLoss
         />
         <StatCard
           title={t('dashboard.total_returns')}
-          value={formatCurrency(stats.totalReturnValue)}
+          value={formatCurrency(stats?.totalReturnValue ?? 0)}
           icon={Icons.return}
-          description={t('dashboard.items_returned', {count: stats.itemsReturned})}
+          description={t('dashboard.items_returned', {count: stats?.itemsReturned ?? 0})}
           isLoss
         />
         <StatCard
           title={t('dashboard.net_profit')}
-          value={formatCurrency(stats.netProfit)}
+          value={formatCurrency(stats?.netProfit ?? 0)}
           icon={Icons.transaction}
           description={t('dashboard.profit_today_desc')}
-          isLoss={stats.netProfit < 0}
+          isLoss={(stats?.netProfit ?? 0) < 0}
         />
         <StatCard
           title={t('dashboard.new_stock')}
-          value={`+${stats.newStockCount}`}
+          value={`+${stats?.newStockCount ?? 0}`}
           icon={Icons.create}
-          description={t('dashboard.restocked_items', {count: stats.restockedItems})}
+          description={t('dashboard.restocked_items', {count: stats?.restockedItems ?? 0})}
         />
       </div>
 
@@ -242,7 +246,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SalesChart data={stats.topSellingProducts} />
+              <SalesChart data={stats?.topSellingProducts ?? []} />
             </CardContent>
           </Card>
         </div>
@@ -258,9 +262,9 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-                {stats.expiringSoon.length > 0 ? (
+                {(stats?.expiringSoon?.length ?? 0) > 0 ? (
                     <ul className="space-y-3">
-                        {stats.expiringSoon.slice(0, 5).map(item => (
+                        {stats?.expiringSoon?.slice(0, 5).map(item => (
                             <li key={item.name} className="flex justify-between items-center text-sm">
                                 <span>{item.name}</span>
                                 <span className={`font-bold ${item.daysLeft < 7 ? 'text-destructive' : 'text-amber-500'}`}>

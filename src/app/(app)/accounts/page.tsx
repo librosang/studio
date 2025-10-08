@@ -17,6 +17,7 @@ export default function AccountsPage() {
     useEffect(() => {
         const fetchAccounts = async () => {
             if(user) {
+                // In a real app, this would be a realtime listener
                 const fetchedAccounts = await getAccounts(user);
                 setAccounts(fetchedAccounts);
             }
@@ -36,3 +37,5 @@ export default function AccountsPage() {
     </div>
   );
 }
+
+    
