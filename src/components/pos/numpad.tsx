@@ -27,13 +27,12 @@ export function Numpad({ value, onChange }: NumpadProps) {
         return; // Don't allow more than 2 decimal places
     }
 
-    if (value === '0') {
-      if (num === '.') {
-        onChange('0.');
-      } else {
+    if (value === '0' && num !== '00' && num !== '.') {
         onChange(num);
-      }
-    } else {
+    } else if (value === '0' && (num === '00' || num === '0')) {
+        return;
+    }
+    else {
       onChange(value + num);
     }
   };
@@ -51,9 +50,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
   };
 
   const handleQuickTender = (amount: number) => {
-      const currentAmount = parseFloat(value) || 0;
-      const newAmount = currentAmount + amount;
-      onChange(newAmount.toFixed(2));
+      onChange(amount.toFixed(2));
   }
 
   const buttons = [
@@ -71,6 +68,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
         {buttons.map((btn) => (
           <Button
             key={btn}
+            type="button"
             variant="outline"
             className="h-16 text-2xl font-bold"
             onClick={() => handleNumberClick(btn)}
@@ -79,6 +77,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
           </Button>
         ))}
          <Button
+            type="button"
             variant="outline"
             className="h-16"
             onClick={handleBackspace}
@@ -86,6 +85,7 @@ export function Numpad({ value, onChange }: NumpadProps) {
             <ArrowLeft className="h-8 w-8" />
         </Button>
          <Button
+          type="button"
           variant="destructive"
           className="h-16 text-lg font-bold col-span-2"
           onClick={handleClear}
@@ -97,11 +97,12 @@ export function Numpad({ value, onChange }: NumpadProps) {
          {quickTenderValues.map(val => (
              <Button
                 key={val}
+                type="button"
                 variant="secondary"
                 className="h-full text-lg"
                 onClick={() => handleQuickTender(val)}
              >
-                 +{val}
+                 {val}
              </Button>
          ))}
       </div>

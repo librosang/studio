@@ -288,11 +288,13 @@ export function PosClient({
         } else {
             toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
             
-            const cashPayment = totalAmount > 0 ? Math.min(totalAmount, tenderedAmount) : 0;
-            
+            // For a sale, cash change is totalAmount.
+            // For a return, cash change is totalAmount (which is negative).
+            const cashChange = totalAmount;
+
             setDrawerState(prev => ({
                 ...prev,
-                cashSales: prev.cashSales + cashPayment,
+                cashSales: prev.cashSales + cashChange,
             }));
 
             const completedCartItems: ReceiptCartItem[] = Array.from(cart.keys()).map(id => {

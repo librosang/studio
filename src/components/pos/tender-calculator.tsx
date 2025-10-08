@@ -41,13 +41,17 @@ export function TenderCalculator({
     const tenderedValue = parseFloat(tenderedString) || 0;
 
     const changeDue = useMemo(() => {
+        if (totalAmount < 0) { // It's a return
+             return Math.abs(totalAmount);
+        }
         if (tenderedValue < totalAmount) {
             return 0;
         }
         return tenderedValue - totalAmount;
     }, [tenderedValue, totalAmount]);
     
-    const canConfirm = tenderedValue >= totalAmount;
+    const canConfirm = totalAmount < 0 || tenderedValue >= totalAmount;
+    const isReturn = totalAmount < 0;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -59,7 +63,7 @@ export function TenderCalculator({
                         <DialogHeader>
                             <DialogTitle className="text-3xl">{t('transaction.validate')}</DialogTitle>
                             <DialogDescription>
-                                Enter the amount of cash received from the customer.
+                                {isReturn ? 'Confirm the return amount to be paid back.' : 'Enter the amount of cash received from the customer.'}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -80,30 +84,32 @@ export function TenderCalculator({
                             </div>
                             <Separator />
                             <div className="space-y-1 pt-2">
-                                <p className="text-muted-foreground">{t('transaction.total')}</p>
+                                <p className="text-muted-foreground">{isReturn ? 'Total Return Value' : t('transaction.total')}</p>
                                 <p className="text-4xl font-bold font-mono tracking-tighter h-12">
                                     {formatCurrency(totalAmount)}
                                 </p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-muted-foreground">Amount Tendered</p>
+                                <p className="text-muted-foreground">{isReturn ? 'Cash Returned' : 'Amount Tendered'}</p>
                                 <p className="text-5xl font-bold font-mono tracking-tighter h-14">
-                                    {formatCurrency(tenderedValue)}
+                                     {isReturn ? formatCurrency(Math.abs(totalAmount)) : formatCurrency(tenderedValue)}
                                 </p>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-muted-foreground">Change Due</p>
-                                <p className="text-6xl font-bold font-mono tracking-tighter text-green-400 h-16">
-                                    {formatCurrency(changeDue)}
-                                </p>
-                            </div>
+                           {!isReturn && (
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground">Change Due</p>
+                                    <p className="text-6xl font-bold font-mono tracking-tighter text-green-400 h-16">
+                                        {formatCurrency(changeDue)}
+                                    </p>
+                                </div>
+                           )}
                         </div>
 
                     </div>
                     
                     {/* Right Side: Actions */}
                     <div className="bg-muted/30 p-6 flex flex-col justify-between md:rounded-r-lg">
-                        <Numpad value={tenderedString} onChange={setTenderedString} />
+                        {!isReturn && <Numpad value={tenderedString} onChange={setTenderedString} />}
                         <DialogFooter className="gap-2 flex-col sm:justify-end mt-8">
                             <Button 
                                 onClick={() => onConfirm(tenderedValue)}
