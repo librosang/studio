@@ -41,7 +41,7 @@ export function DrawerManager({ drawerState, onStartDrawer, onEndDay, children }
     if (drawerState.status === 'inactive') {
         return (
              <Dialog open={isStartDayOpen} onOpenChange={setIsStartDayOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md p-0">
                     <DialogHeader>
                         <DialogTitle>Start of Day</DialogTitle>
                         <DialogDescription>
@@ -49,7 +49,7 @@ export function DrawerManager({ drawerState, onStartDrawer, onEndDay, children }
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleStart}>
-                        <div className="p-6 py-4">
+                        <div className="p-6">
                             <div className="space-y-2">
                                 <Label htmlFor="float-amount">Starting Cash (Float)</Label>
                                 <Input
@@ -63,7 +63,7 @@ export function DrawerManager({ drawerState, onStartDrawer, onEndDay, children }
                                 />
                             </div>
                         </div>
-                        <DialogFooter className="p-6 pt-0">
+                        <DialogFooter>
                             <Button type="submit" className="w-full">
                                 Start Session
                             </Button>
@@ -116,11 +116,13 @@ export function EndOfDayDialog({ isOpen, onClose, onConfirm, drawerState }: EndO
                     <DialogTitle>End of Day Summary</DialogTitle>
                     <DialogDescription>Review your cash drawer summary before closing the session.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <SummaryRow label="Starting Cash" value={formatCurrency(drawerState.startingCash)} />
-                    <SummaryRow label="Total Cash Sales" value={formatCurrency(drawerState.cashSales)} />
-                    <Separator />
-                    <SummaryRow label="Expected in Drawer" value={formatCurrency(expectedCash)} isTotal />
+                <div className="p-6">
+                  <div className="space-y-4">
+                      <SummaryRow label="Starting Cash" value={formatCurrency(drawerState.startingCash)} />
+                      <SummaryRow label="Total Cash Sales" value={formatCurrency(drawerState.cashSales)} />
+                      <Separator />
+                      <SummaryRow label="Expected in Drawer" value={formatCurrency(expectedCash)} isTotal />
+                  </div>
                 </div>
                 <DialogFooter className="gap-2">
                     <Button variant="secondary" onClick={onClose}>{t('data_table.cancel')}</Button>
