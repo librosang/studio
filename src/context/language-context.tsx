@@ -66,6 +66,13 @@ const translations = {
     'dashboard.expiring_soon_desc': 'Products expiring in the next 30 days.',
     'dashboard.days_left': 'days',
     'dashboard.no_expiring_products': 'No products expiring soon.',
+    'dashboard.total_expenses': 'Total Expenses',
+    'dashboard.expenses_today_desc': 'Expenses recorded today.',
+    'dashboard.net_profit': 'Net Profit',
+    'dashboard.profit_today_desc': 'Today\'s net profit.',
+    'dashboard.weekly_financial_overview': 'Last 7 Days Financial Overview',
+    'dashboard.weekly_financial_desc': 'Revenue, expenses, and profit trends.',
+    'dashboard.no_financial_data': 'No financial data for this period.',
     
     // Stock Page
     'stock.title': 'Stock Management',
@@ -286,7 +293,13 @@ const translations = {
     'dashboard.expiring_soon_desc': 'المنتجات التي تنتهي صلاحيتها في غضون 30 يومًا.',
     'dashboard.days_left': 'أيام',
     'dashboard.no_expiring_products': 'لا توجد منتجات ستنتهي صلاحيتها قريبًا.',
-
+    'dashboard.total_expenses': 'إجمالي المصاريف',
+    'dashboard.expenses_today_desc': 'المصاريف المسجلة اليوم.',
+    'dashboard.net_profit': 'صافي الربح',
+    'dashboard.profit_today_desc': 'صافي الربح لليوم.',
+    'dashboard.weekly_financial_overview': 'نظرة عامة مالية لآخر 7 أيام',
+    'dashboard.weekly_financial_desc': 'اتجاهات الإيرادات والمصروفات والأرباح.',
+    'dashboard.no_financial_data': 'لا توجد بيانات مالية لهذه الفترة.',
     
     // Stock Page
     'stock.title': 'إدارة المخزون',
@@ -462,7 +475,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 type CurrencyContextType = {
     currency: Currency;
     setCurrency: (currency: Currency) => void;
-    formatCurrency: (value: number) => string;
+    formatCurrency: (value: number, options?: Intl.NumberFormatOptions) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -503,11 +516,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('currency', curr);
   }
 
-  const formatCurrency = (value: number) => {
-    const formatted = new Intl.NumberFormat(language, {
+  const formatCurrency = (value: number, options: Intl.NumberFormatOptions = {}) => {
+    const defaultOptions: Intl.NumberFormatOptions = {
         style: 'currency',
         currency: currency,
-    }).format(value);
+        ...options,
+    };
+    
+    const formatted = new Intl.NumberFormat(language, defaultOptions).format(value);
 
     if (currency === 'MAD') {
         return formatted.replace('MAD', 'DH');
@@ -563,3 +579,5 @@ export function useCurrency() {
     }
     return context;
 }
+
+    

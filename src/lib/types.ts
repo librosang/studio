@@ -84,7 +84,11 @@ export type DashboardStats = {
   restockedItems: number;
   topSellingProducts: { productName: string; quantity: number }[];
   expiringSoon: { name: string; expiryDate: string; daysLeft: number }[];
+  totalExpenses: number;
+  netProfit: number;
 };
 
 export type Language = 'en' | 'ar';
 export type Currency = 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CAD' | 'MAD';
+
+    
