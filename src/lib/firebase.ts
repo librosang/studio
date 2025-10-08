@@ -1,6 +1,7 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { initializeFirestore, persistentLocalCache, memoryLocalCache } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, memoryLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,7 +21,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 let db;
 try {
   db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: 'SingleTab' })
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
   });
 } catch (err: any) {
   console.error("Failed to initialize persistent cache:", err.message);
@@ -32,3 +33,5 @@ try {
 
 
 export { db };
+
+    
