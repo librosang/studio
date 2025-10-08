@@ -11,7 +11,7 @@ const translations = {
     'nav.stock': 'Stock',
     'nav.shop': 'Shop',
     'nav.pos': 'POS',
-    'nav.expenses': 'Expenses',
+    'nav.accounting': 'Accounting',
     'nav.log': 'Log',
     'nav.accounts': 'Accounts',
     'nav.settings': 'Settings',
@@ -134,9 +134,9 @@ const translations = {
     'data_table.continue': 'Continue',
     'data_table.product_deleted': 'Product deleted.',
     
-    // Expenses
-    'expenses.title': 'Expense Management',
-    'expenses.description': 'Track and manage all your business expenses.',
+    // Expenses / Accounting
+    'expenses.title': 'Accounting Management',
+    'expenses.description': 'Track and manage your business finances.',
     'expenses.add_expense': 'Add Expense',
     'expenses.no_expenses': 'No expenses recorded yet.',
     'expenses.add_first_expense': 'Add your first expense to get started.',
@@ -154,6 +154,9 @@ const translations = {
     'expenses.edit_desc': 'Update the details of your expense.',
     'expenses.expense_saved': 'Expense has been saved.',
     'expenses.save_button': 'Save Expense',
+    'expenses.breakdown_title': 'Expense Breakdown',
+    'expenses.breakdown_desc': 'A visual breakdown of expenses by category.',
+    'expenses.no_breakdown_data': 'Not enough data to display breakdown chart.',
     
 
     // Shop Page
@@ -238,7 +241,7 @@ const translations = {
     'nav.stock': 'المخزون',
     'nav.shop': 'المتجر',
     'nav.pos': 'نقطة البيع',
-    'nav.expenses': 'المصاريف',
+    'nav.accounting': 'المحاسبة',
     'nav.log': 'السجل',
     'nav.accounts': 'الحسابات',
     'nav.settings': 'الإعدادات',
@@ -361,9 +364,9 @@ const translations = {
     'data_table.continue': 'متابعة',
     'data_table.product_deleted': 'تم حذف المنتج.',
     
-     // Expenses
-    'expenses.title': 'إدارة المصاريف',
-    'expenses.description': 'تتبع وإدارة جميع نفقات عملك.',
+     // Expenses / Accounting
+    'expenses.title': 'إدارة المحاسبة',
+    'expenses.description': 'تتبع وإدارة الشؤون المالية لعملك.',
     'expenses.add_expense': 'إضافة مصروف',
     'expenses.no_expenses': 'لم يتم تسجيل أي مصاريف حتى الآن.',
     'expenses.add_first_expense': 'أضف أول مصروف لك للبدء.',
@@ -381,6 +384,9 @@ const translations = {
     'expenses.edit_desc': 'تحديث تفاصيل المصروف.',
     'expenses.expense_saved': 'تم حفظ المصروف.',
     'expenses.save_button': 'حفظ المصروف',
+    'expenses.breakdown_title': 'توزيع المصاريف',
+    'expenses.breakdown_desc': 'توزيع مرئي للمصاريف حسب الفئة.',
+    'expenses.no_breakdown_data': 'لا توجد بيانات كافية لعرض مخطط التوزيع.',
 
 
     // Shop Page
@@ -579,5 +585,3 @@ export function useCurrency() {
     }
     return context;
 }
-
-    

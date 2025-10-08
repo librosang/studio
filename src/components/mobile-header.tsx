@@ -23,7 +23,7 @@ const allNavItems = [
   { href: '/stock', labelKey: 'nav.stock', icon: Icons.stock, roles: ['manager'] as UserRole[] },
   { href: '/shop', labelKey: 'nav.shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
   { href: '/pos', labelKey: 'nav.pos', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/expenses', labelKey: 'nav.expenses', icon: Icons.receipt, roles: ['manager'] as UserRole[] },
+  { href: '/expenses', labelKey: 'nav.accounting', icon: Icons.receipt, roles: ['manager'] as UserRole[] },
   { href: '/log', labelKey: 'nav.log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
   { href: '/accounts', labelKey: 'nav.accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
   { href: '/settings', labelKey: 'nav.settings', icon: Icons.settings, roles: ['manager', 'cashier'] as UserRole[] },
