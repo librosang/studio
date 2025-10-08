@@ -14,12 +14,15 @@ export type CartItem = {
 
 type ReceiptProps = {
   cartItems: CartItem[];
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
   total: number;
   transactionDate: string;
   cashierName?: string;
 };
 
-export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, total, transactionDate, cashierName }, ref) => {
+export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, subtotal, taxAmount, discountAmount, total, transactionDate, cashierName }, ref) => {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   return (
@@ -57,6 +60,26 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
       </table>
 
       <hr className="my-2 border-dashed border-black" />
+      
+       <div className="space-y-1">
+            <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+                <span>Tax</span>
+                <span>{formatCurrency(taxAmount)}</span>
+            </div>
+            {discountAmount > 0 && (
+                <div className="flex justify-between">
+                    <span>Discount</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
+                </div>
+            )}
+        </div>
+
+
+      <hr className="my-2 border-dashed border-black" />
 
       <div className="flex justify-between font-bold">
         <span>TOTAL</span>
@@ -73,3 +96,5 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ cartItems, to
 });
 
 Receipt.displayName = 'Receipt';
+
+    

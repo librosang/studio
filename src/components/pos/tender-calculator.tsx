@@ -12,10 +12,14 @@ import { Button } from '../ui/button';
 import { useState, useMemo } from 'react';
 import { Numpad } from './numpad';
 import { useCurrency } from '@/context/language-context';
+import { Separator } from '../ui/separator';
 
 type TenderCalculatorProps = {
     isOpen: boolean;
     onClose: () => void;
+    subtotal: number;
+    taxAmount: number;
+    discountAmount: number;
     totalAmount: number;
     onConfirm: (tenderedAmount: number) => void;
 }
@@ -23,6 +27,9 @@ type TenderCalculatorProps = {
 export function TenderCalculator({
     isOpen,
     onClose,
+    subtotal,
+    taxAmount,
+    discountAmount,
     totalAmount,
     onConfirm
 }: TenderCalculatorProps) {
@@ -42,7 +49,7 @@ export function TenderCalculator({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xl p-0 gap-0">
+            <DialogContent className="max-w-3xl p-0 gap-0">
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     {/* Left Side: Numpad and Calculation */}
                     <div className="p-6 flex flex-col justify-between">
@@ -53,8 +60,23 @@ export function TenderCalculator({
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-4 text-center my-8">
-                             <div className="space-y-1">
+                        <div className="space-y-2 text-center my-6">
+                            <div className="text-lg">
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Subtotal</span>
+                                    <span>{formatCurrency(subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Tax</span>
+                                    <span>{formatCurrency(taxAmount)}</span>
+                                </div>
+                                {discountAmount > 0 && <div className="flex justify-between text-muted-foreground">
+                                    <span>Discount</span>
+                                    <span>-{formatCurrency(discountAmount)}</span>
+                                </div>}
+                            </div>
+                            <Separator />
+                            <div className="space-y-1 pt-2">
                                 <p className="text-muted-foreground">Total Due</p>
                                 <p className="text-4xl font-bold font-mono tracking-tighter h-12">
                                     {formatCurrency(totalAmount)}
@@ -74,12 +96,12 @@ export function TenderCalculator({
                             </div>
                         </div>
 
-                        <Numpad value={tenderedString} onChange={setTenderedString} />
                     </div>
                     
                     {/* Right Side: Actions */}
-                    <div className="bg-muted/30 p-6 flex flex-col justify-end md:rounded-r-lg">
-                        <DialogFooter className="gap-2 flex-col sm:justify-end">
+                    <div className="bg-muted/30 p-6 flex flex-col justify-between md:rounded-r-lg">
+                        <Numpad value={tenderedString} onChange={setTenderedString} />
+                        <DialogFooter className="gap-2 flex-col sm:justify-end mt-8">
                             <Button 
                                 onClick={() => onConfirm(tenderedValue)}
                                 disabled={!canConfirm}
@@ -95,5 +117,7 @@ export function TenderCalculator({
         </Dialog>
     )
 }
+
+    
 
     

@@ -20,6 +20,9 @@ type ReceiptDialogProps = {
   onClose: () => void;
   transaction: {
     cartItems: CartItem[];
+    subtotal: number;
+    taxAmount: number;
+    discountAmount: number;
     total: number;
     transactionDate: string;
     cashierName?: string;
@@ -60,3 +63,5 @@ export function ReceiptDialog({ isOpen, onClose, transaction }: ReceiptDialogPro
     </Dialog>
   );
 }
+
+    

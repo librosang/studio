@@ -29,6 +29,11 @@ import { DrawerManager, DrawerState, EndOfDayDialog } from './drawer-manager';
 
 function TransactionPanel({
     cartItems,
+    subtotal,
+    tax,
+    setTax,
+    discount,
+    setDiscount,
     totalAmount,
     handleValidate,
     isProcessing,
@@ -39,6 +44,11 @@ function TransactionPanel({
     setIsReturnMode,
 }: {
     cartItems: SerializableProduct[];
+    subtotal: number;
+    tax: number;
+    setTax: (tax: number) => void;
+    discount: number;
+    setDiscount: (discount: number) => void;
     totalAmount: number;
     handleValidate: () => void;
     isProcessing: boolean;
@@ -106,6 +116,35 @@ function TransactionPanel({
             </CardContent>
             <Separator />
             <CardFooter className="flex flex-col gap-4 p-4 mt-auto">
+                 <div className="w-full flex flex-col gap-2 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                     <div className="flex items-center justify-between">
+                        <Label htmlFor="tax-input" className="text-muted-foreground">Tax (%)</Label>
+                        <Input
+                            id="tax-input"
+                            type="number"
+                            value={tax}
+                            onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
+                            className="h-8 w-20 text-right"
+                            placeholder="0"
+                        />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="discount-input" className="text-muted-foreground">Discount</Label>
+                        <Input
+                            id="discount-input"
+                            type="number"
+                            value={discount}
+                            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                            className="h-8 w-20 text-right"
+                            placeholder="0.00"
+                        />
+                    </div>
+                </div>
+                <Separator />
                 <div className='w-full text-2xl font-bold flex justify-between items-center'>
                     <span>{t('transaction.total')}</span>
                     <span>{formatCurrency(totalAmount)}</span>
@@ -135,6 +174,8 @@ export function PosClient({
   const [products, setProducts] = useState<SerializableProduct[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState<Map<string, number>>(new Map());
+  const [tax, setTax] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isTenderOpen, setIsTenderOpen] = useState(false);
@@ -155,6 +196,9 @@ export function PosClient({
 
   const [lastTransaction, setLastTransaction] = useState<{
     cartItems: ReceiptCartItem[];
+    subtotal: number;
+    taxAmount: number;
+    discountAmount: number;
     total: number;
     transactionDate: string;
     cashierName?: string;
@@ -208,6 +252,8 @@ export function PosClient({
 
   const handleClearCart = () => {
     setCart(new Map());
+    setTax(0);
+    setDiscount(0);
   }
 
   const handleValidate = () => {
@@ -252,12 +298,15 @@ export function PosClient({
 
             setLastTransaction({
                 cartItems: completedCartItems,
+                subtotal: subtotal,
+                taxAmount: taxAmount,
+                discountAmount: discountAmount,
                 total: totalAmount,
                 transactionDate: new Date().toISOString(),
                 cashierName: user.name,
             });
 
-            setCart(new Map());
+            handleClearCart();
             setIsReturnMode(false);
         }
     }).finally(() => {
@@ -267,12 +316,18 @@ export function PosClient({
 
   const cartItems = Array.from(cart.keys()).map(id => initialProducts.find(p => p.id === id)).filter(Boolean) as SerializableProduct[];
   
-  const totalAmount = useMemo(() => {
-    return cartItems.reduce((acc, item) => {
+  const { subtotal, taxAmount, discountAmount, totalAmount } = useMemo(() => {
+    const subtotal = cartItems.reduce((acc, item) => {
       const quantity = cart.get(item.id) || 0;
       return acc + (item.price * quantity);
     }, 0);
-  }, [cart, cartItems]);
+
+    const taxAmount = (subtotal * tax) / 100;
+    const discountAmount = discount;
+    const totalAmount = subtotal + taxAmount - discountAmount;
+
+    return { subtotal, taxAmount, discountAmount, totalAmount };
+  }, [cart, cartItems, tax, discount]);
 
   const totalItemsInCart = useMemo(() => {
     return Array.from(cart.values()).reduce((sum, qty) => sum + Math.abs(qty), 0);
@@ -303,6 +358,11 @@ export function PosClient({
 
   const transactionPanelProps = {
     cartItems,
+    subtotal,
+    tax,
+    setTax,
+    discount,
+    setDiscount,
     totalAmount,
     handleValidate,
     isProcessing,
@@ -430,6 +490,9 @@ export function PosClient({
       <TenderCalculator 
         isOpen={isTenderOpen}
         onClose={() => setIsTenderOpen(false)}
+        subtotal={subtotal}
+        taxAmount={taxAmount}
+        discountAmount={discountAmount}
         totalAmount={totalAmount}
         onConfirm={handleProcessTransaction}
       />
@@ -444,10 +507,12 @@ export function PosClient({
     
     <div className="hidden">
         {/* This is kept for print styling purposes, the actual visible receipt is in the dialog */}
-        <Receipt ref={receiptRef} cartItems={lastTransaction?.cartItems || []} total={lastTransaction?.total || 0} transactionDate={lastTransaction?.transactionDate || ''} cashierName={lastTransaction?.cashierName} />
+        <Receipt ref={receiptRef} {...lastTransaction!} />
     </div>
     </>
   );
 }
+
+    
 
     
