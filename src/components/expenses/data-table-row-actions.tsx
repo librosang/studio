@@ -122,7 +122,7 @@ export function DataTableRowActions<TData>({
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[80vh] p-0">
-              <div className="p-6">
+              <div className="p-6 pt-0">
                 <ExpenseForm expense={expense} setOpen={setIsEditDialogOpen} />
               </div>
             </ScrollArea>

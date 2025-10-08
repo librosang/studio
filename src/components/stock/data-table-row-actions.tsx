@@ -130,7 +130,7 @@ export function DataTableRowActions<TData>({
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[80vh] p-0">
-              <div className="p-6">
+              <div className="p-6 pt-0">
                 <ProductForm product={product} setOpen={setIsEditDialogOpen} />
               </div>
             </ScrollArea>
@@ -145,7 +145,7 @@ export function DataTableRowActions<TData>({
               </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[80vh] p-0">
-            <div className="p-6">
+            <div className="p-6 pt-0">
               <TransferForm product={product} setOpen={setIsTransferDialogOpen} />
             </div>
           </ScrollArea>

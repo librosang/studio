@@ -72,7 +72,7 @@ export const columns: ColumnDef<SerializableExpense>[] = [
       return <DataTableRowActions row={row} />;
     },
      meta: {
-      className: "sticky right-0 bg-card/80 backdrop-blur-sm"
+      className: "sticky right-0 bg-card/80 backdrop-blur-sm z-10"
     }
   },
 ];

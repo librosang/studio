@@ -86,7 +86,7 @@ export function ExpensesDataTable<TData, TValue>({
               </DialogDescription>
             </DialogHeader>
              <ScrollArea className="max-h-[80vh] p-0">
-                <div className="p-6">
+                <div className="p-6 pt-0">
                     <ExpenseForm setOpen={setIsFormOpen} />
                 </div>
             </ScrollArea>

@@ -319,5 +319,3 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
     </Form>
   );
 }
-
-    

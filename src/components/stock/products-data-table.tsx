@@ -103,7 +103,7 @@ export function ProductsDataTable<TData, TValue>({
               </DialogDescription>
             </DialogHeader>
              <ScrollArea className="max-h-[80vh] p-0">
-                <div className="p-6">
+                <div className="p-6 pt-0">
                     <ProductForm setOpen={setIsFormOpen} />
                 </div>
             </ScrollArea>
@@ -141,7 +141,7 @@ export function ProductsDataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => {
                     const meta = cell.column.columnDef.meta as { className?: string };
                     return (
-                      <TableCell key={cell.id} className={cn(meta?.className)}>
+                      <TableCell key={cell.id} className={cn('py-2 px-4', meta?.className)}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     )

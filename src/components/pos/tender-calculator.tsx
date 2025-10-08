@@ -11,8 +11,9 @@ import {
 import { Button } from '../ui/button';
 import { useState, useMemo } from 'react';
 import { Numpad } from './numpad';
-import { useCurrency } from '@/context/language-context';
+import { useCurrency, useTranslation } from '@/context/language-context';
 import { Separator } from '../ui/separator';
+import { ScrollArea } from '../ui/scroll-area';
 
 type TenderCalculatorProps = {
     isOpen: boolean;
@@ -35,6 +36,7 @@ export function TenderCalculator({
 }: TenderCalculatorProps) {
     const [tenderedString, setTenderedString] = useState('0');
     const { formatCurrency } = useCurrency();
+    const { t } = useTranslation();
 
     const tenderedValue = parseFloat(tenderedString) || 0;
 
@@ -49,12 +51,13 @@ export function TenderCalculator({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl p-0 gap-0">
+            <DialogContent className="max-w-3xl p-0 gap-0" onInteractOutside={(e) => e.preventDefault()}>
+              <ScrollArea className="max-h-[90vh]">
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     {/* Left Side: Numpad and Calculation */}
                     <div className="p-6 flex flex-col justify-between">
                         <DialogHeader>
-                            <DialogTitle className="text-3xl">Tender</DialogTitle>
+                            <DialogTitle className="text-3xl">{t('transaction.validate')}</DialogTitle>
                             <DialogDescription>
                                 Enter the amount of cash received from the customer.
                             </DialogDescription>
@@ -63,21 +66,21 @@ export function TenderCalculator({
                         <div className="space-y-2 text-center my-6">
                             <div className="text-lg">
                                 <div className="flex justify-between text-muted-foreground">
-                                    <span>Subtotal</span>
+                                    <span>{t('transaction.sales')}</span>
                                     <span>{formatCurrency(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-muted-foreground">
-                                    <span>Tax</span>
+                                    <span>{t('product_form.tax')}</span>
                                     <span>{formatCurrency(taxAmount)}</span>
                                 </div>
                                 {discountAmount > 0 && <div className="flex justify-between text-muted-foreground">
-                                    <span>Discount</span>
+                                    <span>{t('product_form.discount')}</span>
                                     <span>-{formatCurrency(discountAmount)}</span>
                                 </div>}
                             </div>
                             <Separator />
                             <div className="space-y-1 pt-2">
-                                <p className="text-muted-foreground">Total Due</p>
+                                <p className="text-muted-foreground">{t('transaction.total')}</p>
                                 <p className="text-4xl font-bold font-mono tracking-tighter h-12">
                                     {formatCurrency(totalAmount)}
                                 </p>
@@ -107,17 +110,14 @@ export function TenderCalculator({
                                 disabled={!canConfirm}
                                 className="bg-green-600 hover:bg-green-700 h-16 text-lg"
                             >
-                                Confirm Transaction
+                                {t('transaction.validate')}
                             </Button>
-                            <Button variant="ghost" onClick={onClose} className="h-12">Cancel</Button>
+                            <Button variant="ghost" onClick={onClose} className="h-12">{t('data_table.cancel')}</Button>
                         </DialogFooter>
                     </div>
                 </div>
+              </ScrollArea>
             </DialogContent>
         </Dialog>
     )
 }
-
-    
-
-    
