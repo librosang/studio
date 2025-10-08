@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { SerializableProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import { useCurrency, useTranslation } from '@/context/language-context';
 import { TenderCalculator } from './tender-calculator';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
+import { DrawerManager, DrawerState, EndOfDayDialog } from './drawer-manager';
 
 function TransactionPanel({
     cartItems,
@@ -142,6 +143,14 @@ export function PosClient({
   const { user } = useUser();
   const { t } = useTranslation();
   const [isReturnMode, setIsReturnMode] = useState(false);
+  
+  const [drawerState, setDrawerState] = useState<DrawerState>({
+    status: 'inactive',
+    startingCash: 0,
+    cashSales: 0,
+  });
+
+  const [isEndOfDayOpen, setIsEndOfDayOpen] = useState(false);
 
 
   const [lastTransaction, setLastTransaction] = useState<{
@@ -213,7 +222,7 @@ export function PosClient({
     setIsTenderOpen(true);
   };
   
-  const handleProcessTransaction = () => {
+  const handleProcessTransaction = (tenderedAmount: number) => {
     setIsProcessing(true);
     setIsTenderOpen(false);
     const cartObject = Object.fromEntries(cart);
@@ -224,6 +233,13 @@ export function PosClient({
         } else {
             toast({ title: t('general.success'), description: t('transaction.success'), className: 'bg-green-600 text-white' });
             
+            const cashPayment = totalAmount > 0 ? Math.min(totalAmount, tenderedAmount) : 0;
+            
+            setDrawerState(prev => ({
+                ...prev,
+                cashSales: prev.cashSales + cashPayment,
+            }));
+
             const completedCartItems: ReceiptCartItem[] = Array.from(cart.keys()).map(id => {
                 const product = initialProducts.find(p => p.id === id);
                 return {
@@ -297,64 +313,91 @@ export function PosClient({
     setIsReturnMode
   };
 
+  const handleStartDrawer = (startingCash: number) => {
+    setDrawerState({
+        status: 'active',
+        startingCash,
+        cashSales: 0,
+    });
+  };
+
+  const handleEndDay = () => {
+    setIsEndOfDayOpen(true);
+  };
+  
+  const handleConfirmEndDay = () => {
+    setDrawerState({
+        status: 'inactive',
+        startingCash: 0,
+        cashSales: 0,
+    });
+    setIsEndOfDayOpen(false);
+  };
+
   return (
     <>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full">
-      <div className="md:col-span-2 h-full flex flex-col">
-        <div className="mb-6 flex gap-2">
-            <Input 
-                placeholder={t('pos.search_placeholder')}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="text-base flex-1"
-            />
-             <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <ScanBarcode className="h-6 w-6" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{t('product_form.scan_barcode')}</DialogTitle>
-                </DialogHeader>
-                <BarcodeScanner
-                  onScan={onBarcodeScanned}
-                  onClose={() => setIsScannerOpen(false)}
+    <DrawerManager
+        drawerState={drawerState}
+        onStartDrawer={handleStartDrawer}
+        onEndDay={handleEndDay}
+    >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full">
+        <div className="md:col-span-2 h-full flex flex-col">
+            <div className="mb-6 flex gap-2">
+                <Input 
+                    placeholder={t('pos.search_placeholder')}
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="text-base flex-1"
                 />
-              </DialogContent>
-            </Dialog>
-            <Button 
-                onClick={toggleFullscreen} 
-                variant="outline" 
-                size="icon" 
-            >
-                <Icons.fullscreen className="h-5 w-5" />
-            </Button>
+                <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                    <ScanBarcode className="h-6 w-6" />
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                    <DialogTitle>{t('product_form.scan_barcode')}</DialogTitle>
+                    </DialogHeader>
+                    <BarcodeScanner
+                    onScan={onBarcodeScanned}
+                    onClose={() => setIsScannerOpen(false)}
+                    />
+                </DialogContent>
+                </Dialog>
+                <Button 
+                    onClick={toggleFullscreen} 
+                    variant="outline" 
+                    size="icon" 
+                >
+                    <Icons.fullscreen className="h-5 w-5" />
+                </Button>
+            </div>
+            <ScrollArea className="flex-grow pr-4 -mr-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredProducts.map((product) => (
+                <ProductGridItem
+                    key={product.id}
+                    product={product}
+                    onAddToCart={() => handleAddToCart(product.id)}
+                />
+                ))}
+                {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-16 text-muted-foreground">
+                    <Icons.stock className="mx-auto h-12 w-12" />
+                    <p className="mt-4">{t('pos.no_products_found')}</p>
+                </div>
+                )}
+            </div>
+            </ScrollArea>
         </div>
-        <ScrollArea className="flex-grow pr-4 -mr-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map((product) => (
-              <ProductGridItem
-                key={product.id}
-                product={product}
-                onAddToCart={() => handleAddToCart(product.id)}
-              />
-            ))}
-             {filteredProducts.length === 0 && (
-              <div className="col-span-full text-center py-16 text-muted-foreground">
-                <Icons.stock className="mx-auto h-12 w-12" />
-                <p className="mt-4">{t('pos.no_products_found')}</p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
 
-       <Card className="rounded-lg border bg-card text-card-foreground shadow-sm lg:col-span-1 h-fit sticky top-8 hidden lg:flex lg:flex-col">
-        <TransactionPanel {...transactionPanelProps} />
-      </Card>
-    </div>
+        <Card className="rounded-lg border bg-card text-card-foreground shadow-sm lg:col-span-1 h-fit sticky top-8 hidden lg:flex lg:flex-col">
+            <TransactionPanel {...transactionPanelProps} />
+        </Card>
+        </div>
+    </DrawerManager>
     
     {/* Mobile Floating Cart Button & Sheet */}
     <div className="lg:hidden fixed bottom-4 right-4 z-50">
@@ -387,11 +430,17 @@ export function PosClient({
       <TenderCalculator 
         isOpen={isTenderOpen}
         onClose={() => setIsTenderOpen(false)}
-        cartItems={cartItems}
         totalAmount={totalAmount}
         onConfirm={handleProcessTransaction}
       />
     )}
+
+    <EndOfDayDialog
+        isOpen={isEndOfDayOpen}
+        onClose={() => setIsEndOfDayOpen(false)}
+        onConfirm={handleConfirmEndDay}
+        drawerState={drawerState}
+    />
     
     <div className="hidden">
         {/* This is kept for print styling purposes, the actual visible receipt is in the dialog */}
@@ -400,3 +449,5 @@ export function PosClient({
     </>
   );
 }
+
+    

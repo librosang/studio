@@ -11,29 +11,25 @@ import {
 import { Button } from '../ui/button';
 import { useState, useMemo } from 'react';
 import { Numpad } from './numpad';
-import { ReceiptPreview } from './receipt-preview';
-import { type SerializableProduct } from '@/lib/types';
 import { useCurrency } from '@/context/language-context';
 
 type TenderCalculatorProps = {
     isOpen: boolean;
     onClose: () => void;
-    cartItems: SerializableProduct[];
     totalAmount: number;
-    onConfirm: () => void;
+    onConfirm: (tenderedAmount: number) => void;
 }
 
 export function TenderCalculator({
     isOpen,
     onClose,
-    cartItems,
     totalAmount,
     onConfirm
 }: TenderCalculatorProps) {
-    const [tenderedAmount, setTenderedAmount] = useState('0');
+    const [tenderedString, setTenderedString] = useState('0');
     const { formatCurrency } = useCurrency();
 
-    const tenderedValue = parseFloat(tenderedAmount) || 0;
+    const tenderedValue = parseFloat(tenderedString) || 0;
 
     const changeDue = useMemo(() => {
         if (tenderedValue < totalAmount) {
@@ -46,52 +42,58 @@ export function TenderCalculator({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl grid-cols-1 md:grid-cols-2 p-0 gap-0">
-                {/* Left Side: Numpad and Calculation */}
-                <div className="p-6 flex flex-col justify-between">
-                    <DialogHeader>
-                        <DialogTitle className="text-3xl">Tender</DialogTitle>
-                        <DialogDescription>
-                            Enter the amount of cash received from the customer.
-                        </DialogDescription>
-                    </DialogHeader>
+            <DialogContent className="max-w-xl p-0 gap-0">
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                    {/* Left Side: Numpad and Calculation */}
+                    <div className="p-6 flex flex-col justify-between">
+                        <DialogHeader>
+                            <DialogTitle className="text-3xl">Tender</DialogTitle>
+                            <DialogDescription>
+                                Enter the amount of cash received from the customer.
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    <div className="space-y-4 text-center my-8">
-                        <div className="space-y-1">
-                            <p className="text-muted-foreground">Amount Tendered</p>
-                            <p className="text-5xl font-bold font-mono tracking-tighter h-14">
-                                {formatCurrency(tenderedValue)}
-                            </p>
+                        <div className="space-y-4 text-center my-8">
+                             <div className="space-y-1">
+                                <p className="text-muted-foreground">Total Due</p>
+                                <p className="text-4xl font-bold font-mono tracking-tighter h-12">
+                                    {formatCurrency(totalAmount)}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-muted-foreground">Amount Tendered</p>
+                                <p className="text-5xl font-bold font-mono tracking-tighter h-14">
+                                    {formatCurrency(tenderedValue)}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-muted-foreground">Change Due</p>
+                                <p className="text-6xl font-bold font-mono tracking-tighter text-green-400 h-16">
+                                    {formatCurrency(changeDue)}
+                                </p>
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-muted-foreground">Change Due</p>
-                             <p className="text-6xl font-bold font-mono tracking-tighter text-green-400 h-16">
-                                {formatCurrency(changeDue)}
-                            </p>
-                        </div>
-                    </div>
 
-                    <Numpad value={tenderedAmount} onChange={setTenderedAmount} />
-                </div>
-                
-                {/* Right Side: Receipt Preview and Actions */}
-                <div className="bg-muted/30 p-6 flex flex-col justify-between md:rounded-r-lg">
-                    <div className="flex-1">
-                       <h3 className="text-xl font-semibold mb-4">Cart Summary</h3>
-                       <ReceiptPreview cartItems={cartItems} total={totalAmount} />
+                        <Numpad value={tenderedString} onChange={setTenderedString} />
                     </div>
-                    <DialogFooter className="gap-2 sm:justify-end mt-6">
-                        <Button variant="ghost" onClick={onClose}>Cancel</Button>
-                        <Button 
-                            onClick={onConfirm}
-                            disabled={!canConfirm}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            Confirm Transaction
-                        </Button>
-                    </DialogFooter>
+                    
+                    {/* Right Side: Actions */}
+                    <div className="bg-muted/30 p-6 flex flex-col justify-end md:rounded-r-lg">
+                        <DialogFooter className="gap-2 flex-col sm:justify-end">
+                            <Button 
+                                onClick={() => onConfirm(tenderedValue)}
+                                disabled={!canConfirm}
+                                className="bg-green-600 hover:bg-green-700 h-16 text-lg"
+                            >
+                                Confirm Transaction
+                            </Button>
+                            <Button variant="ghost" onClick={onClose} className="h-12">Cancel</Button>
+                        </DialogFooter>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
     )
 }
+
+    
