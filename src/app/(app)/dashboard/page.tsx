@@ -310,5 +310,3 @@ function StatCard({
     </Card>
   );
 }
-
-    

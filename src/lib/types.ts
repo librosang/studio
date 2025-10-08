@@ -90,5 +90,3 @@ export type DashboardStats = {
 
 export type Language = 'en' | 'ar';
 export type Currency = 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CAD' | 'MAD';
-
-    
