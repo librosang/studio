@@ -62,7 +62,7 @@ export function DataTableRowActions({
     if (result.error) {
       toast({
         title: t('general.error'),
-        description: t(result.error as any),
+        description: t(result.error as any, {name: account.name}),
         variant: 'destructive',
       });
     } else {
@@ -71,7 +71,9 @@ export function DataTableRowActions({
         description: t('accounts.account_deleted'),
       });
       setIsDeleteDialogOpen(false);
-      // Here you would typically refetch the data or remove the item from the local state
+      // Note: In a real app, you would need to trigger a re-fetch of the accounts list.
+      // For this mock app, we'll rely on a page refresh for now.
+      window.location.reload(); 
     }
   };
   
@@ -89,7 +91,7 @@ export function DataTableRowActions({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)} disabled={!canPerformActions}>
               <Icons.edit className="mr-2 h-4 w-4" />
               {t('data_table.edit')}
             </DropdownMenuItem>
@@ -99,6 +101,7 @@ export function DataTableRowActions({
                 <DropdownMenuItem 
                   onSelect={(e) => e.preventDefault()}
                   disabled={!canPerformActions}
+                  className="text-destructive focus:text-destructive"
                 >
                   <Icons.trash className="mr-2 h-4 w-4" />
                   {t('data_table.delete')}

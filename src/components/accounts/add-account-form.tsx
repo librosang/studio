@@ -70,19 +70,23 @@ export function AddAccountForm({ account, setOpen }: AddAccountFormProps) {
       : await addAccount(data, user);
 
     if (result.error) {
-      toast({
-        title: t('general.error'),
-        description: 'Failed to save account.',
-        variant: 'destructive',
-      });
+        const errorText = typeof result.error === 'string' ? result.error : "Validation failed. Check your inputs.";
+        toast({
+            title: t('general.error'),
+            description: errorText,
+            variant: 'destructive',
+        });
     } else {
-      toast({
-        title: t('general.success'),
-        description: t('accounts.account_saved_success', { name: data.name, action: account ? t('accounts.action_updated') : t('accounts.action_created') }),
-        className: 'bg-green-600 text-white',
-      });
-      form.reset();
-      setOpen(false);
+        toast({
+            title: t('general.success'),
+            description: t('accounts.account_saved_success', { name: data.name, action: account ? t('accounts.action_updated') : t('accounts.action_created') }),
+            className: 'bg-green-600 text-white',
+        });
+        form.reset();
+        setOpen(false);
+        // Note: In a real app, you would need to trigger a re-fetch of the accounts list.
+        // For this mock app, we'll rely on a page refresh for now.
+        window.location.reload(); 
     }
   };
 

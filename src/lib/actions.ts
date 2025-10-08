@@ -87,17 +87,19 @@ export async function addProduct(formData: ProductFormData, user: UserProfile) {
       updatedAt: Timestamp.now(),
   };
 
-  addDoc(collection(db, 'products'), newProductData).then(docRef => {
-      console.log("Product added with ID: ", docRef.id);
-      addLog(
+  try {
+    const docRef = await addDoc(collection(db, 'products'), newProductData);
+    console.log("Product added with ID: ", docRef.id);
+    addLog(
         'CREATE',
         `Created: ${name}`,
         [{ productName: name, quantityChange: stockQuantity, price }],
         user
-      );
-  }).catch(error => {
+    );
+  } catch (error) {
       console.error("Error adding product: ", error);
-  });
+      return { error: 'Failed to add product.' };
+  }
 
   revalidatePath('/stock');
   revalidatePath('/dashboard');
@@ -127,24 +129,25 @@ export async function updateProduct(id: string, formData: ProductFormData, user:
         updatedAt: Timestamp.now(),
     };
 
-    getDoc(productRef).then(productSnap => {
+    try {
+        const productSnap = await getDoc(productRef);
         if (productSnap.exists()) {
             const oldData = productSnap.data() as Product;
             const quantityChange = stockQuantity - oldData.stockQuantity;
 
-            updateDoc(productRef, updatedData).then(() => {
-                console.log("Product updated");
-                 addLog(
-                    'UPDATE',
-                    `Updated: ${name}`,
-                    [{ productName: name, quantityChange: quantityChange, price }],
-                    user
-                );
-            });
+            await updateDoc(productRef, updatedData);
+            console.log("Product updated");
+            addLog(
+                'UPDATE',
+                `Updated: ${name}`,
+                [{ productName: name, quantityChange: quantityChange, price }],
+                user
+            );
         }
-    }).catch(error => {
+    } catch (error) {
         console.error("Error updating product: ", error);
-    });
+        return { error: 'Failed to update product.' };
+    }
 
     revalidatePath('/stock');
     revalidatePath('/shop');
@@ -158,24 +161,25 @@ export async function deleteProduct(id: string, user: UserProfile) {
     
     const productRef = doc(db, 'products', id);
 
-    getDoc(productRef).then(productSnap => {
+    try {
+        const productSnap = await getDoc(productRef);
         if (productSnap.exists()) {
             const { name, stockQuantity, shopQuantity, price } = productSnap.data() as Product;
             const totalQuantity = stockQuantity + shopQuantity;
 
-            deleteDoc(productRef).then(() => {
-                console.log("Product deleted");
-                addLog(
-                    'DELETE',
-                    `Deleted: ${name}`,
-                    [{ productName: name, quantityChange: -totalQuantity, price }],
-                    user
-                );
-            });
+            await deleteDoc(productRef);
+            console.log("Product deleted");
+            addLog(
+                'DELETE',
+                `Deleted: ${name}`,
+                [{ productName: name, quantityChange: -totalQuantity, price }],
+                user
+            );
         }
-    }).catch(error => {
+    } catch(error) {
         console.error("Error deleting product: ", error);
-    });
+        return { error: 'Failed to delete product.' };
+    }
 
     revalidatePath('/stock');
     revalidatePath('/shop');
@@ -191,7 +195,8 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
 
   const productRef = doc(db, 'products', id);
 
-  getDoc(productRef).then(productSnap => {
+  try {
+    const productSnap = await getDoc(productRef);
     if (!productSnap.exists()) {
       throw new Error('Product not found.');
     }
@@ -205,22 +210,23 @@ export async function transferStockToShop(id: string, quantityToTransfer: number
     const newStockQuantity = product.stockQuantity - quantityToTransfer;
     const newShopQuantity = product.shopQuantity + quantityToTransfer;
 
-    updateDoc(productRef, {
+    await updateDoc(productRef, {
       stockQuantity: newStockQuantity,
       shopQuantity: newShopQuantity,
       updatedAt: Timestamp.now(),
-    }).then(() => {
-      addLog(
+    });
+    
+    addLog(
         'TRANSFER',
         'Stock -> Shop',
         [{ productName: product.name, quantityChange: quantityToTransfer, price: product.price }],
         user
-      );
-    });
+    );
 
-  }).catch(error => {
+  } catch (error) {
       console.error("Error transferring stock: ", error);
-  });
+      return { error: 'Failed to transfer stock.' };
+  }
   
   revalidatePath('/stock');
   revalidatePath('/shop');
@@ -244,41 +250,44 @@ export async function processTransaction(cart: { [id: string]: number }, user: U
   const batch = writeBatch(db);
   const productIds = Object.keys(cart);
   const logItems: { productName: string; quantityChange: number; price: number }[] = [];
-  const productPromises = productIds.map(id => getDoc(doc(db, 'products', id)));
+  
+  try {
+    const productRefs = productIds.map(id => doc(db, 'products', id));
+    const productSnaps = await Promise.all(productRefs.map(ref => getDoc(ref)));
 
-  Promise.all(productPromises).then(productSnaps => {
-      productSnaps.forEach(productSnap => {
-          if (productSnap.exists()) {
-              const productId = productSnap.id;
-              const quantityChangeInCart = cart[productId];
-              
-              if (quantityChangeInCart === 0) return;
+    for (const productSnap of productSnaps) {
+        if (productSnap.exists()) {
+            const productId = productSnap.id;
+            const quantityChangeInCart = cart[productId];
+            
+            if (quantityChangeInCart === 0) continue;
 
-              const product = productSnap.data() as Product;
-              const newShopQuantity = product.shopQuantity - quantityChangeInCart;
+            const product = productSnap.data() as Product;
+            const newShopQuantity = product.shopQuantity - quantityChangeInCart;
 
-              if (quantityChangeInCart > 0 && newShopQuantity < 0) {
-                  throw new Error(`Not enough stock for ${product.name} in the shop.`);
-              }
-              
-              const productRef = doc(db, 'products', productId);
-              batch.update(productRef, { shopQuantity: newShopQuantity, updatedAt: Timestamp.now() });
-              
-              logItems.push({ productName: product.name, quantityChange: -quantityChangeInCart, price: product.price });
-          }
-      });
+            // For sales, ensure we don't sell more than what's available
+            if (quantityChangeInCart > 0 && newShopQuantity < 0) {
+                throw new Error(`Not enough stock for ${product.name} in the shop.`);
+            }
+            
+            const productRef = doc(db, 'products', productId);
+            batch.update(productRef, { shopQuantity: newShopQuantity, updatedAt: Timestamp.now() });
+            
+            logItems.push({ productName: product.name, quantityChange: -quantityChangeInCart, price: product.price });
+        }
+    }
 
-      if (logItems.length > 0) {
-        addLog('TRANSACTION', 'Shop Transaction', logItems, user);
-      }
+    if (logItems.length > 0) {
+      addLog('TRANSACTION', 'Shop Transaction', logItems, user);
+    }
 
-      batch.commit().catch(error => {
-          console.error("Transaction batch commit failed: ", error);
-      });
+    await batch.commit();
 
-  }).catch(error => {
-      console.error("Error processing transaction: ", error.message);
-  });
+  } catch (error) {
+    console.error("Error processing transaction: ", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { error: errorMessage };
+  }
 
   revalidatePath('/stock');
   revalidatePath('/shop');
@@ -426,6 +435,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       };
   }).filter(p => p.daysLeft >= 0).sort((a,b) => a.daysLeft - b.daysLeft);
 
+  const expensesRef = collection(db, 'expenses');
+  const expensesQuery = query(expensesRef, where('date', '>=', todayStart), where('date', '<=', todayEnd));
+  const expensesSnapshot = await getDocs(expensesQuery);
+  const totalExpenses = expensesSnapshot.docs.reduce((acc, doc) => acc + doc.data().amount, 0);
+
+  const netProfit = totalRevenue - totalReturnValue - totalExpenses;
 
   return {
     itemsSold,
@@ -435,7 +450,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     newStockCount,
     restockedItems,
     topSellingProducts,
-    expiringSoon
+    expiringSoon,
+    totalExpenses,
+    netProfit
   };
 }
 
@@ -473,68 +490,62 @@ export async function getProductDataFromBarcode(barcode: string): Promise<{ name
 export async function getAccounts(user: UserProfile): Promise<UserProfile[]> {
     if (user.role !== 'manager') return [];
     // This is a mock implementation. In a real app, you would fetch from Firestore users collection.
-    // For now, we return a static list of mock users.
     const mockUsers: UserProfile[] = [
         { id: '1', name: 'Admin Manager', email: 'manager@test.com', role: 'manager' },
         { id: '2', name: 'John Cashier', email: 'john@test.com', role: 'cashier' },
         { id: '3', name: 'Jane Cashier', email: 'jane@test.com', role: 'cashier' },
     ];
-    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
     return mockUsers;
 }
 
-export async function addAccount(formData: unknown, user: UserProfile) {
+export async function addAccount(formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | z.ZodError }> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     
     // In a real app, you would not define this schema here. This is just for validation.
-    // The role should only be 'cashier' as only managers can create accounts.
-    const NewAccountSchema = UserSchema.pick({ name: true, email: true }).extend({
-        role: z.literal('cashier'),
-    });
+    const NewAccountSchema = UserSchema.pick({ name: true, email: true, role: true });
     
     const result = NewAccountSchema.safeParse(formData);
     if (!result.success) {
-        return { error: result.error.flatten().fieldErrors };
+        return { error: result.error };
     }
 
     // TODO: Implement actual user creation with Firebase Admin SDK on a secure backend.
-    // e.g., call a Cloud Function that uses admin.auth().createUser(...)
-    // and then creates a corresponding user profile document in Firestore.
     console.log("MOCK: Creating new user:", result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} created.` };
 }
 
-export async function updateAccount(id: string, formData: unknown, user: UserProfile) {
+export async function updateAccount(id: string, formData: Pick<UserProfile, 'name' | 'email' | 'role'>, user: UserProfile): Promise<{data?: string, error?: string | z.ZodError }> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
 
     const UpdateAccountSchema = UserSchema.pick({ name: true, email: true, role: true });
 
     const result = UpdateAccountSchema.safeParse(formData);
     if (!result.success) {
-        return { error: result.error.flatten().fieldErrors };
+        return { error: result.error };
     }
     
     // TODO: Implement actual user update with Firebase Admin SDK on a secure backend.
-    // e.g., call a Cloud Function that uses admin.auth().updateUser(...)
-    // and then updates the corresponding user profile document in Firestore.
     console.log(`MOCK: Updating user ${id}:`, result.data);
     revalidatePath('/accounts');
     return { data: `User ${result.data.name} updated.` };
 }
 
-export async function deleteAccount(id: string, user: UserProfile) {
+export async function deleteAccount(id: string, user: UserProfile): Promise<{data?: string, error?: string}> {
     if (user.role !== 'manager') return { error: 'Permission denied.' };
     
+    // You cannot delete the currently logged in user
+    if (id === user.id) {
+        return { error: "You cannot delete your own account." };
+    }
+
     // You cannot delete the main manager account in this mock setup
     if (id === '1') {
         return { error: "accounts.delete_primary_manager_error" };
     }
     
     // TODO: Implement actual user deletion with Firebase Admin SDK on a secure backend.
-    // e.g., call a Cloud Function that uses admin.auth().deleteUser(...)
-    // and then deletes the corresponding user profile document from Firestore.
     console.log(`MOCK: Deleting user ${id}`);
     revalidatePath('/accounts');
     return { data: 'User deleted successfully.' };
