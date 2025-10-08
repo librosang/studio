@@ -53,6 +53,8 @@ export function LogExport({ logs }: LogExportProps) {
           "User": log.userName,
           "Product Name": item.productName,
           "Quantity Change": item.quantityChange,
+          "Price per item": item.price,
+          "Total Value": item.quantityChange * item.price,
         }))
     );
 
@@ -67,9 +69,15 @@ export function LogExport({ logs }: LogExportProps) {
       { wch: 20 }, // User
       { wch: 30 }, // Product Name
       { wch: 15 }, // Quantity Change
+      { wch: 15 }, // Price
+      { wch: 15 }, // Total
     ];
 
-    XLSX.writeFile(workbook, "StockFlow_ActivityLog.xlsx");
+    const fileName = date 
+      ? `StockFlow_Log_${format(date, "yyyy-MM-dd")}.xlsx`
+      : "StockFlow_ActivityLog_All.xlsx";
+
+    XLSX.writeFile(workbook, fileName);
 
     setIsExporting(false);
   };
@@ -82,7 +90,7 @@ export function LogExport({ logs }: LogExportProps) {
               id="date"
               variant={"outline"}
               className={cn(
-                "w-[260px] justify-start text-left font-normal",
+                "w-full sm:w-[260px] justify-start text-left font-normal",
                 !date && "text-muted-foreground"
               )}
             >

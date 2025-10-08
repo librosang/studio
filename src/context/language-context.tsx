@@ -529,17 +529,24 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         ...options,
     };
     
-    const formatted = new Intl.NumberFormat(language, defaultOptions).format(value);
+    let formatted = new Intl.NumberFormat(language, defaultOptions).format(value);
 
-    if (currency === 'MAD') {
-        return formatted.replace('MAD', 'DH');
+    if (currency === 'MAD' && language === 'en') {
+        // For English, Intl often shows MAD at the end. We want DH at the start.
+        // It might produce "1,234.56 MAD". We replace it.
+        const numericValue = new Intl.NumberFormat(language, { ...defaultOptions, style: 'decimal' }).format(value);
+        formatted = `DH${numericValue}`;
+    } else if (currency === 'MAD' && language === 'ar') {
+        // For Arabic, Intl might produce "١٬٢٣٤٫٥٦ د.م.‏". We'll replace د.م.‏ with د.إ
+        formatted = formatted.replace('د.م.‏', 'د.م.');
     }
+
 
     return formatted;
   }
 
   const t = (key: TranslationKey, replacements: Record<string, string | number> = {}) => {
-    let translation = translations[language][key] || key;
+    let translation = translations[language]?.[key] || translations['en'][key] || key;
     Object.keys(replacements).forEach(placeholder => {
         const regex = new RegExp(`{${placeholder}}`, 'g');
         translation = translation.replace(regex, String(replacements[placeholder]));
@@ -550,7 +557,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   
   if (!isMounted) {
-    return null; // or a loading spinner
+    // Avoid rendering mismatch between server and client
+    return null;
   }
 
   return (
