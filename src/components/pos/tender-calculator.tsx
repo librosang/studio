@@ -39,19 +39,16 @@ export function TenderCalculator({
     const { t } = useTranslation();
 
     const tenderedValue = parseFloat(tenderedString) || 0;
+    const isReturn = totalAmount < 0;
 
     const changeDue = useMemo(() => {
-        if (totalAmount < 0) { // It's a return
-             return Math.abs(totalAmount);
-        }
-        if (tenderedValue < totalAmount) {
+        if (isReturn || tenderedValue < totalAmount) {
             return 0;
         }
         return tenderedValue - totalAmount;
-    }, [tenderedValue, totalAmount]);
+    }, [tenderedValue, totalAmount, isReturn]);
     
-    const canConfirm = totalAmount < 0 || tenderedValue >= totalAmount;
-    const isReturn = totalAmount < 0;
+    const canConfirm = isReturn || tenderedValue >= totalAmount;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -70,7 +67,7 @@ export function TenderCalculator({
                         <div className="space-y-2 text-center my-6">
                             <div className="text-lg">
                                 <div className="flex justify-between text-muted-foreground">
-                                    <span>{t('transaction.sales')}</span>
+                                    <span>{t('transaction.subtotal')}</span>
                                     <span>{formatCurrency(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-muted-foreground">
@@ -84,20 +81,20 @@ export function TenderCalculator({
                             </div>
                             <Separator />
                             <div className="space-y-1 pt-2">
-                                <p className="text-muted-foreground">{isReturn ? 'Total Return Value' : t('transaction.total')}</p>
+                                <p className="text-muted-foreground">{isReturn ? t('transaction.total_return_value') : t('transaction.total')}</p>
                                 <p className="text-4xl font-bold font-mono tracking-tighter h-12">
                                     {formatCurrency(totalAmount)}
                                 </p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-muted-foreground">{isReturn ? 'Cash Returned' : 'Amount Tendered'}</p>
+                                <p className="text-muted-foreground">{isReturn ? t('transaction.cash_refunded') : t('transaction.amount_tendered')}</p>
                                 <p className="text-5xl font-bold font-mono tracking-tighter h-14">
                                      {isReturn ? formatCurrency(Math.abs(totalAmount)) : formatCurrency(tenderedValue)}
                                 </p>
                             </div>
                            {!isReturn && (
                                 <div className="space-y-1">
-                                    <p className="text-muted-foreground">Change Due</p>
+                                    <p className="text-muted-foreground">{t('transaction.change_due')}</p>
                                     <p className="text-6xl font-bold font-mono tracking-tighter text-green-400 h-16">
                                         {formatCurrency(changeDue)}
                                     </p>
@@ -116,7 +113,7 @@ export function TenderCalculator({
                                 disabled={!canConfirm}
                                 className="bg-green-600 hover:bg-green-700 h-16 text-lg"
                             >
-                                {t('transaction.validate')}
+                                {t('transaction.confirm_button')}
                             </Button>
                             <Button variant="ghost" onClick={onClose} className="h-12">{t('data_table.cancel')}</Button>
                         </DialogFooter>
@@ -127,3 +124,5 @@ export function TenderCalculator({
         </Dialog>
     )
 }
+
+    

@@ -122,7 +122,7 @@ function TransactionPanel({
                         <span>{formatCurrency(subtotal)}</span>
                     </div>
                      <div className="flex items-center justify-between">
-                        <Label htmlFor="tax-input" className="text-muted-foreground">Tax (%)</Label>
+                        <Label htmlFor="tax-input" className="text-muted-foreground">{t('product_form.tax')} (%)</Label>
                         <Input
                             id="tax-input"
                             type="number"
@@ -133,7 +133,7 @@ function TransactionPanel({
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="discount-input" className="text-muted-foreground">Discount</Label>
+                        <Label htmlFor="discount-input" className="text-muted-foreground">{t('product_form.discount')}</Label>
                         <Input
                             id="discount-input"
                             type="number"
@@ -153,7 +153,7 @@ function TransactionPanel({
                     <Icons.trash className='h-4 w-4 mr-2' />
                     Clear Cart
                 </Button>
-                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-primary hover:bg-primary/90 text-primary-foreground">
+                <Button onClick={handleValidate} disabled={isProcessing || cart.size === 0} size="lg" className="w-full text-primary-foreground bg-primary hover:bg-primary/90">
                     {isProcessing ? <Icons.spinner className="animate-spin mr-2" /> : <Icons.checkCircle className="mr-2" />}
                     {t('transaction.validate')}
                 </Button>
@@ -333,11 +333,11 @@ export function PosClient({
       return acc + (item.price * quantity);
     }, 0);
 
-    const taxAmount = (subtotal * tax) / 100;
-    const discountAmount = discount;
-    const totalAmount = subtotal + taxAmount - discountAmount;
+    const taxAmountCalc = (subtotal * tax) / 100;
+    const discountAmountCalc = discount;
+    const totalAmountCalc = subtotal + taxAmountCalc - discountAmountCalc;
 
-    return { subtotal, taxAmount, discountAmount, totalAmount };
+    return { subtotal, taxAmount: taxAmountCalc, discountAmount: discountAmountCalc, totalAmount: totalAmountCalc };
   }, [cart, cartItems, tax, discount]);
 
   const totalItemsInCart = useMemo(() => {
@@ -524,3 +524,5 @@ export function PosClient({
     </>
   );
 }
+
+    

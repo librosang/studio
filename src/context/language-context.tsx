@@ -113,6 +113,8 @@ const translations = {
     'product_form.enter_barcode_error': 'Please enter or scan a barcode to look up.',
     'product_form.product_found_title': 'Product Found!',
     'product_form.populated_data_desc': 'Populated data for {name}.',
+    'product_form.tax': 'Tax',
+    'product_form.discount': 'Discount',
 
     // Transfer Form
     'transfer_form.title': 'Transfer to Shop',
@@ -158,7 +160,6 @@ const translations = {
     'expenses.breakdown_desc': 'A visual breakdown of expenses by category.',
     'expenses.no_breakdown_data': 'Not enough data to display breakdown chart.',
     
-
     // Shop Page
     'shop.title': 'Shop',
     'shop.description': 'Select products to sell or process returns.',
@@ -186,12 +187,18 @@ const translations = {
     'transaction.sales': 'Sales',
     'transaction.returns': 'Returns',
     'transaction.items': 'items',
-    'transaction.total': 'Total:',
+    'transaction.total': 'Total',
     'transaction.validate': 'Validate Transaction',
     'transaction.cart_is_empty': 'Cart is empty',
     'transaction.add_items_to_proceed': 'Add items to the cart.',
     'transaction.failed': 'Transaction Failed',
     'transaction.success': 'Transaction completed.',
+    'transaction.subtotal': 'Subtotal',
+    'transaction.total_return_value': 'Total Return Value',
+    'transaction.amount_tendered': 'Amount Tendered',
+    'transaction.cash_refunded': 'Cash Refunded',
+    'transaction.change_due': 'Change Due',
+    'transaction.confirm_button': 'Confirm',
 
     // Receipt
     'receipt.title': 'Transaction Successful',
@@ -343,6 +350,8 @@ const translations = {
     'product_form.enter_barcode_error': 'الرجاء إدخال أو مسح الباركود للبحث عنه.',
     'product_form.product_found_title': 'تم العثور على المنتج!',
     'product_form.populated_data_desc': 'تم ملء البيانات لـ {name}.',
+    'product_form.tax': 'ضريبة',
+    'product_form.discount': 'خصم',
 
     // Transfer Form
     'transfer_form.title': 'نقل إلى المتجر',
@@ -416,13 +425,19 @@ const translations = {
     'transaction.sales': 'المبيعات',
     'transaction.returns': 'المرتجعات',
     'transaction.items': 'منتجات',
-    'transaction.total': 'الإجمالي:',
+    'transaction.total': 'الإجمالي',
     'transaction.validate': 'تأكيد المعاملة',
     'transaction.cart_is_empty': 'العربة فارغة',
     'transaction.add_items_to_proceed': 'أضف منتجات إلى العربة.',
     'transaction.failed': 'فشلت المعاملة',
     'transaction.success': 'اكتملت المعاملة.',
-
+    'transaction.subtotal': 'المجموع الفرعي',
+    'transaction.total_return_value': 'إجمالي قيمة الإرجاع',
+    'transaction.amount_tendered': 'المبلغ المقدم',
+    'transaction.cash_refunded': 'المبلغ المسترد نقدًا',
+    'transaction.change_due': 'الباقي المستحق',
+    'transaction.confirm_button': 'تأكيد',
+    
     // Receipt
     'receipt.title': 'نجاح العملية',
     'receipt.cashier': 'الكاشير:',
