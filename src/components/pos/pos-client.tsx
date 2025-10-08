@@ -185,10 +185,14 @@ export function PosClient({
   const { t } = useTranslation();
   const [isReturnMode, setIsReturnMode] = useState(false);
   
-  const [drawerState, setDrawerState] = useState<DrawerState>({
-    status: 'inactive',
-    startingCash: 0,
-    cashSales: 0,
+  const [drawerState, setDrawerState] = useState<DrawerState>(() => {
+      if (typeof window !== 'undefined') {
+        const savedState = sessionStorage.getItem('drawerState');
+        if (savedState) {
+            return JSON.parse(savedState);
+        }
+      }
+      return { status: 'inactive', startingCash: 0, cashSales: 0 };
   });
 
   const [isEndOfDayOpen, setIsEndOfDayOpen] = useState(false);
@@ -206,6 +210,11 @@ export function PosClient({
 
   const receiptRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        sessionStorage.setItem('drawerState', JSON.stringify(drawerState));
+    }
+  }, [drawerState]);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -391,6 +400,7 @@ export function PosClient({
         startingCash: 0,
         cashSales: 0,
     });
+    sessionStorage.removeItem('drawerState');
     setIsEndOfDayOpen(false);
   };
 
@@ -512,9 +522,3 @@ export function PosClient({
     </>
   );
 }
-
-    
-
-    
-
-    

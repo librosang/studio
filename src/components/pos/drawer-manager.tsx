@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useCurrency } from "@/context/language-context";
+import { useCurrency, useTranslation } from "@/context/language-context";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Separator } from "../ui/separator";
 
@@ -24,44 +24,51 @@ type DrawerManagerProps = {
 }
 
 export function DrawerManager({ drawerState, onStartDrawer, onEndDay, children }: DrawerManagerProps) {
+    const [isStartDayOpen, setIsStartDayOpen] = useState(drawerState.status === 'inactive');
     const [floatAmount, setFloatAmount] = useState('');
     const { formatCurrency } = useCurrency();
+    const { t } = useTranslation();
 
-    const handleStart = () => {
+    const handleStart = (e: FormEvent) => {
+        e.preventDefault();
         const amount = parseFloat(floatAmount);
         if (!isNaN(amount) && amount >= 0) {
             onStartDrawer(amount);
+            setIsStartDayOpen(false);
         }
     }
 
     if (drawerState.status === 'inactive') {
         return (
-             <Dialog open={true} onOpenChange={() => {}}>
-                <DialogContent className="sm:max-w-md" onInteractOutside={e => e.preventDefault()}>
+             <Dialog open={isStartDayOpen} onOpenChange={setIsStartDayOpen}>
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Start of Day</DialogTitle>
                         <DialogDescription>
                             Enter the starting cash amount in your drawer to begin your session.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="float-amount">Starting Cash (Float)</Label>
-                            <Input
-                                id="float-amount"
-                                type="number"
-                                placeholder="e.g. 100.00"
-                                value={floatAmount}
-                                onChange={(e) => setFloatAmount(e.target.value)}
-                                autoFocus
-                            />
+                    <form onSubmit={handleStart}>
+                        <div className="p-6 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="float-amount">Starting Cash (Float)</Label>
+                                <Input
+                                    id="float-amount"
+                                    type="number"
+                                    placeholder="e.g. 100.00"
+                                    value={floatAmount}
+                                    onChange={(e) => setFloatAmount(e.target.value)}
+                                    autoFocus
+                                    step="0.01"
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={handleStart} className="w-full">
-                            Start Session
-                        </Button>
-                    </DialogFooter>
+                        <DialogFooter className="p-6 pt-0">
+                            <Button type="submit" className="w-full">
+                                Start Session
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         )
@@ -99,6 +106,7 @@ type EndOfDayDialogProps = {
 
 export function EndOfDayDialog({ isOpen, onClose, onConfirm, drawerState }: EndOfDayDialogProps) {
     const { formatCurrency } = useCurrency();
+    const { t } = useTranslation();
     const expectedCash = drawerState.startingCash + drawerState.cashSales;
 
     return (
@@ -115,7 +123,7 @@ export function EndOfDayDialog({ isOpen, onClose, onConfirm, drawerState }: EndO
                     <SummaryRow label="Expected in Drawer" value={formatCurrency(expectedCash)} isTotal />
                 </div>
                 <DialogFooter className="gap-2">
-                    <Button variant="secondary" onClick={onClose}>Cancel</Button>
+                    <Button variant="secondary" onClick={onClose}>{t('data_table.cancel')}</Button>
                     <Button variant="destructive" onClick={onConfirm}>Confirm & End Session</Button>
                 </DialogFooter>
             </DialogContent>
@@ -131,5 +139,3 @@ function SummaryRow({ label, value, isTotal = false }: { label: string, value: s
         </div>
     )
 }
-
-    
