@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { useTranslation } from '@/context/language-context';
 import { useEffect, useState } from 'react';
 import { SerializableExpense } from '@/lib/types';
-import { collection, onSnapshot, orderBy, query, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, getDocs, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Icons } from '@/components/icons';
 import { ExpensesDataTable } from '@/components/expenses/expenses-data-table';
@@ -32,10 +32,10 @@ export default function AccountingPage() {
 
   useEffect(() => {
     const expensesRef = collection(db, 'expenses');
-    const q = query(expensesRef, orderBy('date', 'desc'));
+    const expensesQuery = query(expensesRef, orderBy('date', 'desc'));
 
-    const unsubscribeExpenses = onSnapshot(q, (querySnapshot) => {
-      const expensesData = querySnapshot.docs.map(doc => {
+    const unsubscribeExpenses = onSnapshot(expensesQuery, (expensesSnapshot) => {
+      const expensesData = expensesSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -45,43 +45,42 @@ export default function AccountingPage() {
       });
       setExpenses(expensesData);
       
-      // Recalculate summary when expenses change
       const totalExpenses = expensesData.reduce((acc, expense) => acc + expense.amount, 0);
       setSummary(prev => ({
         ...prev,
         totalExpenses,
         netProfit: prev.totalRevenue - totalExpenses,
       }));
-
       setLoading(false);
     }, (error) => {
         console.error("Error fetching expenses: ", error);
         setLoading(false);
     });
 
-    const calculateTotalRevenue = async () => {
-        const logsRef = collection(db, 'logs');
-        const transactionsQuery = query(logsRef, where('type', '==', 'TRANSACTION'));
-        const querySnapshot = await getDocs(transactionsQuery);
+    const logsRef = collection(db, 'logs');
+    const transactionsQuery = query(logsRef, where('type', '==', 'TRANSACTION'));
+
+    const unsubscribeLogs = onSnapshot(transactionsQuery, (logsSnapshot) => {
         let totalRevenue = 0;
-        querySnapshot.forEach(doc => {
+        logsSnapshot.forEach(doc => {
             const log = doc.data();
             log.items.forEach((item: any) => {
-                // revenue is sales (negative quantity change) minus returns (positive quantity change)
                 totalRevenue += (item.quantityChange < 0 ? Math.abs(item.quantityChange) * item.price : -item.quantityChange * item.price);
             });
         });
-         setSummary(prev => ({
+        setSummary(prev => ({
             ...prev,
             totalRevenue,
             netProfit: totalRevenue - prev.totalExpenses,
         }));
+    });
+
+    return () => {
+      unsubscribeExpenses();
+      unsubscribeLogs();
     };
-
-    calculateTotalRevenue();
-
-    return () => unsubscribeExpenses();
   }, []);
+
 
   if (loading) {
      return <div className="flex h-[calc(100vh-10rem)] w-full items-center justify-center"><Icons.spinner className="h-8 w-8 animate-spin" /></div>;
