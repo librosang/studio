@@ -40,7 +40,7 @@ export default function MobileHeader() {
         const updatePlugins = () => {
           const storedPlugins = localStorage.getItem('plugins');
           const plugins: Plugin[] = storedPlugins ? JSON.parse(storedPlugins) : allPlugins;
-          const userPlugins = plugins.filter(p => p.active && user && p.roles.includes(user.role));
+          const userPlugins = plugins.filter(p => user && p.roles.includes(user.role));
           setActivePlugins(userPlugins);
         };
 
@@ -53,11 +53,10 @@ export default function MobileHeader() {
     }, [user]);
 
     const navItems = allNavItems
-        .filter(item => activePlugins.some(p => p.id === item.id))
-        .map(item => ({
-            ...item,
-            ...activePlugins.find(p => p.id === item.id)!
-        }));
+        .filter(item => {
+            const plugin = activePlugins.find(p => p.id === item.id);
+            return plugin && plugin.active;
+        });
 
 
   return (
