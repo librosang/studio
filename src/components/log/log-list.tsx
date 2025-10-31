@@ -108,5 +108,3 @@ export function LogList({ logs }: { logs: SerializableLogEntry[] }) {
     </Card>
   );
 }
-
-    

@@ -598,5 +598,3 @@ export async function deleteExpense(id: string, user: UserProfile) {
         return { error: "Failed to delete expense." };
     }
 }
-
-    

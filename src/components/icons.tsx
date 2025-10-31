@@ -38,7 +38,6 @@ import {
   WifiOff,
   Receipt,
   Puzzle,
-  ChevronRight,
   FilePieChart,
 } from 'lucide-react';
 
