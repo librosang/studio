@@ -37,6 +37,7 @@ import {
   Wifi,
   WifiOff,
   Receipt,
+  Puzzle,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -93,4 +94,5 @@ export const Icons = {
   online: Wifi,
   offline: WifiOff,
   receipt: Receipt,
+  plugin: Puzzle,
 };

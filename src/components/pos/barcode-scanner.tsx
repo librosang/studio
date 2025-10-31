@@ -18,7 +18,7 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const { t } = useTranslation();
 
   const handleResult = (result: IDetectedBarcode[]) => {
-    if (result) {
+    if (result && result.length > 0) {
       onScan(result[0].rawValue);
     }
   };
@@ -51,26 +51,12 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
               onScan={handleResult}
               onError={handleError}
               formats={[
-                'maxi_code',
-                'pdf417',
-                'aztec',
-                'data_matrix',
-                'matrix_codes',
-                'dx_film_edge',
-                'databar',
-                'databar_expanded',
-                'codabar',
-                'code_39',
-                'code_93',
-                'code_128',
-                'ean_8',
                 'ean_13',
-                'itf',
-                'linear_codes',
+                'ean_8',
                 'upc_a',
-                'upc_e'
-            ]}
-            
+                'upc_e',
+                'code_128',
+              ]}
               components={{
                 tracker: true,
                 onOff: true,
@@ -80,10 +66,8 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
               }}
               styles={{
                 container: {
-                  width: '80%',
-                  maxWidth: 500,
-                  margin: 'auto'
-              }
+                  width: '100%',
+                }
               }}
             />
           </div>

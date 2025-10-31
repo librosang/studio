@@ -11,22 +11,22 @@ import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Icons } from './icons';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '@/context/user-context';
-import { UserRole } from '@/lib/types';
 import { useTranslation } from '@/context/language-context';
 import { OnlineStatusIndicator } from './online-status-indicator';
+import { allPlugins, type Plugin } from '@/lib/plugins';
 
 
 const allNavItems = [
-  { href: '/dashboard', labelKey: 'nav.dashboard', icon: Icons.dashboard, roles: ['manager'] as UserRole[] },
-  { href: '/stock', labelKey: 'nav.stock', icon: Icons.stock, roles: ['manager'] as UserRole[] },
-  { href: '/shop', labelKey: 'nav.shop', icon: Icons.shop, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/pos', labelKey: 'nav.pos', icon: Icons.pos, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/expenses', labelKey: 'nav.accounting', icon: Icons.receipt, roles: ['manager'] as UserRole[] },
-  { href: '/log', labelKey: 'nav.log', icon: Icons.log, roles: ['manager', 'cashier'] as UserRole[] },
-  { href: '/accounts', labelKey: 'nav.accounts', icon: Icons.accounts, roles: ['manager'] as UserRole[] },
-  { href: '/settings', labelKey: 'nav.settings', icon: Icons.settings, roles: ['manager', 'cashier'] as UserRole[] },
+  { href: '/dashboard', labelKey: 'nav.dashboard', icon: Icons.dashboard, id: 'dashboard' },
+  { href: '/stock', labelKey: 'nav.stock', icon: Icons.stock, id: 'stock' },
+  { href: '/shop', labelKey: 'nav.shop', icon: Icons.shop, id: 'shop' },
+  { href: '/pos', labelKey: 'nav.pos', icon: Icons.pos, id: 'pos' },
+  { href: '/expenses', labelKey: 'nav.accounting', icon: Icons.receipt, id: 'accounting' },
+  { href: '/log', labelKey: 'nav.log', icon: Icons.log, id: 'log' },
+  { href: '/accounts', labelKey: 'nav.accounts', icon: Icons.accounts, id: 'accounts' },
+  { href: '/settings', labelKey: 'nav.settings', icon: Icons.settings, id: 'settings' },
 ];
 
 export default function MobileHeader() {
@@ -34,8 +34,31 @@ export default function MobileHeader() {
     const [isOpen, setIsOpen] = useState(false);
     const { user } = useUser();
     const { t } = useTranslation();
+    const [activePlugins, setActivePlugins] = useState<Plugin[]>([]);
     
-    const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
+    useEffect(() => {
+        const updatePlugins = () => {
+          const storedPlugins = localStorage.getItem('plugins');
+          const plugins: Plugin[] = storedPlugins ? JSON.parse(storedPlugins) : allPlugins;
+          const userPlugins = plugins.filter(p => p.active && user && p.roles.includes(user.role));
+          setActivePlugins(userPlugins);
+        };
+
+        updatePlugins();
+
+        window.addEventListener('plugins-updated', updatePlugins);
+        return () => {
+            window.removeEventListener('plugins-updated', updatePlugins);
+        };
+    }, [user]);
+
+    const navItems = allNavItems
+        .filter(item => activePlugins.some(p => p.id === item.id))
+        .map(item => ({
+            ...item,
+            ...activePlugins.find(p => p.id === item.id)!
+        }));
+
 
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 sm:hidden">
