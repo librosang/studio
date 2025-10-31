@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   ArrowUpDown,
   ChevronDown,
+  ChevronRight,
   Trash2,
   Edit,
   Minus,
