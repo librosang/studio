@@ -39,6 +39,7 @@ import {
   Receipt,
   Puzzle,
   ChevronRight,
+  FilePieChart,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -97,4 +98,5 @@ export const Icons = {
   offline: WifiOff,
   receipt: Receipt,
   plugin: Puzzle,
+  reports: FilePieChart,
 };

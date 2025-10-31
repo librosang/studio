@@ -2,7 +2,7 @@
 import { Icons, Icon } from '@/components/icons';
 
 export type Plugin = {
-  id: 'dashboard' | 'stock' | 'shop' | 'pos' | 'accounting' | 'log' | 'accounts' | 'settings';
+  id: 'dashboard' | 'stock' | 'shop' | 'pos' | 'accounting' | 'reports' | 'log' | 'accounts' | 'settings';
   name: string;
   description: string;
   icon: Icon;
@@ -54,6 +54,15 @@ export const allPlugins: Plugin[] = [
     description: 'Track expenses and view financial summaries and reports.',
     icon: Icons.receipt,
     href: '/expenses',
+    active: true,
+    roles: ['manager'],
+  },
+  {
+    id: 'reports',
+    name: 'Reports',
+    description: 'View and export inventory and sales reports.',
+    icon: Icons.reports,
+    href: '/reports',
     active: true,
     roles: ['manager'],
   },

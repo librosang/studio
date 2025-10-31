@@ -12,6 +12,7 @@ const translations = {
     'nav.shop': 'Shop',
     'nav.pos': 'POS',
     'nav.accounting': 'Accounting',
+    'nav.reports': 'Reports',
     'nav.log': 'Log',
     'nav.accounts': 'Accounts',
     'nav.settings': 'Settings',
@@ -69,7 +70,7 @@ const translations = {
     'dashboard.total_expenses': 'Total Expenses',
     'dashboard.expenses_today_desc': 'Expenses recorded today.',
     'dashboard.net_profit': 'Net Profit',
-    'dashboard.profit_today_desc': 'Today\'s net profit.',
+    'dashboard.profit_today_desc': "Today's net profit.",
     'dashboard.weekly_financial_overview': 'Last 7 Days Financial Overview',
     'dashboard.weekly_financial_desc': 'Revenue, expenses, and profit trends.',
     'dashboard.no_financial_data': 'No financial data for this period.',
@@ -159,6 +160,10 @@ const translations = {
     'expenses.breakdown_title': 'Expense Breakdown',
     'expenses.breakdown_desc': 'A visual breakdown of expenses by category.',
     'expenses.no_breakdown_data': 'Not enough data to display breakdown chart.',
+
+    // Reports Page
+    'reports.title': 'Inventory Reports',
+    'reports.valuation_desc': 'View the total financial value of your current inventory.',
     
     // Shop Page
     'shop.title': 'Shop',
@@ -249,6 +254,7 @@ const translations = {
     'nav.shop': 'المتجر',
     'nav.pos': 'نقطة البيع',
     'nav.accounting': 'المحاسبة',
+    'nav.reports': 'التقارير',
     'nav.log': 'السجل',
     'nav.accounts': 'الحسابات',
     'nav.settings': 'الإعدادات',
@@ -397,6 +403,9 @@ const translations = {
     'expenses.breakdown_desc': 'توزيع مرئي للمصاريف حسب الفئة.',
     'expenses.no_breakdown_data': 'لا توجد بيانات كافية لعرض مخطط التوزيع.',
 
+    // Reports Page
+    'reports.title': 'تقارير المخزون',
+    'reports.valuation_desc': 'عرض القيمة المالية الإجمالية لمخزونك الحالي.',
 
     // Shop Page
     'shop.title': 'المتجر',
@@ -608,5 +617,3 @@ export function useCurrency() {
     }
     return context;
 }
-
-    
