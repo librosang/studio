@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -31,10 +30,10 @@ export default function MainSidebar({ className }: { className?: string }) {
     const updateNavItems = () => {
       if (!user) return;
       const storedPlugins = localStorage.getItem('plugins');
-      const plugins: Plugin[] = storedPlugins ? JSON.parse(storedPlugins) : allPlugins;
+      const activePlugins: Plugin[] = storedPlugins ? JSON.parse(storedPlugins) : allPlugins;
       
       const activeNavItems = navItemsMaster.filter(item => {
-        const plugin = plugins.find(p => p.id === item.id);
+        const plugin = activePlugins.find(p => p.id === item.id);
         return plugin && plugin.active && item.roles.includes(user.role);
       });
       setNavItems(activeNavItems);
