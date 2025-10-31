@@ -21,7 +21,6 @@ import { revalidatePath } from 'next/cache';
 import { db } from './firebase';
 import type { Product, LogEntry, SerializableProduct, SerializableLogEntry, DashboardStats, UserProfile, ProductFormData, ExpenseFormData } from './types';
 import { ProductSchema, UserSchema, ExpenseSchema } from './types';
-import { suggestCategory as suggestCategoryFlow } from '@/ai/flows/suggest-category';
 import { sampleProducts } from './sample-data';
 import { startOfDay, endOfDay, differenceInDays } from 'date-fns';
 
@@ -315,22 +314,6 @@ export async function getLogs(): Promise<SerializableLogEntry[]> {
   return logList;
 }
 
-// --- GenAI Action ---
-export async function getCategorySuggestion(productName: string): Promise<{ category: string } | { error: string }> {
-  if (!productName.trim()) {
-    return { error: "Product name is empty." };
-  }
-  try {
-    const result = await suggestCategoryFlow({ productName });
-    return { category: result.category };
-  } catch (error) {
-    console.error('AI suggestion failed:', error);
-    if (error instanceof Error && (error.message.includes('permission') || error.message.includes('billing'))) {
-        return { error: 'AI suggestion failed. This may be due to billing settings on your Firebase project. Please ensure you are on the Blaze plan.' };
-    }
-    return { error: 'An unexpected error occurred while getting an AI suggestion.' };
-  }
-}
 
 // --- Database Seeding ---
 export async function seedDatabase() {

@@ -38,6 +38,7 @@ import {
   WifiOff,
   Receipt,
   Puzzle,
+  ChevronRight,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -74,6 +75,7 @@ export const Icons = {
   arrowUpDown: ArrowUpDown,
   arrowLeft: ArrowLeft,
   chevronDown: ChevronDown,
+  chevronRight: ChevronRight,
   trash: Trash2,
   edit: Edit,
   minus: Minus,

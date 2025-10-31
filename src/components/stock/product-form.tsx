@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { addProduct, updateProduct, getCategorySuggestion, getProductDataFromBarcode } from '@/lib/actions';
+import { addProduct, updateProduct, getProductDataFromBarcode } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { SerializableProduct, ProductFormData, ProductSchema } from '@/lib/types';
 import { Icons } from '../icons';
@@ -90,23 +90,6 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
         }
     });
   };
-
-  const handleSuggestCategory = async () => {
-    const productName = form.getValues('name');
-    if (!productName) {
-        toast({ title: t('general.error'), description: t('product_form.suggest_category_error'), variant: 'destructive' });
-        return;
-    }
-    setIsSuggesting(true);
-    const result = await getCategorySuggestion(productName);
-    if (result.category) {
-        form.setValue('category', result.category, { shouldValidate: true });
-        toast({ title: t('product_form.suggestion_applied'), description: t('product_form.category_set_to', {category: result.category}), className: 'bg-blue-500 text-white' });
-    } else {
-        toast({ title: t('general.error'), description: result.error, variant: 'destructive' });
-    }
-    setIsSuggesting(false);
-  }
   
   const handleBarcodeLookup = async (barcodeValue?: string) => {
     const barcode = barcodeValue || form.getValues('barcode');
@@ -159,9 +142,6 @@ export function ProductForm({ product, setOpen }: ProductFormProps) {
                     <FormControl>
                       <Input placeholder={t('product_form.category_placeholder')} {...field} />
                     </FormControl>
-                    <Button type="button" variant="outline" onClick={handleSuggestCategory} disabled={isSuggesting} className='px-3'>
-                        {isSuggesting ? <Icons.spinner className="animate-spin h-4 w-4" /> : <Icons.magic className="h-4 w-4 text-primary" />}
-                    </Button>
                   </div>
                   <FormMessage />
                 </FormItem>

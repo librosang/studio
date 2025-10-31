@@ -9,8 +9,6 @@ import { Language, Currency } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
-import { ChevronRight } from 'lucide-react';
-
 
 export default function SettingsPage() {
     const { language, setLanguage } = useLanguage();
@@ -68,7 +66,7 @@ export default function SettingsPage() {
                           <p className="text-sm text-muted-foreground">Enable or disable application features.</p>
                       </div>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  <Icons.chevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
             </Link>
         </CardContent>

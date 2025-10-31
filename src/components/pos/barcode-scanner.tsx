@@ -51,11 +51,7 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
               onScan={handleResult}
               onError={handleError}
               formats={[
-                'ean_13',
-                'ean_8',
-                'upc_a',
-                'upc_e',
-                'code_128',
+                "ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"
               ]}
               components={{
                 tracker: true,

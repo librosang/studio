@@ -13,44 +13,40 @@ import { OnlineStatusIndicator } from './online-status-indicator';
 import { allPlugins, Plugin } from '@/lib/plugins';
 import { useState, useEffect } from 'react';
 
-const allNavItems = [
-  { href: '/dashboard', labelKey: 'nav.dashboard', icon: Icons.dashboard, id: 'dashboard' },
-  { href: '/stock', labelKey: 'nav.stock', icon: Icons.stock, id: 'stock' },
-  { href: '/shop', labelKey: 'nav.shop', icon: Icons.shop, id: 'shop' },
-  { href: '/pos', labelKey: 'nav.pos', icon: Icons.pos, id: 'pos' },
-  { href: '/expenses', labelKey: 'nav.accounting', icon: Icons.receipt, id: 'accounting' },
-  { href: '/log', labelKey: 'nav.log', icon: Icons.log, id: 'log' },
-  { href: '/accounts', labelKey: 'nav.accounts', icon: Icons.accounts, id: 'accounts' },
-  { href: '/settings', labelKey: 'nav.settings', icon: Icons.settings, id: 'settings' },
-];
+const navItemsMaster = allPlugins.map(plugin => ({
+    href: plugin.href,
+    labelKey: `nav.${plugin.id}`,
+    icon: plugin.icon,
+    id: plugin.id,
+    roles: plugin.roles
+}));
 
 export default function MainSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { user } = useUser();
   const { t } = useTranslation();
-  const [activePlugins, setActivePlugins] = useState<Plugin[]>([]);
+  const [navItems, setNavItems] = useState(navItemsMaster);
 
   useEffect(() => {
-    const updatePlugins = () => {
+    const updateNavItems = () => {
+      if (!user) return;
       const storedPlugins = localStorage.getItem('plugins');
       const plugins: Plugin[] = storedPlugins ? JSON.parse(storedPlugins) : allPlugins;
-      const userPlugins = plugins.filter(p => user && p.roles.includes(user.role));
-      setActivePlugins(userPlugins);
+      
+      const activeNavItems = navItemsMaster.filter(item => {
+        const plugin = plugins.find(p => p.id === item.id);
+        return plugin && plugin.active && item.roles.includes(user.role);
+      });
+      setNavItems(activeNavItems);
     };
 
-    updatePlugins();
+    updateNavItems(); // Initial update
 
-    window.addEventListener('plugins-updated', updatePlugins);
+    window.addEventListener('plugins-updated', updateNavItems);
     return () => {
-      window.removeEventListener('plugins-updated', updatePlugins);
+      window.removeEventListener('plugins-updated', updateNavItems);
     };
   }, [user]);
-
-  const navItems = allNavItems
-    .filter(item => {
-        const plugin = activePlugins.find(p => p.id === item.id);
-        return plugin && plugin.active;
-    });
 
   return (
     <aside className={cn("w-16 md:w-64 bg-card border-r flex-col transition-all duration-300 hidden sm:flex", className)}>
@@ -66,6 +62,7 @@ export default function MainSidebar({ className }: { className?: string }) {
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const label = t(item.labelKey as any);
+            const Icon = item.icon;
             return (
               <Tooltip key={item.href} delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -78,7 +75,7 @@ export default function MainSidebar({ className }: { className?: string }) {
                     )}
                   >
                     <Link href={item.href}>
-                      <item.icon className="h-6 w-6" />
+                      <Icon className="h-6 w-6" />
                       <span className="hidden md:block">{label}</span>
                     </Link>
                   </Button>
