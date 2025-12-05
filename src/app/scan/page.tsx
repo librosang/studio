@@ -107,12 +107,12 @@ export default function ScanPage() {
           console.log('📤 Sending data to Telegram:', barcode);
           
           // Validate barcode format
-          if (!/^\d{8,13}$/.test(barcode)) {
-            setError(`Invalid barcode format: ${barcode}`);
-            setIsScanning(true);
-            setScannedCode(null);
-            return;
-          }
+          //if (!/^\d{8,13}$/.test(barcode)) {
+         //   setError(`Invalid barcode format: ${barcode}`);
+          //  setIsScanning(true);
+         //   setScannedCode(null);
+          //  return;
+         // }
           
           // Send the barcode
           tg.sendData(barcode);
