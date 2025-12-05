@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Scanner as ScannerComp, IDetectedBarcode } from '@yudiel/react-qr-scanner';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Icons } from '@/components/icons';
 
 // Declare Telegram types
 declare global {
@@ -22,235 +20,229 @@ declare global {
 
 export default function ScanPage() {
   const [error, setError] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
   const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [isTelegramReady, setIsTelegramReady] = useState(false);
 
-  // Load Telegram script dynamically
+  // Load Telegram script
   useEffect(() => {
-    // Check if script already exists
-    if (document.getElementById('telegram-web-app-script')) {
-      initializeTelegram();
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
-    const script = document.createElement('script');
-    script.id = 'telegram-web-app-script';
-    script.src = 'https://telegram.org/js/telegram-web-app.js';
-    script.async = true;
-    
-    script.onload = () => {
-      console.log('Telegram script loaded successfully');
-      // Wait a bit for Telegram object to be available
-      setTimeout(() => {
+    const loadTelegram = () => {
+      // Check if script already exists
+      if (document.getElementById('telegram-web-app-script')) {
         initializeTelegram();
-      }, 100);
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load Telegram script');
-      setError('Failed to load Telegram Web App script. Please try again.');
-    };
-    
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup on unmount
-      const existingScript = document.getElementById('telegram-web-app-script');
-      if (existingScript) {
-        existingScript.remove();
+        return;
       }
+
+      const script = document.createElement('script');
+      script.id = 'telegram-web-app-script';
+      script.src = 'https://telegram.org/js/telegram-web-app.js';
+      script.async = true;
+      
+      script.onload = () => {
+        setTimeout(() => initializeTelegram(), 200);
+      };
+      
+      script.onerror = () => {
+        setError('Failed to load Telegram Web App. Please try reopening from bot.');
+      };
+      
+      document.head.appendChild(script);
     };
+
+    loadTelegram();
   }, []);
 
-  const initializeTelegram = () => {
-    console.log('Attempting to initialize Telegram...');
-    console.log('window.Telegram:', window.Telegram);
-    
-    if (window.Telegram?.WebApp) {
+  const initializeTelegram = useCallback(() => {
+    try {
+      if (!window.Telegram?.WebApp) {
+        setError('Please open this page from the Telegram bot.');
+        return;
+      }
+
       const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
       
-      try {
-        console.log('Telegram WebApp found, initializing...');
-        console.log('Init data:', tg.initData);
-        
-        tg.ready();
-        tg.expand();
-        
-        setIsTelegramReady(true);
-        console.log('✓ Telegram WebApp initialized successfully');
-        
-      } catch (e) {
-        console.error('Telegram initialization error:', e);
-        setError(`Telegram initialization failed: ${e}`);
-      }
-    } else {
-      console.error('window.Telegram.WebApp not found');
-      console.log('Available on window:', Object.keys(window));
-      setError('This page must be opened from a Telegram bot mini app.');
+      setIsTelegramReady(true);
+      setIsScanning(true); // Start scanning once Telegram is ready
+      
+    } catch (e) {
+      setError(`Telegram initialization failed: ${e}`);
     }
-  };
+  }, []);
 
-  const handleResult = (result: IDetectedBarcode[]) => {
-    if (!isScanning) return;
+  const handleResult = useCallback((result: IDetectedBarcode[]) => {
+    if (!isScanning || !result || result.length === 0) return;
     
-    if (result && result.length > 0) {
+    try {
       const barcode = result[0].rawValue;
-      setScannedCode(barcode);
-      setIsScanning(false);
       
-      console.log('📦 Barcode detected:', barcode);
-
-      if (window.Telegram?.WebApp) {
-        try {
-          const tg = window.Telegram.WebApp;
-          console.log('📤 Sending data to Telegram:', barcode);
-          
-          // Validate barcode format
-          //if (!/^\d{8,13}$/.test(barcode)) {
-         //   setError(`Invalid barcode format: ${barcode}`);
-          //  setIsScanning(true);
-         //   setScannedCode(null);
-          //  return;
-         // }
-          
-          // Send the barcode
-          tg.sendData(barcode);
-          console.log('✓ Data sent successfully');
-          
-          // Close after a short delay
-          setTimeout(() => {
-            console.log('Closing WebApp...');
-            tg.close();
-          }, 500);
-          
-        } catch (e) {
-          console.error('❌ Telegram send error:', e);
-          setError(`Failed to send data: ${e}`);
-          setIsScanning(true);
-          setScannedCode(null);
-        }
-      } else {
-        setError('Telegram WebApp lost connection. Please reopen from bot.');
-        setIsScanning(true);
-        setScannedCode(null);
+      // Validate barcode format (8-13 digits)
+      if (!/^\d{8,13}$/.test(barcode)) {
+        setError(`Invalid barcode format: ${barcode}. Must be 8-13 digits.`);
+        return;
       }
-    }
-  };
 
-  const handleError = (error: any) => {
-    console.error('📷 Scanner Error:', error);
-    let message = 'Camera error occurred.';
+      // Stop scanning
+      setIsScanning(false);
+      setScannedCode(barcode);
+
+      // Send to Telegram
+      if (!window.Telegram?.WebApp) {
+        setError('Telegram connection lost. Please reopen from bot.');
+        return;
+      }
+
+      const tg = window.Telegram.WebApp;
+      tg.sendData(barcode);
+      
+      // Close after delay
+      setTimeout(() => {
+        tg.close();
+      }, 500);
+      
+    } catch (e) {
+      setError(`Error processing barcode: ${e}`);
+      setIsScanning(true);
+      setScannedCode(null);
+    }
+  }, [isScanning]);
+
+  const handleScanError = useCallback((error: any) => {
+    console.error('Scanner error:', error);
+    
+    let message = 'An unknown camera error occurred.';
     
     if (error?.name === 'NotAllowedError') {
-      message = '❌ Camera permission denied. Please enable camera access in your browser settings.';
+      message = 'Camera access denied. Please enable camera permissions in your browser settings.';
     } else if (error?.name === 'NotFoundError') {
-      message = '❌ No camera found on this device.';
+      message = 'No camera found on this device.';
     } else if (error?.name === 'NotReadableError') {
-      message = '❌ Camera is in use by another app.';
+      message = 'Camera is already in use by another application.';
+    } else if (error?.name === 'OverconstrainedError') {
+      message = 'Camera constraints could not be satisfied. Try a different camera.';
     } else if (error?.message) {
       message = `Camera error: ${error.message}`;
     }
     
     setError(message);
+    setIsScanning(false);
+  }, []);
+
+  const handleRetry = () => {
+    setError(null);
+    setScannedCode(null);
+    setIsScanning(true);
   };
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center p-4">
       {error ? (
-        <Alert variant="destructive" className="max-w-md mx-auto">
-          <Icons.xCircle className="h-5 w-5" />
-          <AlertTitle className="text-lg font-semibold">Error</AlertTitle>
-          <AlertDescription className="mt-2 text-sm">
-            {error}
-          </AlertDescription>
+        // Error State
+        <div className="max-w-md w-full mx-auto bg-red-900/20 border-2 border-red-500 rounded-xl p-6">
+          <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-500/20 rounded-full">
+            <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white text-center mb-3">Error</h2>
+          <p className="text-gray-300 text-sm text-center mb-6 leading-relaxed">{error}</p>
+          
           <button 
-            onClick={() => {
-              setError(null);
-              setIsScanning(true);
-              setScannedCode(null);
-              initializeTelegram();
-            }}
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+            onClick={handleRetry}
+            className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg font-medium transition-colors"
           >
             Try Again
           </button>
-        </Alert>
+        </div>
       ) : scannedCode ? (
-        <Alert className="max-w-md mx-auto bg-green-900 text-white border-green-700">
-          <Icons.check className="h-5 w-5" />
-          <AlertTitle className="text-lg font-semibold">Success!</AlertTitle>
-          <AlertDescription className="mt-2">
-            <p className="text-sm mb-2">Barcode scanned:</p>
-            <code className="block p-2 bg-black/30 rounded font-mono text-base">
+        // Success State
+        <div className="max-w-md w-full mx-auto bg-green-900/20 border-2 border-green-500 rounded-xl p-6">
+          <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-500/20 rounded-full">
+            <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white text-center mb-3">Success!</h2>
+          <p className="text-sm text-gray-300 text-center mb-3">Barcode scanned:</p>
+          <div className="bg-black/50 p-4 rounded-lg mb-4">
+            <code className="block text-center font-mono text-lg text-white break-all">
               {scannedCode}
             </code>
-            <p className="text-xs mt-3 text-green-200">
-              Sending to Telegram bot...
-            </p>
-          </AlertDescription>
-        </Alert>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-green-400 text-sm">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span>Sending to Telegram...</span>
+          </div>
+        </div>
       ) : (
+        // Scanner State
         <>
-          <div className="w-full max-w-md mb-6">
-            <h1 className="text-2xl font-bold text-white text-center mb-2">
-              Barcode Scanner
+          <div className="w-full max-w-md mb-6 text-center">
+            <h1 className="text-2xl font-bold text-white mb-2">
+              📷 Barcode Scanner
             </h1>
-            <p className="text-sm text-gray-400 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full">
               {isTelegramReady ? (
-                <span className="text-green-400">✓ Connected to Telegram</span>
+                <>
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-xs text-green-400">Connected</span>
+                </>
               ) : (
-                <span className="text-yellow-400">⏳ Connecting to Telegram...</span>
+                <>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-yellow-400">Connecting...</span>
+                </>
               )}
-            </p>
+            </div>
           </div>
 
-          <div className="relative w-full max-w-md aspect-square bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-700">
-            {isScanning ? (
+          <div className="relative w-full max-w-md aspect-square bg-gray-900 rounded-2xl overflow-hidden border-2 border-gray-700 shadow-2xl">
+            {isScanning && isTelegramReady ? (
               <ScannerComp
                 onScan={handleResult}
-                onError={handleError}
+                onError={handleScanError}
                 formats={[
-                  "ean_13", 
+                  "ean_13",
                   "ean_8", 
-                  "upc_a", 
-                  "upc_e", 
-                  "code_128", 
-                  "code_39",
+                  "upc_a",
+                  "upc_e",
+                  "code_128",
                   "qr_code"
                 ]}
                 components={{
                   tracker: true,
                   finder: true,
+                  torch: true,
+                }}
+                constraints={{
+                  facingMode: 'environment'
                 }}
                 styles={{
                   container: {
-                    position: 'absolute',
                     width: '100%',
                     height: '100%',
-                    top: 0,
-                    left: 0,
                   },
                   video: {
-                    height: '100%',
-                    width: '100%',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
                   }
                 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                <div className="text-white text-center">
-                  <Icons.loader2 className="h-10 w-10 animate-spin mx-auto mb-3" />
-                  <p className="text-sm">Processing...</p>
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-white text-sm">Initializing camera...</p>
                 </div>
               </div>
             )}
           </div>
           
-          <div className="mt-6 text-center max-w-md">
-            <p className="text-base text-gray-300 mb-2">
-              📷 Point your camera at a barcode
+          <div className="mt-6 text-center max-w-md space-y-2">
+            <p className="text-base text-gray-300">
+              Point your camera at a barcode
             </p>
             <p className="text-xs text-gray-500">
               Supported: EAN-13, EAN-8, UPC, Code-128, QR Code
