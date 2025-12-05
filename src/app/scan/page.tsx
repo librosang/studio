@@ -99,9 +99,9 @@ export default function ScanPage() {
       tg.sendData(barcode);
       
       // Close after delay
-      setTimeout(() => {
-        tg.close();
-      }, 500);
+      // setTimeout(() => {
+      //   tg.close();
+      // }, 500);
       
     } catch (e) {
       setError(`Error processing barcode: ${e}`);
