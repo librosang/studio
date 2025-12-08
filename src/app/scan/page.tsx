@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Scanner as ScannerComp, IDetectedBarcode } from '@yudiel/react-qr-scanner';
 
 // Declare Telegram types
@@ -23,13 +23,14 @@ export default function ScanPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [isTelegramReady, setIsTelegramReady] = useState(false);
+  const hasScanned = useRef(false);
+  const telegramRef = useRef<any>(null);
 
   // Load Telegram script
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const loadTelegram = () => {
-      // Check if script already exists
       if (document.getElementById('telegram-web-app-script')) {
         initializeTelegram();
         return;
@@ -45,7 +46,7 @@ export default function ScanPage() {
       };
       
       script.onerror = () => {
-        setError('Failed to load Telegram Web App. Please try reopening from bot.');
+        setError('Failed to load Telegram Web App.');
       };
       
       document.head.appendChild(script);
@@ -54,7 +55,7 @@ export default function ScanPage() {
     loadTelegram();
   }, []);
 
-  const initializeTelegram = useCallback(() => {
+  const initializeTelegram = () => {
     try {
       if (!window.Telegram?.WebApp) {
         setError('Please open this page from the Telegram bot.');
@@ -62,69 +63,94 @@ export default function ScanPage() {
       }
 
       const tg = window.Telegram.WebApp;
+      telegramRef.current = tg;
+
+      if (!tg.initData || tg.initData === '') {
+        setError('⚠️ Please open this scanner using the button in the Telegram bot.');
+        return;
+      }
+
       tg.ready();
       tg.expand();
       
       setIsTelegramReady(true);
-      setIsScanning(true); // Start scanning once Telegram is ready
+      setIsScanning(true);
       
     } catch (e) {
-      setError(`Telegram initialization failed: ${e}`);
+      setError(`Initialization failed: ${e}`);
+    }
+  };
+
+  const sendToTelegram = useCallback((barcode: string) => {
+    if (!telegramRef.current) {
+      console.error('Telegram not available');
+      return;
+    }
+
+    try {
+      console.log('Sending barcode:', barcode);
+      telegramRef.current.sendData(barcode);
+      
+      // Close after sending
+      setTimeout(() => {
+        if (telegramRef.current) {
+          telegramRef.current.close();
+        }
+      }, 300);
+      
+    } catch (e) {
+      console.error('Send error:', e);
+      setError(`Failed to send: ${e}`);
     }
   }, []);
 
   const handleResult = useCallback((result: IDetectedBarcode[]) => {
-    if (!isScanning || !result || result.length === 0) return;
+    // Prevent multiple scans
+    if (hasScanned.current || !isScanning) {
+      return;
+    }
+    
+    if (!result || result.length === 0) {
+      return;
+    }
     
     try {
       const barcode = result[0].rawValue;
       
-      // Validate barcode format (8-13 digits)
+      // Validate format
       if (!/^\d{8,13}$/.test(barcode)) {
-        setError(`Invalid barcode format: ${barcode}. Must be 8-13 digits.`);
+        setError(`Invalid barcode: ${barcode}`);
         return;
       }
 
-      // Stop scanning
+      // Mark as scanned
+      hasScanned.current = true;
       setIsScanning(false);
       setScannedCode(barcode);
 
-      // Send to Telegram
-      if (!window.Telegram?.WebApp) {
-        setError('Telegram connection lost. Please reopen from bot.');
-        return;
-      }
-
-      const tg = window.Telegram.WebApp;
-      tg.sendData(barcode);
-      
-      // Close after delay
+      // Send to Telegram after state updates
       // setTimeout(() => {
-      //   tg.close();
-      // }, 500);
+      //   sendToTelegram(barcode);
+      // }, 100);
       
     } catch (e) {
-      setError(`Error processing barcode: ${e}`);
-      setIsScanning(true);
-      setScannedCode(null);
+      console.error('Handle result error:', e);
+      setError(`Error: ${e}`);
+      hasScanned.current = false;
     }
-  }, [isScanning]);
+  }, [isScanning, sendToTelegram]);
 
   const handleScanError = useCallback((error: any) => {
     console.error('Scanner error:', error);
     
-    let message = 'An unknown camera error occurred.';
+    let message = 'Camera error occurred.';
     
     if (error?.name === 'NotAllowedError') {
-      message = 'Camera access denied. Please enable camera permissions in your browser settings.';
+      message = 'Camera permission denied. Please enable camera access.';
     } else if (error?.name === 'NotFoundError') {
-      message = 'No camera found on this device.';
+      message = 'No camera found.';
     } else if (error?.name === 'NotReadableError') {
-      message = 'Camera is already in use by another application.';
-    } else if (error?.name === 'OverconstrainedError') {
-      message = 'Camera constraints could not be satisfied. Try a different camera.';
-    } else if (error?.message) {
-      message = `Camera error: ${error.message}`;
+      message = 'Camera in use by another app.';
     }
     
     setError(message);
@@ -134,13 +160,13 @@ export default function ScanPage() {
   const handleRetry = () => {
     setError(null);
     setScannedCode(null);
+    hasScanned.current = false;
     setIsScanning(true);
   };
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center p-4">
       {error ? (
-        // Error State
         <div className="max-w-md w-full mx-auto bg-red-900/20 border-2 border-red-500 rounded-xl p-6">
           <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-500/20 rounded-full">
             <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,7 +184,6 @@ export default function ScanPage() {
           </button>
         </div>
       ) : scannedCode ? (
-        // Success State
         <div className="max-w-md w-full mx-auto bg-green-900/20 border-2 border-green-500 rounded-xl p-6">
           <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-500/20 rounded-full">
             <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,7 +203,6 @@ export default function ScanPage() {
           </div>
         </div>
       ) : (
-        // Scanner State
         <>
           <div className="w-full max-w-md mb-6 text-center">
             <h1 className="text-2xl font-bold text-white mb-2">
@@ -215,7 +239,6 @@ export default function ScanPage() {
                 components={{
                   tracker: true,
                   finder: true,
-                  torch: true,
                 }}
                 constraints={{
                   facingMode: 'environment'
@@ -224,9 +247,6 @@ export default function ScanPage() {
                   container: {
                     width: '100%',
                     height: '100%',
-                  },
-                  video: {
-                    objectFit: 'cover',
                   }
                 }}
               />
@@ -234,7 +254,7 @@ export default function ScanPage() {
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                  <p className="text-white text-sm">Initializing camera...</p>
+                  <p className="text-white text-sm">Initializing...</p>
                 </div>
               </div>
             )}
