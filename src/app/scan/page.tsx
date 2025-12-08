@@ -237,7 +237,6 @@ export default function ScanPage() {
                   "qr_code"
                 ]}
                 components={{
-                  tracker: true,
                   finder: true,
                 }}
                 constraints={{
