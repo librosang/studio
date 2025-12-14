@@ -209,8 +209,6 @@ export default function ScanPage() {
                   "ean_8", 
                   "upc_a",
                   "upc_e",
-                  "code_128",
-                  "qr_code"
                 ]}
                 components={{
                   tracker: true,
